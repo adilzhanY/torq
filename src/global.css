@@ -1,0 +1,43 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+/* Platform-specific font families */
+@media android {
+  :root {
+    --font-mono: monospace;
+    --font-rounded: normal;
+    --font-serif: serif;
+    --font-sans: normal;
+  }
+}
+
+@media ios {
+  :root {
+    --font-mono: ui-monospace;
+    --font-serif: ui-serif;
+    --font-sans: system-ui;
+    --font-rounded: ui-rounded;
+  }
+}
+
+/* Torq clay/bento palette (mirrors src/theme.ts) as Tailwind colors, so both
+   className and style-object code speak the same design tokens. */
+@layer theme {
+  @theme {
+    --color-page: #f1efe9;
+    --color-page2: #e9e7df;
+    --color-surface: #faf9f5;
+    --color-ink: #1b211f;
+    --color-ink-soft: #4b5650;
+    --color-ink-faint: #76817b;
+    --color-primary: #272d29;
+    --color-primary-deep: #161a17;
+    --color-accent: #f97316;
+    --color-gold: #e0a500;
+
+    --radius-clay-lg: 28px;
+    --radius-clay-md: 22px;
+    --radius-clay-sm: 16px;
+  }
+}

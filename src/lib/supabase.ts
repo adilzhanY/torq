@@ -1,0 +1,37 @@
+import "react-native-url-polyfill/auto";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
+/**
+ * Torq Supabase client. Configure it by setting these in .env
+ * (Expo inlines EXPO_PUBLIC_* at build time):
+ *
+ *   EXPO_PUBLIC_SUPABASE_URL=...
+ *   EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+ *
+ * The session is stored in AsyncStorage; RLS guards every row server-side.
+ * With no env set, the app runs fully offline (local-only).
+ */
+const url = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+let _client: SupabaseClient | null = null;
+
+export function supabaseConfigured(): boolean {
+  return Boolean(url && key);
+}
+
+export function supabase(): SupabaseClient | null {
+  if (!supabaseConfigured()) return null;
+  if (!_client) {
+    _client = createClient(url!, key!, {
+      auth: {
+        storage: AsyncStorage,
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false,
+      },
+    });
+  }
+  return _client;
+}
