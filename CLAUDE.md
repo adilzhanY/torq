@@ -27,6 +27,10 @@ The design is ported from `~/dev/grit/apps/mobile` — a warm clay/bento system:
 - Tokens in `src/theme.ts` (`C` palette, `R` radii, `FONT`, `clay()`/`claySm()`
   shadows). The same palette is mirrored as Tailwind theme colors in
   `src/global.css` (`bg-page`, `text-ink`, `bg-surface`, `text-accent`…).
+- Brand accent is the logo lime: `C.accent = #C8FE23`, `C.primary = #1A1B1A`
+  (the logo's dark square). Lime is LIGHT — anything drawn on it uses
+  `C.accentInk` (dark), never white. Used on: quick-start play button, LIVE
+  pill, done-set checks, Finish-workout CTA.
 - UI primitives in `src/components/ui.tsx`: `Txt`, `Card`, `Pill`,
   `SectionTitle`, `PrimaryButton`, `NumberField`, `TextField`, `Divider`.
 - Animations in `src/components/anim.tsx` (`Squish` press, `PopIn`, etc).
@@ -90,3 +94,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   see Dev environment); app verified running in Expo Go on it. Brand logo
   (lime pulse on dark square) added as `Logo.tsx`, shown in the top bar and
   loading screens.
+- 2026-07-05: Rethemed to the brand accent: orange → lime `#C8FE23`, primary
+  dark aligned to the logo's `#1A1B1A`, `C.accentInk` added for dark-on-lime
+  content. Verified on the emulator (home, live session, set-check flow).

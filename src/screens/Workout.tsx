@@ -103,7 +103,7 @@ function ActiveSession() {
             {workoutSets(w)} sets · {Math.round(workoutVolume(w))} volume
           </Txt>
         </View>
-        <Pill text="LIVE" color="#fff" bg={C.accent} />
+        <Pill text="LIVE" color={C.accentInk} bg={C.accent} />
       </View>
 
       {w.entries.map((entry, ei) => (
@@ -143,13 +143,13 @@ function ActiveSession() {
                     borderRadius: 12,
                     alignItems: "center",
                     justifyContent: "center",
-                    backgroundColor: set.done ? C.goodAcc : C.page2,
+                    backgroundColor: set.done ? C.accent : C.page2,
                     marginBottom: 1,
                   },
                   claySm(),
                 ]}
               >
-                <Icon name="Check" size={18} color={set.done ? "#fff" : C.inkFaint} />
+                <Icon name="Check" size={18} color={set.done ? C.accentInk : C.inkFaint} />
               </Squish>
             </View>
           ))}
@@ -173,7 +173,13 @@ function ActiveSession() {
         color={C.primary}
         onPress={() => setPicker(true)}
       />
-      <PrimaryButton label="Finish workout" onPress={finishWorkout} disabled={workoutSets(w) === 0} />
+      <PrimaryButton
+        label="Finish workout"
+        background={C.accent}
+        color={C.accentInk}
+        onPress={finishWorkout}
+        disabled={workoutSets(w) === 0}
+      />
       <PrimaryButton label="Discard" background={C.badSurf} color={C.badAcc} onPress={discardWorkout} />
 
       <ExercisePicker
@@ -223,7 +229,7 @@ export function Workout() {
             justifyContent: "center",
           }}
         >
-          <Icon name="Play" size={20} color="#fff" />
+          <Icon name="Play" size={20} color={C.accentInk} />
         </View>
         <View style={{ gap: 2 }}>
           <Txt size={16} weight="extrabold" color="#fff">Quick start</Txt>

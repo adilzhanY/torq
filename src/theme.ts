@@ -13,9 +13,12 @@ export const C = {
   inkSoft: "#4b5650",
   inkFaint: "#76817b",
 
-  primary: "#272d29",
-  primaryDeep: "#161a17",
-  accent: "#f97316",
+  // Brand: the logo's dark square + lime pulse mark.
+  primary: "#1A1B1A",
+  primaryDeep: "#101110",
+  accent: "#C8FE23",
+  /** Text/icon color on top of the (light) lime accent. */
+  accentInk: "#1A1B1A",
 
   goodSurf: "#d4f3ec",
   goodAcc: "#0b7d72",
@@ -28,11 +31,11 @@ export const C = {
   gold: "#e0a500",
 
   // Chart palette
-  chart1: "#272d29",
+  chart1: "#1A1B1A",
   chart2: "#0b7d72",
   chart3: "#c2700a",
   chart4: "#6d4fe0",
-  chart5: "#f97316",
+  chart5: "#C8FE23",
 } as const;
 
 export const R = { lg: 28, md: 22, sm: 16, pill: 999 } as const;
