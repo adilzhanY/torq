@@ -97,3 +97,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-07-05: Rethemed to the brand accent: orange → lime `#C8FE23`, primary
   dark aligned to the logo's `#1A1B1A`, `C.accentInk` added for dark-on-lime
   content. Verified on the emulator (home, live session, set-check flow).
+- 2026-07-05: Showcase README added (view-only, no setup instructions, per
+  Adilzhan) with the brand SVG at `assets/logo.svg` and emulator screenshots
+  in `docs/screens/`.
