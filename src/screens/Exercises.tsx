@@ -1,26 +1,120 @@
-/** Exercises tab — the movement library: search, add, delete. */
+/**
+ * Exercises tab — search across BOTH the personal library and the bundled
+ * ExerciseDB catalog (with animated gif demos). Catalog entries expand to
+ * show the demo + instructions and can be imported into the library.
+ */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { Image } from "expo-image";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
-import { Card, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
+import { Card, Divider, Pill, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
+import { DB_EXERCISES, DB_GIF_BY_ID, toBodyPart, toEquipment, type DbExercise } from "../lib/exercisedb";
+
+/** How many catalog matches to render at once (there are 1500+). */
+const DB_PAGE = 30;
 import type { BodyPart, Equipment } from "../types";
 
 const BODY_PARTS: BodyPart[] = ["chest", "back", "legs", "shoulders", "arms", "core", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "other"];
 
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function matches(q: string, hay: string[]): boolean {
+  const needle = q.trim().toLowerCase();
+  if (!needle) return true;
+  return hay.some((h) => h.toLowerCase().includes(needle));
+}
+
+function DbExerciseCard({ ex }: { ex: DbExercise }) {
+  const { exercises, addExercise } = useStore();
+  const [open, setOpen] = useState(false);
+  const added = exercises.some((e) => e.dbId === ex.id);
+
+  const importIt = () => {
+    if (added) return;
+    addExercise({
+      name: titleCase(ex.name),
+      bodyPart: toBodyPart(ex.bodyParts[0] ?? "other"),
+      equipment: toEquipment(ex.equipments[0] ?? "other"),
+      dbId: ex.id,
+    });
+  };
+
+  return (
+    <Card style={{ gap: 10, padding: 12 }}>
+      <Pressable
+        onPress={() => setOpen((v) => !v)}
+        style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+      >
+        <Image
+          source={{ uri: ex.gifUrl }}
+          style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: "#fff" }}
+          contentFit="cover"
+          cachePolicy="memory-disk"
+        />
+        <View style={{ flex: 1, gap: 3 }}>
+          <Txt weight="semibold" numberOfLines={2}>{titleCase(ex.name)}</Txt>
+          <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
+            <Pill text={ex.bodyParts[0] ?? ""} color={C.inkSoft} bg={C.page2} />
+            <Pill text={ex.equipments[0] ?? ""} color={C.inkSoft} bg={C.page2} />
+          </View>
+        </View>
+        <Icon name={open ? "ChevronDown" : "ChevronRight"} size={18} color={C.inkFaint} />
+      </Pressable>
+
+      {open ? (
+        <View style={{ gap: 10 }}>
+          <Divider />
+          <Image
+            source={{ uri: ex.gifUrl }}
+            style={{ width: "100%", aspectRatio: 1, borderRadius: R.sm, backgroundColor: "#fff" }}
+            contentFit="cover"
+            cachePolicy="memory-disk"
+          />
+          <Txt size={12} weight="bold" color={C.inkSoft}>
+            Targets {ex.targetMuscles.join(", ")}
+            {ex.secondaryMuscles.length ? ` · also ${ex.secondaryMuscles.join(", ")}` : ""}
+          </Txt>
+          <View style={{ gap: 6 }}>
+            {ex.instructions.map((step, i) => (
+              <Txt key={i} size={13} color={C.inkSoft}>
+                {step.replace(/^Step:\d+\s*/, `${i + 1}. `)}
+              </Txt>
+            ))}
+          </View>
+          <PrimaryButton
+            label={added ? "In your library ✓" : "Add to my exercises"}
+            onPress={importIt}
+            disabled={added}
+            background={added ? C.page2 : C.accent}
+            color={added ? C.inkSoft : C.accentInk}
+          />
+        </View>
+      ) : null}
+    </Card>
+  );
+}
+
 export function Exercises() {
   const { exercises, addExercise, deleteExercise } = useStore();
   const [q, setQ] = useState("");
+  const [dbLimit, setDbLimit] = useState(DB_PAGE);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState("");
   const [bodyPart, setBodyPart] = useState<BodyPart>("chest");
   const [equipment, setEquipment] = useState<Equipment>("barbell");
 
-  const list = exercises
-    .filter((e) => e.name.toLowerCase().includes(q.trim().toLowerCase()))
+  const mine = exercises
+    .filter((e) => matches(q, [e.name, e.bodyPart, e.equipment]))
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  const fromDb = DB_EXERCISES.filter((e) =>
+    matches(q, [e.name, ...e.bodyParts, ...e.equipments, ...e.targetMuscles]),
+  );
 
   const submit = () => {
     if (!name.trim()) return;
@@ -93,34 +187,77 @@ export function Exercises() {
         </Card>
       ) : null}
 
-      <TextField value={q} onChange={setQ} placeholder="Search…" />
-      <SectionTitle>{list.length} exercises</SectionTitle>
+      <TextField
+        value={q}
+        onChange={(v) => {
+          setQ(v);
+          setDbLimit(DB_PAGE);
+        }}
+        placeholder="Search exercises, muscles, equipment…"
+      />
 
-      <Card style={{ gap: 0, paddingVertical: 6 }}>
-        {list.map((e, i) => (
-          <View key={e.id}>
-            {i > 0 ? <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.06)" }} /> : null}
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 10,
-              }}
-            >
-              <View style={{ gap: 2, flex: 1 }}>
-                <Txt weight="semibold">{e.name}</Txt>
-                <Txt size={11} color={C.inkFaint}>
-                  {e.bodyPart} · {e.equipment}
-                </Txt>
+      <SectionTitle>My exercises · {mine.length}</SectionTitle>
+      {mine.length === 0 ? (
+        <Card>
+          <Txt size={13} color={C.inkFaint}>Nothing matches in your library.</Txt>
+        </Card>
+      ) : (
+        <Card style={{ gap: 0, paddingVertical: 6 }}>
+          {mine.map((e, i) => (
+            <View key={e.id}>
+              {i > 0 ? <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.06)" }} /> : null}
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingVertical: 10,
+                  gap: 10,
+                }}
+              >
+                {e.dbId && DB_GIF_BY_ID[e.dbId] ? (
+                  <Image
+                    source={{ uri: DB_GIF_BY_ID[e.dbId] }}
+                    style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: "#fff" }}
+                    contentFit="cover"
+                    cachePolicy="memory-disk"
+                  />
+                ) : null}
+                <View style={{ gap: 2, flex: 1 }}>
+                  <Txt weight="semibold">{e.name}</Txt>
+                  <Txt size={11} color={C.inkFaint}>
+                    {e.bodyPart} · {e.equipment}
+                  </Txt>
+                </View>
+                <Pressable hitSlop={8} onPress={() => deleteExercise(e.id)}>
+                  <Icon name="Trash2" size={15} color={C.inkFaint} />
+                </Pressable>
               </View>
-              <Pressable hitSlop={8} onPress={() => deleteExercise(e.id)}>
-                <Icon name="Trash2" size={15} color={C.inkFaint} />
-              </Pressable>
             </View>
-          </View>
-        ))}
-      </Card>
+          ))}
+        </Card>
+      )}
+
+      <SectionTitle>Exercise database · {fromDb.length}</SectionTitle>
+      {fromDb.length === 0 ? (
+        <Card>
+          <Txt size={13} color={C.inkFaint}>No catalog exercises match “{q.trim()}”.</Txt>
+        </Card>
+      ) : (
+        <>
+          {fromDb.slice(0, dbLimit).map((e) => (
+            <DbExerciseCard key={e.id} ex={e} />
+          ))}
+          {fromDb.length > dbLimit ? (
+            <PrimaryButton
+              label={`Show more (${fromDb.length - dbLimit} left)`}
+              background={C.surface}
+              color={C.primary}
+              onPress={() => setDbLimit((n) => n + DB_PAGE)}
+            />
+          ) : null}
+        </>
+      )}
     </ScrollView>
   );
 }

@@ -63,6 +63,21 @@ persists on every commit; `src/lib/auth.tsx` (`useAuth`) wraps Supabase auth.
 Default exercise library seeded on first launch from `src/lib/seed.ts`
 (stable ids so multi-device seeds merge cleanly).
 
+## ExerciseDB catalog
+
+`src/data/exercisedb.json` is a snapshot of the full open-source ExerciseDB
+(1500 exercises) from `https://oss.exercisedb.dev/api/v1/exercises`.
+Pagination gotchas: pages are capped at 25 rows and the cursor param is
+`after=<meta.nextCursor>` — the documented `cursor` param is silently ignored
+(you get the same page forever). `src/lib/exercisedb.ts` loads the snapshot,
+maps ExerciseDB body parts/equipment onto Torq's enums, and rewrites gif URLs:
+the API still reports `static.exercisedb.dev`, a domain with NO DNS record;
+the gifs actually live at `v1.exercisedb.dev/media/<id>.gif` (behind Vercel,
+which serves a bot-challenge 429 to bulk/CLI traffic — real devices are fine).
+Gifs are remote-only (bundling ~1500 would add hundreds of MB); `expo-image`
+caches them with `cachePolicy="memory-disk"`. Exercises imported from the
+catalog carry `dbId` on the `Exercise` row, which keys `DB_GIF_BY_ID`.
+
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
 Strong-style five tabs: Profile · History · Workout (default) · Exercises ·
@@ -100,3 +115,9 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-07-05: Showcase README added (view-only, no setup instructions, per
   Adilzhan) with the brand SVG at `assets/logo.svg` and emulator screenshots
   in `docs/screens/`.
+- 2026-07-05: Full ExerciseDB catalog (1500 exercises, gif demos) integrated —
+  see "ExerciseDB catalog" above. Exercises tab now searches the user library
+  AND the catalog (paged 30 at a time); catalog cards expand to gif +
+  instructions and can be imported into the library. An earlier 30-exercise
+  Kaggle sample integration was replaced by this and deleted. expo-image
+  added.

@@ -24,8 +24,10 @@ weight × reps, tick sets as you go, finish, done.
 
 - **Live workout logging** — quick-start an empty session or launch a saved
   routine; the Workout tab becomes the set logger while a session is active.
-- **Exercise library** — seeded with the essential barbell/dumbbell/machine
-  movements, searchable, extendable with your own.
+- **Exercise library** — a searchable 1,500-exercise catalog
+  ([ExerciseDB](https://oss.exercisedb.dev)) with animated demos, muscle
+  breakdowns and step-by-step instructions, importable into your own
+  library alongside custom exercises.
 - **Routines** — reusable workout templates.
 - **History** — every finished session with date, duration, set count and
   total volume.

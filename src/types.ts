@@ -35,6 +35,8 @@ export interface Exercise {
   name: string;
   bodyPart: BodyPart;
   equipment: Equipment;
+  /** ExerciseDB id when imported from the bundled catalog (keys DB_GIFS). */
+  dbId?: string;
   notes?: string;
   updatedAt: number;
 }
