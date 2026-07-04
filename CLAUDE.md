@@ -30,6 +30,10 @@ The design is ported from `~/dev/grit/apps/mobile` — a warm clay/bento system:
 - UI primitives in `src/components/ui.tsx`: `Txt`, `Card`, `Pill`,
   `SectionTitle`, `PrimaryButton`, `NumberField`, `TextField`, `Divider`.
 - Animations in `src/components/anim.tsx` (`Squish` press, `PopIn`, etc).
+- Brand logo in `src/components/Logo.tsx`: the lime (`#C8FE23`) pulse mark on
+  a dark (`#1A1B1A`) rounded square, drawn with react-native-svg from the
+  brand SVG Adilzhan supplied. Exports `LOGO_BG`/`LOGO_FG`; used in the top
+  bar and both loading screens.
 - `src/tw/` re-exports react-native-css pre-wrapped components (`View`, `Text`,
   …) for className usage. Most existing screens use style objects + theme
   tokens (grit's style); either is fine.
@@ -67,9 +71,22 @@ set-logger while a session is active (`activeWorkout` in the store).
 - `npm run tsc` — typecheck (keep this clean)
 - `CI=1 npx expo export --platform android` — verify the bundle compiles
 
+## Dev environment (this machine)
+
+Android tooling lives user-locally (no root): JDK 21 at `~/.local/jdk`,
+Android SDK at `~/Android/Sdk` (platform-tools, emulator, android-36 image).
+AVD `torq` (Pixel 7) is at `~/.config/.android/avd` — the emulator only finds
+it with `ANDROID_AVD_HOME=~/.config/.android/avd` exported. Launch:
+`ANDROID_AVD_HOME=~/.config/.android/avd ~/Android/Sdk/emulator/emulator -avd
+torq -gpu host`, then `npx expo start --android` (Expo Go).
+
 ## History
 
 - 2026-07-04: Project created. Expo template + NativeWind v5/Tailwind v4 set
   up; grit mobile design system and Supabase sync layer ported and adapted to
   the workout domain; five screens scaffolded; pushed to
   github.com/adilzhanY/torq (branch `main`).
+- 2026-07-04: Local Android emulator installed (JDK 21 + SDK + Pixel 7 AVD,
+  see Dev environment); app verified running in Expo Go on it. Brand logo
+  (lime pulse on dark square) added as `Logo.tsx`, shown in the top bar and
+  loading screens.

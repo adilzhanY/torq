@@ -14,7 +14,7 @@ import { AuthProvider } from "./src/lib/auth";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
 import { C } from "./src/theme";
-import { Logo } from "./src/components/Logo";
+import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
 import { Txt } from "./src/components/ui";
 import { Workout } from "./src/screens/Workout";
@@ -31,7 +31,7 @@ function Root() {
   if (!ready) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 24, backgroundColor: C.page }}>
-        <Logo size={96} color={C.primary} />
+        <Logo size={96} />
         <ActivityIndicator color={C.primary} />
       </View>
     );
@@ -50,7 +50,7 @@ function Root() {
           paddingBottom: 4,
         }}
       >
-        <Logo size={26} color={C.primary} />
+        <Logo size={26} />
         <Txt size={16} weight="extrabold">
           {name ? `Hello, ${name}.` : "Torq"}
         </Txt>
@@ -80,8 +80,8 @@ export default function App() {
 
   if (!loaded) {
     return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: C.primary }}>
-        <ActivityIndicator color="#fff" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: LOGO_BG }}>
+        <ActivityIndicator color={LOGO_FG} />
       </View>
     );
   }
