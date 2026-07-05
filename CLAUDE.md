@@ -69,14 +69,16 @@ Default exercise library seeded on first launch from `src/lib/seed.ts`
 (1500 exercises) from `https://oss.exercisedb.dev/api/v1/exercises`.
 Pagination gotchas: pages are capped at 25 rows and the cursor param is
 `after=<meta.nextCursor>` — the documented `cursor` param is silently ignored
-(you get the same page forever). `src/lib/exercisedb.ts` loads the snapshot,
-maps ExerciseDB body parts/equipment onto Torq's enums, and rewrites gif URLs:
-the API still reports `static.exercisedb.dev`, a domain with NO DNS record;
-the gifs actually live at `v1.exercisedb.dev/media/<id>.gif` (behind Vercel,
-which serves a bot-challenge 429 to bulk/CLI traffic — real devices are fine).
-Gifs are remote-only (bundling ~1500 would add hundreds of MB); `expo-image`
-caches them with `cachePolicy="memory-disk"`. Exercises imported from the
-catalog carry `dbId` on the `Exercise` row, which keys `DB_GIF_BY_ID`.
+(you get the same page forever). `src/lib/exercisedb.ts` loads the snapshot
+and maps ExerciseDB body parts/equipment onto Torq's enums.
+
+Gifs: the dataset's `gifUrl` points at `static.exercisedb.dev`, a domain with
+NO DNS record (dead). The app instead builds URLs against Adilzhan's mirror
+`github.com/adilzhanY/exercise-db` (all 1500 gifs under `media/<id>.gif`,
+verified identical dataset) via `raw.githubusercontent.com`. Gifs are
+remote-only (bundling ~1500 would add ~258 MB); `expo-image` caches them with
+`cachePolicy="memory-disk"`. Exercises imported from the catalog carry `dbId`
+on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
@@ -121,3 +123,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   instructions and can be imported into the library. An earlier 30-exercise
   Kaggle sample integration was replaced by this and deleted. expo-image
   added.
+- 2026-07-05: Gif hosting switched to Adilzhan's own mirror
+  github.com/adilzhanY/exercise-db (raw.githubusercontent.com) after the
+  upstream media hosts proved dead (`static.` no DNS) or bot-challenged
+  (`v1.` behind a Vercel checkpoint). Verified rendering on the emulator:
+  catalog thumbnails + expanded demo gif with instructions.

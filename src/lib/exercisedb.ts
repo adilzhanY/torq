@@ -36,19 +36,18 @@ export interface DbExercise {
 const raw = require("../data/exercisedb.json") as RawExercise[];
 
 /**
- * The API still reports gifUrl on static.exercisedb.dev, but that domain has
- * no DNS record (dead). The gifs are actually served from v1.exercisedb.dev
- * at the same path.
+ * The dataset's gifUrl points at static.exercisedb.dev, a domain with no DNS
+ * record (dead). The gifs are served from Adilzhan's mirror of the ExerciseDB
+ * repo instead — github.com/adilzhanY/exercise-db holds all 1500 under
+ * media/<exerciseId>.gif, delivered via GitHub's raw CDN.
  */
-function fixGifUrl(url: string): string {
-  return url.replace("https://static.exercisedb.dev/", "https://v1.exercisedb.dev/");
-}
+const GIF_BASE = "https://raw.githubusercontent.com/adilzhanY/exercise-db/main/media";
 
 export const DB_EXERCISES: DbExercise[] = raw
   .map((e) => ({
     id: e.exerciseId,
     name: e.name,
-    gifUrl: fixGifUrl(e.gifUrl),
+    gifUrl: `${GIF_BASE}/${e.exerciseId}.gif`,
     bodyParts: e.bodyParts,
     equipments: e.equipments,
     targetMuscles: e.targetMuscles,
