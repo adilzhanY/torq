@@ -12,7 +12,6 @@ import React, {
   useState,
 } from "react";
 import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
-import { seedExercises } from "./seed";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
 import {
@@ -66,8 +65,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     loadDB().then((db) => {
-      if (db.exercises.length === 0 && db.workouts.length === 0) {
-        db.exercises = seedExercises(Date.now());
+      // One-time cleanup: drop the old seeded starter library (ids "seed-…").
+      // The ExerciseDB catalog replaced it — "my exercises" holds only what
+      // the user saved. Tombstoned so the delete also propagates via sync.
+      const seeded = db.exercises.filter((e) => e.id.startsWith("seed-"));
+      if (seeded.length) {
+        db.exercises = db.exercises.filter((e) => !e.id.startsWith("seed-"));
+        for (const e of seeded) {
+          db.tombstones.push({ table: "exercises", id: e.id, updatedAt: Date.now() });
+        }
+        void saveDB(db);
       }
       dbRef.current = db;
       setReady(true);

@@ -60,8 +60,9 @@ see `.env.example`).
 
 State: `src/lib/store.tsx` (`useStore`) owns the DB + all domain actions and
 persists on every commit; `src/lib/auth.tsx` (`useAuth`) wraps Supabase auth.
-Default exercise library seeded on first launch from `src/lib/seed.ts`
-(stable ids so multi-device seeds merge cleanly).
+"My exercises" starts EMPTY by design (no seeding) — the user imports from
+the ExerciseDB catalog or adds custom ones. The store's load path still
+tombstones any leftover `seed-…` rows from the removed starter library.
 
 ## ExerciseDB catalog
 
@@ -128,3 +129,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   upstream media hosts proved dead (`static.` no DNS) or bot-challenged
   (`v1.` behind a Vercel checkpoint). Verified rendering on the emulator:
   catalog thumbnails + expanded demo gif with instructions.
+- 2026-07-05: Removed the 36-exercise seeded starter library (seed.ts
+  deleted; one-time tombstoning cleanup in the store). Library is now
+  import-from-catalog or custom only; verified import flow end to end.
