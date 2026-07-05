@@ -12,6 +12,8 @@ import React, {
   useState,
 } from "react";
 import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
+import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
+import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
 import {
@@ -42,6 +44,8 @@ interface StoreValue {
   deleteRoutine: (id: string) => void;
 
   startWorkout: (routine?: Routine) => void;
+  /** Start a recommended template: imports missing catalog exercises first. */
+  startRecommended: (template: RecommendedRoutine) => void;
   updateActiveWorkout: (patch: Partial<Workout>) => void;
   finishWorkout: () => void;
   discardWorkout: () => void;
@@ -155,6 +159,44 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         id: uid(),
         name: routine?.name ?? "Workout",
         routineId: routine?.id,
+        startedAt: Date.now(),
+        entries,
+        updatedAt: 0,
+      });
+      commit();
+    },
+    startRecommended: (template) => {
+      if (dbRef.current.activeWorkout) return;
+      const entries: WorkoutEntry[] = [];
+      for (const item of template.items) {
+        const dbEx = DB_BY_ID[item.dbId];
+        if (!dbEx) continue;
+        // Reuse the library exercise if it was imported before, else import.
+        let ex = dbRef.current.exercises.find((e) => e.dbId === item.dbId);
+        if (!ex) {
+          ex = stamp({
+            id: uid(),
+            name: titleCase(dbEx.name),
+            bodyPart: toBodyPart(dbEx.bodyParts[0] ?? "other"),
+            equipment: toEquipment(dbEx.equipments[0] ?? "other"),
+            dbId: item.dbId,
+            updatedAt: 0,
+          });
+          dbRef.current.exercises.push(ex);
+        }
+        entries.push({
+          exerciseId: ex.id,
+          sets: Array.from({ length: item.sets }, () => ({
+            type: "normal" as const,
+            weight: 0,
+            reps: item.reps,
+            done: false,
+          })),
+        });
+      }
+      dbRef.current.activeWorkout = stamp({
+        id: uid(),
+        name: template.name,
         startedAt: Date.now(),
         entries,
         updatedAt: 0,

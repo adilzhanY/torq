@@ -10,7 +10,14 @@ import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { Card, Divider, Pill, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
-import { DB_EXERCISES, DB_GIF_BY_ID, toBodyPart, toEquipment, type DbExercise } from "../lib/exercisedb";
+import {
+  DB_EXERCISES,
+  DB_GIF_BY_ID,
+  titleCase,
+  toBodyPart,
+  toEquipment,
+  type DbExercise,
+} from "../lib/exercisedb";
 
 /** How many catalog matches to render at once (there are 1500+). */
 const DB_PAGE = 30;
@@ -18,10 +25,6 @@ import type { BodyPart, Equipment } from "../types";
 
 const BODY_PARTS: BodyPart[] = ["chest", "back", "legs", "shoulders", "arms", "core", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "other"];
-
-function titleCase(s: string): string {
-  return s.replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 function matches(q: string, hay: string[]): boolean {
   const needle = q.trim().toLowerCase();

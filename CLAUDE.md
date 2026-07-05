@@ -84,8 +84,13 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
 Strong-style five tabs: Profile · History · Workout (default) · Exercises ·
-Measure. The Workout tab is quick-start + routines list, and becomes the live
-set-logger while a session is active (`activeWorkout` in the store).
+Measure. The Workout tab is quick-start + the user's routines + a
+"Recommended" section (3-card push/pull/legs split from
+`src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
+becomes the live set-logger while a session is active (`activeWorkout` in
+the store). `startRecommended` in the store imports any missing catalog
+exercises into the library, then opens a session with sets prefilled at the
+template's target reps.
 
 ## Commands
 
@@ -132,3 +137,7 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-07-05: Removed the 36-exercise seeded starter library (seed.ts
   deleted; one-time tombstoning cleanup in the store). Library is now
   import-from-catalog or custom only; verified import flow end to end.
+- 2026-07-05: Added 3 recommended routines (Push/Pull/Leg Day — a 3-day
+  split) to the Workout tab with gif thumbnails and set×rep schemes;
+  starting one auto-imports its exercises and prefills the live session.
+  Verified on the emulator.

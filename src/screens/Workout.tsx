@@ -5,8 +5,11 @@
  */
 import { useState } from "react";
 import { FlatList, Modal, Pressable, ScrollView, View } from "react-native";
+import { Image } from "expo-image";
 import { C, R, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
+import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
+import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
 import {
   Card,
   Divider,
@@ -196,6 +199,41 @@ function ActiveSession() {
   );
 }
 
+function RecommendedCard({ routine }: { routine: RecommendedRoutine }) {
+  const { startRecommended } = useStore();
+  return (
+    <Card style={{ gap: 10 }}>
+      <View style={{ gap: 2 }}>
+        <Txt size={15} weight="bold">{routine.name}</Txt>
+        <Txt size={12} color={C.inkFaint}>{routine.blurb}</Txt>
+      </View>
+      <View style={{ gap: 6 }}>
+        {routine.items.map((item) => {
+          const ex = DB_BY_ID[item.dbId];
+          if (!ex) return null;
+          return (
+            <View key={item.dbId} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Image
+                source={{ uri: DB_GIF_BY_ID[item.dbId] }}
+                style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: "#fff" }}
+                contentFit="cover"
+                cachePolicy="memory-disk"
+              />
+              <Txt size={13} weight="bold" color={C.inkSoft} style={{ width: 44 }}>
+                {item.sets}×{item.reps}
+              </Txt>
+              <Txt size={13} weight="semibold" style={{ flex: 1 }} numberOfLines={1}>
+                {titleCase(ex.name)}
+              </Txt>
+            </View>
+          );
+        })}
+      </View>
+      <PrimaryButton label="Start routine" onPress={() => startRecommended(routine)} />
+    </Card>
+  );
+}
+
 export function Workout() {
   const { activeWorkout, routines, startWorkout, deleteRoutine } = useStore();
 
@@ -241,7 +279,8 @@ export function Workout() {
       {routines.length === 0 ? (
         <Card>
           <Txt size={13} color={C.inkFaint}>
-            No routines yet. Finish a workout and save it as a routine, or build one on the Exercises tab.
+            No routines yet. Start with a recommended one below — finishing it
+            keeps its exercises in your library.
           </Txt>
         </Card>
       ) : (
@@ -260,6 +299,11 @@ export function Workout() {
           </Card>
         ))
       )}
+
+      <SectionTitle>Recommended</SectionTitle>
+      {RECOMMENDED.map((r) => (
+        <RecommendedCard key={r.name} routine={r} />
+      ))}
     </ScrollView>
   );
 }

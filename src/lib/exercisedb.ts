@@ -61,6 +61,16 @@ export const DB_GIF_BY_ID: Record<string, string> = Object.fromEntries(
   DB_EXERCISES.map((e) => [e.id, e.gifUrl]),
 );
 
+/** Catalog exercise by ExerciseDB id. */
+export const DB_BY_ID: Record<string, DbExercise> = Object.fromEntries(
+  DB_EXERCISES.map((e) => [e.id, e]),
+);
+
+/** Catalog names are lowercase; display them in title case. */
+export function titleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
 /** Map an ExerciseDB body part to Torq's BodyPart. */
 export function toBodyPart(dbBodyPart: string): BodyPart {
   switch (dbBodyPart) {
