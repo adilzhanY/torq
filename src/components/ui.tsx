@@ -143,8 +143,28 @@ export const NumberField = React.forwardRef<
     placeholder?: string;
     /** Tighter vertical padding (dense rows like the live set logger). */
     compact?: boolean;
+    /** Center the digits (narrow fixed-width fields). */
+    center?: boolean;
+    autoFocus?: boolean;
+    selectTextOnFocus?: boolean;
+    onBlur?: () => void;
   }
->(function NumberField({ label, value, onChange, suffix, width, placeholder = "0", compact }, ref) {
+>(function NumberField(
+  {
+    label,
+    value,
+    onChange,
+    suffix,
+    width,
+    placeholder = "0",
+    compact,
+    center,
+    autoFocus,
+    selectTextOnFocus,
+    onBlur,
+  },
+  ref,
+) {
   return (
     <View style={{ gap: 4, width }}>
       {label ? (
@@ -159,7 +179,7 @@ export const NumberField = React.forwardRef<
           gap: 4,
           backgroundColor: C.page2,
           borderRadius: R.sm,
-          paddingHorizontal: 12,
+          paddingHorizontal: center ? 6 : 12,
           paddingVertical: compact ? 5 : 8,
         }}
       >
@@ -170,7 +190,17 @@ export const NumberField = React.forwardRef<
           keyboardType="numeric"
           placeholder={placeholder}
           placeholderTextColor={C.inkFaint}
-          style={{ flex: 1, fontFamily: FONT.semibold, fontSize: 14, color: C.ink, padding: 0 }}
+          autoFocus={autoFocus}
+          selectTextOnFocus={selectTextOnFocus}
+          onBlur={onBlur}
+          style={{
+            flex: 1,
+            fontFamily: FONT.semibold,
+            fontSize: 14,
+            color: C.ink,
+            padding: 0,
+            textAlign: center ? "center" : "left",
+          }}
         />
         {suffix ? (
           <Txt size={12} weight="medium" color={C.inkFaint}>

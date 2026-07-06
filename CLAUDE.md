@@ -156,13 +156,25 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Strong-style SET/PREVIOUS/KG/REPS header row (unit from settings).
   Verified on the emulator.
 - 2026-07-06 (later): live-session polish — tapping an idle rest divider
-  pops open (PopIn) an inline per-set rest editor: current seconds
-  preselected (`selectTextOnFocus`), number-pad keyboard, commit on
-  enter/blur, clamped 5–600s; saved as `WorkoutSet.restSec` (new optional
-  field in types.ts, falls back to `settings.restSec`) so it rides along in
-  sync. Set rows are denser (`NumberField` got a `compact` prop —
-  paddingVertical 5, done check shrunk 38→32) and a done set's whole row
-  tints light lime (`rgba(200,254,35,0.18)`). Verified on the emulator.
+  pops open (PopIn) an inline per-set rest editor, an ATM-style masked
+  m:ss duration input (Adilzhan's preferred pattern; reworked from a plain
+  seconds field): always displays m:ss, digits push in from the right
+  (2 → 0:02 → 0:20 → 2:00), and once all 3 slots are filled new digits
+  shift the seconds only, minute locked (2:00 + 3 → 2:03 + 0 → 2:30).
+  Implemented as a formatted Txt over a hidden TextInput holding the raw
+  digit buffer; prefilled value shows a fake lime "selected" highlight
+  until the first keystroke replaces it (`selectTextOnFocus`). Commit on
+  enter/blur, clamped 5–599s; saved as `WorkoutSet.restSec` (optional
+  field in types.ts, falls back to `settings.restSec`) so it rides along
+  in sync. Set rows are denser (`NumberField` got `compact`, `center`,
+  `autoFocus`, `selectTextOnFocus`, `onBlur` props; done check shrunk
+  38→32) and a done set's whole row tints lime (`rgba(160,210,20,0.42)`),
+  full-bleed to the card edges (margin −16 cancels the Card padding).
+  KG/REPS cells are `SetNumInput` (Workout.tsx, width `FIELD_W`=50,
+  digits centered): an input while the set is open; once done it renders
+  as a plain centered number that turns back into a focused
+  select-on-focus input when tapped, so completed sets stay editable.
+  Verified on the emulator.
 - 2026-07-06 (later): tapping the running rest bar no longer skips — it
   toggles a Strong-style control pad. NOT a Modal: a Modal clipped its
   bottom rows on this emulator (content rendered partly below the window),

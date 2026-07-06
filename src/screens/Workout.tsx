@@ -18,7 +18,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { Image } from "expo-image";
-import { C, FONT, R, clay, claySm } from "../theme";
+import { C, R, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
@@ -68,6 +68,55 @@ function useNow(active: boolean): number {
     return () => clearInterval(t);
   }, [active]);
   return now;
+}
+
+/** Width of the KG / REPS value fields in the live set logger. */
+const FIELD_W = 50;
+
+/**
+ * KG / REPS cell: an input while the set is open; once the set is done it
+ * collapses to a plain centered number that turns back into a focused
+ * input when tapped, so completed sets stay editable.
+ */
+function SetNumInput({
+  value,
+  done,
+  onChange,
+  inputRef,
+}: {
+  value: string;
+  done: boolean;
+  onChange: (v: string) => void;
+  inputRef?: (r: TextInput | null) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  useEffect(() => {
+    if (!done) setEditing(false);
+  }, [done]);
+  if (done && !editing) {
+    return (
+      <Pressable
+        onPress={() => setEditing(true)}
+        hitSlop={4}
+        style={{ width: FIELD_W, paddingVertical: 7, alignItems: "center" }}
+      >
+        <Txt size={14} weight="bold">{value || "0"}</Txt>
+      </Pressable>
+    );
+  }
+  return (
+    <NumberField
+      ref={inputRef}
+      value={value}
+      onChange={onChange}
+      width={FIELD_W}
+      compact
+      center
+      autoFocus={done && editing}
+      selectTextOnFocus={done}
+      onBlur={() => setEditing(false)}
+    />
+  );
 }
 
 /** Slides its content up from below on mount (the rest pad entrance). */
@@ -190,20 +239,46 @@ function RestDivider({
   editNonce?: number;
 }) {
   const [editing, setEditing] = useState(false);
+  /** Raw digit buffer for the m:ss masked input, e.g. "230" -> 2:30. */
   const [draft, setDraft] = useState("");
+  /** False until the first keystroke — the prefilled value shows "selected". */
+  const [touched, setTouched] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+
+  const secsToDigits = (sec: number) => {
+    const s = Math.max(0, Math.min(599, Math.round(sec)));
+    return `${Math.floor(s / 60)}${String(s % 60).padStart(2, "0")}`;
+  };
+
+  const openEditor = () => {
+    setDraft(secsToDigits(seconds));
+    setTouched(false);
+    setEditing(true);
+  };
 
   useEffect(() => {
-    if (editNonce) {
-      setDraft(String(seconds));
-      setEditing(true);
-    }
+    if (editNonce) openEditor();
     // Only fire on the nonce bump, not on unrelated seconds changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editNonce]);
 
+  /** ATM-style right-to-left entry: digits push in from the right
+   * (2 -> 0:02 -> 0:20 -> 2:00); once all 3 slots are filled, new digits
+   * shift the seconds only, keeping the minute (2:00 + 3 -> 2:03). */
+  const onDigits = (t: string) => {
+    let d = t.replace(/\D/g, "");
+    if (d.length > 3) d = d[0] + d.slice(-2);
+    d = d.replace(/^0+(?=\d)/, "");
+    setDraft(d);
+    setTouched(true);
+  };
+
   const commit = () => {
-    const sec = Math.round(Number(draft));
-    if (Number.isFinite(sec) && sec >= 5 && sec <= 600) onChangeSeconds(sec);
+    if (touched) {
+      const p = draft.padStart(3, "0");
+      const sec = Number(p[0]) * 60 + Number(p.slice(1));
+      if (sec >= 5) onChangeSeconds(Math.min(599, sec));
+    }
     setEditing(false);
   };
 
@@ -220,40 +295,52 @@ function RestDivider({
   }
 
   if (editing) {
+    const p = draft.padStart(3, "0");
+    const shown = `${Number(p[0])}:${p.slice(1)}`;
     return (
       <PopIn style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}>
         <Icon name="Timer" size={14} color={C.inkSoft} />
-        <View
+        <Pressable
+          onPress={() => inputRef.current?.focus()}
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 5,
             backgroundColor: C.page2,
             borderRadius: R.pill,
-            paddingHorizontal: 14,
-            paddingVertical: 4,
+            paddingHorizontal: 16,
+            paddingVertical: 5,
           }}
         >
+          <Txt
+            size={15}
+            weight="extrabold"
+            style={{ backgroundColor: touched ? "transparent" : "rgba(200,254,35,0.55)" }}
+          >
+            {shown}
+          </Txt>
           <TextInput
+            ref={inputRef}
             value={draft}
-            onChangeText={setDraft}
+            onChangeText={onDigits}
             autoFocus
             selectTextOnFocus
+            caretHidden
+            selectionColor="transparent"
             keyboardType="number-pad"
             onBlur={commit}
             onSubmitEditing={commit}
             returnKeyType="done"
             style={{
-              fontFamily: FONT.extrabold,
-              fontSize: 13,
-              color: C.ink,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              opacity: 0.02,
+              color: "transparent",
               padding: 0,
-              minWidth: 36,
-              textAlign: "center",
             }}
           />
-          <Txt size={11} weight="bold" color={C.inkFaint}>sec rest</Txt>
-        </View>
+        </Pressable>
+        <Txt size={11} weight="bold" color={C.inkFaint}>rest</Txt>
       </PopIn>
     );
   }
@@ -261,10 +348,7 @@ function RestDivider({
   return (
     <Pressable
       hitSlop={6}
-      onPress={() => {
-        setDraft(String(seconds));
-        setEditing(true);
-      }}
+      onPress={openEditor}
       style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 28 }}
     >
       <View style={{ flex: 1, height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />
@@ -502,10 +586,22 @@ function ActiveSession() {
             <Txt size={11} weight="bold" color={C.inkFaint} style={{ flex: 1 }}>
               {prevSets ? "PREVIOUS" : ""}
             </Txt>
-            <Txt size={11} weight="bold" color={C.inkFaint} style={{ width: 84 }}>
+            <Txt
+              size={11}
+              weight="bold"
+              color={C.inkFaint}
+              style={{ width: FIELD_W, textAlign: "center" }}
+            >
               {settings.unit.toUpperCase()}
             </Txt>
-            <Txt size={11} weight="bold" color={C.inkFaint} style={{ width: 72 }}>REPS</Txt>
+            <Txt
+              size={11}
+              weight="bold"
+              color={C.inkFaint}
+              style={{ width: FIELD_W, textAlign: "center" }}
+            >
+              REPS
+            </Txt>
             <View style={{ width: 32, alignItems: "center" }}>
               <Icon name="Check" size={14} color={C.inkFaint} />
             </View>
@@ -520,11 +616,10 @@ function ActiveSession() {
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 10,
-                  marginHorizontal: -6,
-                  paddingHorizontal: 6,
+                  marginHorizontal: -16,
+                  paddingHorizontal: 16,
                   paddingVertical: 3,
-                  borderRadius: R.sm,
-                  backgroundColor: set.done ? "rgba(200,254,35,0.18)" : "transparent",
+                  backgroundColor: set.done ? "rgba(160,210,20,0.42)" : "transparent",
                 }}
               >
                 <Pressable
@@ -547,20 +642,18 @@ function ActiveSession() {
                 <Txt size={12} weight="semibold" color={C.inkFaint} style={{ flex: 1 }} numberOfLines={1}>
                   {prevSets ? (prev ? `${prev.weight} ${settings.unit} × ${prev.reps}` : "—") : ""}
                 </Txt>
-                <NumberField
-                  ref={(r) => {
+                <SetNumInput
+                  value={set.weight ? String(set.weight) : ""}
+                  done={set.done}
+                  onChange={(v) => patchSet(ei, si, { weight: Number(v) || 0 })}
+                  inputRef={(r) => {
                     weightRefs.current[restKey] = r;
                   }}
-                  value={set.weight ? String(set.weight) : ""}
-                  onChange={(v) => patchSet(ei, si, { weight: Number(v) || 0 })}
-                  width={84}
-                  compact
                 />
-                <NumberField
+                <SetNumInput
                   value={set.reps ? String(set.reps) : ""}
+                  done={set.done}
                   onChange={(v) => patchSet(ei, si, { reps: Number(v) || 0 })}
-                  width={72}
-                  compact
                 />
                 <Squish
                   onPress={() => toggleDone(ei, si, set)}
