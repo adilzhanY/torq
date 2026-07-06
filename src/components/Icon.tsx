@@ -14,6 +14,7 @@ import {
   History,
   ListChecks,
   ListPlus,
+  Minus,
   Pause,
   Pencil,
   Play,
@@ -37,7 +38,7 @@ import { C } from "../theme";
 
 const MAP: Record<string, LucideIcon> = {
   BicepsFlexed, CalendarDays, ChartColumn, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, Clock, Dumbbell,
-  Flame, History, ListChecks, ListPlus, Pause, Pencil, Play, Plus, Repeat, Ruler,
+  Flame, History, ListChecks, ListPlus, Minus, Pause, Pencil, Play, Plus, Repeat, Ruler,
   Save, Scale, Search, Sparkles, Timer, TrendingDown, TrendingUp, Trash2, Trophy, UserCircle, X,
 };
 

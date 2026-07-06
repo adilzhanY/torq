@@ -141,6 +141,45 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   split) to the Workout tab with gif thumbnails and set×rep schemes;
   starting one auto-imports its exercises and prefills the live session.
   Verified on the emulator.
+- 2026-07-06: Strong-style live-session upgrades in `Workout.tsx`
+  (ActiveSession): elapsed workout timer in the header (1s ticker via
+  `useNow`); rest timer — every set row has a `RestDivider` showing the
+  planned rest (`settings.restSec`, default 2:00) that turns into a lime
+  countdown progress bar when its set is checked (tap to skip, vibrates on
+  finish; one active rest at a time, local state only); PREVIOUS column
+  showing last performance per set index from the most recent finished
+  workout containing that exercise (column hidden entirely for first-time
+  exercises); tapping a set number opens a set-type menu (Warm up W orange
+  `C.warnAcc`, Drop set D purple #7c5cd6, Failure F red `C.badAcc`) — typed
+  sets show the colored letter instead of a number, normal-set numbering
+  skips them, re-picking the active type reverts to normal. Set rows got a
+  Strong-style SET/PREVIOUS/KG/REPS header row (unit from settings).
+  Verified on the emulator.
+- 2026-07-06 (later): live-session polish — tapping an idle rest divider
+  pops open (PopIn) an inline per-set rest editor: current seconds
+  preselected (`selectTextOnFocus`), number-pad keyboard, commit on
+  enter/blur, clamped 5–600s; saved as `WorkoutSet.restSec` (new optional
+  field in types.ts, falls back to `settings.restSec`) so it rides along in
+  sync. Set rows are denser (`NumberField` got a `compact` prop —
+  paddingVertical 5, done check shrunk 38→32) and a done set's whole row
+  tints light lime (`rgba(200,254,35,0.18)`). Verified on the emulator.
+- 2026-07-06 (later): tapping the running rest bar no longer skips — it
+  slides up a Strong-style control pad (bottom-sheet Modal, dark
+  `C.primary` panel): big Pause/Resume (rest state gained
+  `paused`/`pausedMs`; bar freezes with a pause icon), −/+ 20s bump
+  (`bumpRest`, ending the rest if it hits zero), RESET (stops the rest and
+  reopens that set's inline seconds editor via an `editNonce` prop bumped
+  from outside), SKIP (clears the rest and focuses the next set's weight
+  input via a `weightRefs` map of NumberField refs). Icon gained `Minus`.
+  Verified on the emulator (pause freeze, ±20s both directions, skip
+  focusing the next kg field).
+- 2026-07-06 (later): rest countdown is now a Strong-style tall bar
+  (`RestCountdownBar`): 40px lime bar that starts full and drains leftward
+  in one continuous `Animated.timing` (linear, driven by `endsAt`, width
+  interpolated 0–100%), remaining time centered on it, PopIn entrance, tap
+  to skip. The set-type menu is an anchored popover: opens at the tap's
+  pageX/pageY (`animationType="none"` + PopIn, flips above when near the
+  screen bottom) instead of a centered modal. Verified on the emulator.
 - 2026-07-06: Exercise search is now token-based (`matches()` in
   `src/screens/Exercises.tsx`): every query word must appear somewhere in
   name/bodyParts/equipment/targetMuscles, any order — "bicep curl" finds

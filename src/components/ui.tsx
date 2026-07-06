@@ -141,8 +141,10 @@ export const NumberField = React.forwardRef<
     suffix?: string;
     width?: number;
     placeholder?: string;
+    /** Tighter vertical padding (dense rows like the live set logger). */
+    compact?: boolean;
   }
->(function NumberField({ label, value, onChange, suffix, width, placeholder = "0" }, ref) {
+>(function NumberField({ label, value, onChange, suffix, width, placeholder = "0", compact }, ref) {
   return (
     <View style={{ gap: 4, width }}>
       {label ? (
@@ -158,7 +160,7 @@ export const NumberField = React.forwardRef<
           backgroundColor: C.page2,
           borderRadius: R.sm,
           paddingHorizontal: 12,
-          paddingVertical: 8,
+          paddingVertical: compact ? 5 : 8,
         }}
       >
         <TextInput

@@ -48,6 +48,8 @@ export interface WorkoutSet {
   reps: number;
   /** Ticked off during an active session. */
   done: boolean;
+  /** Per-set rest override in seconds (falls back to Settings.restSec). */
+  restSec?: number;
 }
 
 /** One exercise inside a workout/routine with its sets. */
