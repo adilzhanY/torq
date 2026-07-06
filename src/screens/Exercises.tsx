@@ -26,10 +26,17 @@ import type { BodyPart, Equipment } from "../types";
 const BODY_PARTS: BodyPart[] = ["chest", "back", "legs", "shoulders", "arms", "core", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "other"];
 
+function tokenize(q: string): string[] {
+  return q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+/** Every query word must appear somewhere in the haystack, in any order —
+ * so "bicep curl" finds "Cable Biceps Curl". */
 function matches(q: string, hay: string[]): boolean {
-  const needle = q.trim().toLowerCase();
-  if (!needle) return true;
-  return hay.some((h) => h.toLowerCase().includes(needle));
+  const tokens = tokenize(q);
+  if (!tokens.length) return true;
+  const text = hay.join(" ").toLowerCase();
+  return tokens.every((t) => text.includes(t));
 }
 
 function DbExerciseCard({ ex }: { ex: DbExercise }) {
@@ -115,9 +122,18 @@ export function Exercises() {
     .filter((e) => matches(q, [e.name, e.bodyPart, e.equipment]))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  // Name hits rank above rows matched only via muscles/equipment.
+  const qTokens = tokenize(q);
   const fromDb = DB_EXERCISES.filter((e) =>
     matches(q, [e.name, ...e.bodyParts, ...e.equipments, ...e.targetMuscles]),
-  );
+  ).sort((a, b) => {
+    if (!qTokens.length) return 0;
+    const an = a.name.toLowerCase();
+    const bn = b.name.toLowerCase();
+    const aName = qTokens.every((t) => an.includes(t)) ? 0 : 1;
+    const bName = qTokens.every((t) => bn.includes(t)) ? 0 : 1;
+    return aName - bName || an.localeCompare(bn);
+  });
 
   const submit = () => {
     if (!name.trim()) return;

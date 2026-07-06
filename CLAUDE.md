@@ -141,3 +141,11 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   split) to the Workout tab with gif thumbnails and set×rep schemes;
   starting one auto-imports its exercises and prefills the live session.
   Verified on the emulator.
+- 2026-07-06: Exercise search is now token-based (`matches()` in
+  `src/screens/Exercises.tsx`): every query word must appear somewhere in
+  name/bodyParts/equipment/targetMuscles, any order — "bicep curl" finds
+  "Cable Lying Bicep Curl" etc. Catalog results rank name-matches above
+  muscle-only matches. Also enabled the hardware keyboard on the `torq` AVD
+  (`hw.keyboard = yes` in its config.ini + device setting
+  `show_ime_with_hard_keyboard 0`) so you can type in the emulator with the
+  host keyboard.
