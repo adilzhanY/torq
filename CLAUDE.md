@@ -164,15 +164,22 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   paddingVertical 5, done check shrunk 38→32) and a done set's whole row
   tints light lime (`rgba(200,254,35,0.18)`). Verified on the emulator.
 - 2026-07-06 (later): tapping the running rest bar no longer skips — it
-  slides up a Strong-style control pad (bottom-sheet Modal, dark
-  `C.primary` panel): big Pause/Resume (rest state gained
-  `paused`/`pausedMs`; bar freezes with a pause icon), −/+ 20s bump
-  (`bumpRest`, ending the rest if it hits zero), RESET (stops the rest and
-  reopens that set's inline seconds editor via an `editNonce` prop bumped
-  from outside), SKIP (clears the rest and focuses the next set's weight
-  input via a `weightRefs` map of NumberField refs). Icon gained `Minus`.
-  Verified on the emulator (pause freeze, ±20s both directions, skip
-  focusing the next kg field).
+  toggles a Strong-style control pad. NOT a Modal: a Modal clipped its
+  bottom rows on this emulator (content rendered partly below the window),
+  so the pad is an inline overlay inside ActiveSession's root View:
+  full-width, `bottom:0`, top-rounded, `paddingBottom:96` so it slides up
+  from behind the BottomNav (custom `SlideUp` translateY spring — not
+  PopIn). ActiveSession's root is now a flex-1 View wrapping the
+  ScrollView. Grid layout per Adilzhan's sketch: full-width Pause/Resume
+  on top (rest state gained `paused`/`pausedMs`; bar freezes with a pause
+  icon), below it ONE row, all height 56: square 64-wide + / − (±20s via
+  `bumpRest`, ending the rest at zero) then SKIP and RESET splitting the
+  remaining width (SKIP clears rest and focuses the next set's weight
+  input via the `weightRefs` map; RESET stops the rest and reopens that
+  set's inline seconds editor via an `editNonce` prop). Gotcha: Squish
+  applies `style` to its inner Animated.View, so `flex:1` on a Squish
+  does nothing in a row — wrap it in a flex-1 View. Icon gained `Minus`.
+  Verified on the emulator.
 - 2026-07-06 (later): rest countdown is now a Strong-style tall bar
   (`RestCountdownBar`): 40px lime bar that starts full and drains leftward
   in one continuous `Animated.timing` (linear, driven by `endsAt`, width

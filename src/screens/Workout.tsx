@@ -15,6 +15,7 @@ import {
   TextInput,
   Vibration,
   View,
+  type ViewStyle,
 } from "react-native";
 import { Image } from "expo-image";
 import { C, FONT, R, clay, claySm } from "../theme";
@@ -67,6 +68,28 @@ function useNow(active: boolean): number {
     return () => clearInterval(t);
   }, [active]);
   return now;
+}
+
+/** Slides its content up from below on mount (the rest pad entrance). */
+function SlideUp({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(v, { toValue: 1, useNativeDriver: true, friction: 10, tension: 120 }).start();
+  }, [v]);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          transform: [
+            { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) },
+          ],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
 }
 
 /**
@@ -443,6 +466,7 @@ function ActiveSession() {
   };
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 14 }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <View style={{ gap: 2 }}>
@@ -564,7 +588,7 @@ function ActiveSession() {
                 }
                 endsAt={rest?.key === restKey ? rest.endsAt : undefined}
                 paused={rest?.key === restKey ? rest.paused : false}
-                onPressBar={() => setPad(true)}
+                onPressBar={() => setPad((p) => !p)}
                 onChangeSeconds={(sec) => patchSet(ei, si, { restSec: sec })}
                 editNonce={editReq?.key === restKey ? editReq.n : 0}
               />
@@ -662,95 +686,101 @@ function ActiveSession() {
         </Pressable>
       </Modal>
 
-      <Modal
-        visible={pad && rest !== null}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setPad(false)}
-      >
-        <View style={{ flex: 1, justifyContent: "flex-end" }}>
-          <Pressable style={{ flex: 1 }} onPress={() => setPad(false)} />
+    </ScrollView>
+
+      {pad && rest !== null ? (
+        <SlideUp style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
           <View
-            style={{
-              backgroundColor: C.primary,
-              borderTopLeftRadius: R.lg,
-              borderTopRightRadius: R.lg,
-              padding: 18,
-              paddingBottom: 34,
-              flexDirection: "row",
-              gap: 16,
-            }}
+            style={[
+              {
+                backgroundColor: C.primary,
+                borderTopLeftRadius: R.lg,
+                borderTopRightRadius: R.lg,
+                padding: 14,
+                paddingBottom: 96,
+                gap: 10,
+              },
+              clay(),
+            ]}
           >
             <Squish
               onPress={togglePauseRest}
-              style={{ flex: 1, alignItems: "center", justifyContent: "center", minHeight: 170 }}
+              style={{
+                height: 72,
+                borderRadius: 14,
+                backgroundColor: "rgba(255,255,255,0.14)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              <Txt size={30} weight="extrabold" color="#fff">
+              <Txt size={24} weight="extrabold" color="#fff">
                 {rest?.paused ? "Resume" : "Pause"}
               </Txt>
             </Squish>
-            <View style={{ width: 132, gap: 10 }}>
-              <View style={{ flexDirection: "row", gap: 10 }}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Squish
+                onPress={() => bumpRest(20)}
+                style={{
+                  width: 64,
+                  height: 56,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon name="Plus" size={22} color="#fff" />
+              </Squish>
+              <Squish
+                onPress={() => bumpRest(-20)}
+                style={{
+                  width: 64,
+                  height: 56,
+                  borderRadius: 14,
+                  backgroundColor: "rgba(255,255,255,0.14)",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Icon name="Minus" size={22} color="#fff" />
+              </Squish>
+              <View style={{ flex: 1 }}>
                 <Squish
-                  onPress={() => bumpRest(-20)}
+                  onPress={skipRest}
                   style={{
-                    flex: 1,
-                    height: 46,
-                    borderRadius: 12,
-                    backgroundColor: "rgba(255,255,255,0.12)",
+                    height: 56,
+                    borderRadius: 14,
+                    backgroundColor: C.accent,
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Icon name="Minus" size={20} color="#fff" />
-                </Squish>
-                <Squish
-                  onPress={() => bumpRest(20)}
-                  style={{
-                    flex: 1,
-                    height: 46,
-                    borderRadius: 12,
-                    backgroundColor: "rgba(255,255,255,0.12)",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon name="Plus" size={20} color="#fff" />
+                  <Txt size={14} weight="extrabold" color={C.accentInk} style={{ letterSpacing: 1 }}>
+                    SKIP
+                  </Txt>
                 </Squish>
               </View>
-              <Squish
-                onPress={resetRest}
-                style={{
-                  height: 46,
-                  borderRadius: 12,
-                  backgroundColor: C.accent,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Txt size={13} weight="extrabold" color={C.accentInk} style={{ letterSpacing: 1 }}>
-                  RESET
-                </Txt>
-              </Squish>
-              <Squish
-                onPress={skipRest}
-                style={{
-                  height: 46,
-                  borderRadius: 12,
-                  backgroundColor: C.accent,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Txt size={13} weight="extrabold" color={C.accentInk} style={{ letterSpacing: 1 }}>
-                  SKIP
-                </Txt>
-              </Squish>
+              <View style={{ flex: 1 }}>
+                <Squish
+                  onPress={resetRest}
+                  style={{
+                    height: 56,
+                    borderRadius: 14,
+                    backgroundColor: C.accent,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Txt size={14} weight="extrabold" color={C.accentInk} style={{ letterSpacing: 1 }}>
+                    RESET
+                  </Txt>
+                </Squish>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
-    </ScrollView>
+        </SlideUp>
+      ) : null}
+    </View>
   );
 }
 
