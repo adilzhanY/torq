@@ -261,3 +261,15 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   get one empty set. Wired into ExercisePicker's onAdd in Workout.tsx.
   Verified on the emulator against a real 6-set bench session (W 20×15
   replayed as W with values; PREVIOUS column aligns per index).
+- 2026-07-07: Exercises tab unified with the picker: the shared list core now
+  lives in `src/components/ExerciseBrowser.tsx` (sectioned library+catalog
+  list, Search/Filter/Order/New toolbar, order menu, filter dialog,
+  new-exercise sheet; optional `onBack`, `selected`, `footer` props).
+  `ExercisePicker` is a thin overlay wrapper adding multi-select + the
+  "Add N exercises" CTA (passed as `footer` so the sheet stacks above it).
+  `Exercises.tsx` rewritten: the browser plus a full-screen `ExerciseDetail`
+  overlay on row tap (big gif / dumbbell placeholder, body-part+equipment
+  pills, "in your library" pill, catalog instructions, Add-to-library or
+  Delete-from-library action that flips live). The old My-exercises/
+  Exercise-database card layout and DbExerciseCard are gone. Verified on
+  the emulator: browse, detail open, add→delete round-trip.
