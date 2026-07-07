@@ -287,7 +287,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   (best real set at ≥N reps with date; estimated = inverse-Epley `repMax`
   in stats.ts off the best 1RM; rows to 12), and lifetime totals; warmups
   can't set records, matching computePRs. Verified on the emulator end to
-  end.
+  end. Live-session exercise names render as black (`C.primary`) fully
+  rounded badges with white text (still tap-to-open-info).
 - 2026-07-07: BottomNav redesigned as a floating dock (reference: iOS
   pill-dock pattern): dark `C.primary` pill floating 8px above the safe
   area (left/right 14, height 62, fully rounded, clay shadow); the active

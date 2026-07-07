@@ -492,9 +492,20 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
             <Pressable
               hitSlop={6}
               onPress={() => setInfo(entry.exerciseId)}
-              style={{ flex: 1 }}
+              style={{ flex: 1, alignItems: "flex-start" }}
             >
-              <Txt size={15} weight="bold">{name(entry.exerciseId)}</Txt>
+              <View
+                style={{
+                  backgroundColor: C.primary,
+                  borderRadius: R.pill,
+                  paddingHorizontal: 13,
+                  paddingVertical: 6,
+                }}
+              >
+                <Txt size={14} weight="bold" color="#fff" numberOfLines={1}>
+                  {name(entry.exerciseId)}
+                </Txt>
+              </View>
             </Pressable>
             <Pressable
               hitSlop={8}
