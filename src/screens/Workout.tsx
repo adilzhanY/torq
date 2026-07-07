@@ -22,6 +22,7 @@ import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
 import { lastSetsFor } from "../lib/stats";
 import { ExercisePicker } from "../components/ExercisePicker";
+import { ExerciseInfo } from "../components/ExerciseInfo";
 import {
   Card,
   NumberField,
@@ -339,6 +340,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
     discardWorkout,
   } = useStore();
   const [picker, setPicker] = useState(false);
+  /** Exercise id whose info page (About/History/Records) is open. */
+  const [info, setInfo] = useState<string | null>(null);
   /** Running rest countdown, keyed by "entryIndex-setIndex". While paused,
    * `pausedMs` holds the frozen remainder and `endsAt` is ignored. */
   const [rest, setRest] = useState<{
@@ -486,7 +489,13 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         return (
         <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 10 }}>
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Txt size={15} weight="bold">{name(entry.exerciseId)}</Txt>
+            <Pressable
+              hitSlop={6}
+              onPress={() => setInfo(entry.exerciseId)}
+              style={{ flex: 1 }}
+            >
+              <Txt size={15} weight="bold">{name(entry.exerciseId)}</Txt>
+            </Pressable>
             <Pressable
               hitSlop={8}
               onPress={() => setEntries(w.entries.filter((_, i) => i !== ei))}
@@ -778,6 +787,25 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           </View>
         </SlideUp>
       ) : null}
+
+      {info
+        ? (() => {
+            const e = exercises.find((x) => x.id === info);
+            return e ? (
+              <ExerciseInfo
+                exercise={{
+                  libId: e.id,
+                  dbId: e.dbId,
+                  name: e.name,
+                  bodyPart: e.bodyPart,
+                  equipment: e.equipment,
+                  gifUrl: e.dbId ? DB_GIF_BY_ID[e.dbId] : undefined,
+                }}
+                onClose={() => setInfo(null)}
+              />
+            ) : null;
+          })()
+        : null}
 
       <ExercisePicker
         open={picker}

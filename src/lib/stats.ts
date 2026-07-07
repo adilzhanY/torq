@@ -8,6 +8,13 @@ export function est1RM(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30));
 }
 
+/** Best expected weight for `reps` given a one-rep max (inverse Epley). */
+export function repMax(oneRM: number, reps: number): number {
+  if (oneRM <= 0 || reps <= 0) return 0;
+  if (reps === 1) return Math.round(oneRM);
+  return Math.round(oneRM / (1 + reps / 30));
+}
+
 /** Strong-style default session name from the local start hour. */
 export function workoutName(atMs: number): string {
   const h = new Date(atMs).getHours();

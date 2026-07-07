@@ -47,9 +47,12 @@ function FooterStat({ icon, text }: { icon: string; text: string }) {
 export function WorkoutSummary({
   workout,
   onClose,
+  highlightExerciseId,
 }: {
   workout: Workout;
   onClose: () => void;
+  /** Rings this exercise's card in light green (deep-link from exercise info). */
+  highlightExerciseId?: string;
 }) {
   const { exercises, workouts, settings } = useStore();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
@@ -88,8 +91,17 @@ export function WorkoutSummary({
 
         {workout.entries.map((entry, ei) => {
           let normalCount = 0;
+          const highlighted = entry.exerciseId === highlightExerciseId;
           return (
-            <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 8 }}>
+            <Card
+              key={`${entry.exerciseId}-${ei}`}
+              style={{
+                gap: 8,
+                ...(highlighted
+                  ? { borderWidth: 2, borderColor: "rgba(160,210,20,0.85)" }
+                  : {}),
+              }}
+            >
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                 <Txt size={15} weight="bold" style={{ flex: 1 }} numberOfLines={1}>
                   {name(entry.exerciseId)}

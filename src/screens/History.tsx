@@ -1,27 +1,17 @@
 /** History tab — past workout sessions, newest first. Tap one to open the
  * full summary (sets, 1RMs, PR badges — same screen as after finishing). */
 import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { C } from "../theme";
-import { Icon } from "../components/Icon";
-import { Card, Divider, Pill, SectionTitle, Txt } from "../components/ui";
+import { Card, SectionTitle, Txt } from "../components/ui";
+import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { useStore } from "../lib/store";
-import { fmtDuration } from "../lib/stats";
-import { workoutSets, workoutVolume, type Workout } from "../types";
-
-function fmtDate(ms: number): string {
-  return new Date(ms).toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  });
-}
+import type { Workout } from "../types";
 
 export function History() {
-  const { workouts, exercises, deleteWorkout, settings } = useStore();
+  const { workouts, deleteWorkout } = useStore();
   const [selected, setSelected] = useState<Workout | null>(null);
-  const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
   const sorted = [...workouts].sort((a, b) => b.startedAt - a.startedAt);
 
   return (
@@ -38,41 +28,12 @@ export function History() {
         </Card>
       ) : (
         sorted.map((w) => (
-          <Pressable key={w.id} onPress={() => setSelected(w)}>
-          <Card style={{ gap: 10 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Txt size={15} weight="bold">{w.name}</Txt>
-              <Pressable hitSlop={8} onPress={() => deleteWorkout(w.id)}>
-                <Icon name="Trash2" size={16} color={C.badAcc} />
-              </Pressable>
-            </View>
-            <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
-              <Pill text={fmtDate(w.startedAt)} color={C.inkSoft} bg={C.page2} />
-              {w.endedAt ? (
-                <Pill text={fmtDuration(w.startedAt, w.endedAt)} color={C.inkSoft} bg={C.page2} />
-              ) : null}
-              <Pill text={`${workoutSets(w)} sets`} color={C.goodAcc} bg={C.goodSurf} />
-              <Pill
-                text={`${Math.round(workoutVolume(w))} ${settings.unit}`}
-                color={C.prAcc}
-                bg={C.prSurf}
-              />
-            </View>
-            <Divider />
-            <View style={{ gap: 4 }}>
-              {w.entries.map((e, i) => (
-                <View key={i} style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Txt size={13} weight="semibold" color={C.inkSoft}>
-                    {e.sets.length} × {name(e.exerciseId)}
-                  </Txt>
-                  <Txt size={13} color={C.inkFaint}>
-                    {Math.max(...e.sets.map((s) => s.weight), 0)} {settings.unit}
-                  </Txt>
-                </View>
-              ))}
-            </View>
-          </Card>
-          </Pressable>
+          <WorkoutCard
+            key={w.id}
+            workout={w}
+            onPress={() => setSelected(w)}
+            onDelete={() => deleteWorkout(w.id)}
+          />
         ))
       )}
     </ScrollView>

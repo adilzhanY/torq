@@ -273,6 +273,21 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Delete-from-library action that flips live). The old My-exercises/
   Exercise-database card layout and DbExerciseCard are gone. Verified on
   the emulator: browse, detail open, add→delete round-trip.
+- 2026-07-07: Exercise info page (`src/components/ExerciseInfo.tsx`,
+  Strong-style): About / History / Records pill tabs in a full-screen
+  overlay. Opened from the live session (exercise names are now tappable)
+  and from Exercises-tab rows (replaced the old single-page ExerciseDetail).
+  About = the former detail (gif, muscles, instructions, add/delete).
+  History = History-style cards (extracted into
+  `src/components/WorkoutCard.tsx`, shared with the History tab) for
+  workouts containing the exercise; tapping one opens WorkoutSummary with
+  the new `highlightExerciseId` prop — that exercise's card gets a light
+  green border. Records = personal records (est 1RM / max weight / max
+  single-set volume), a REPS · BEST PERFORMANCE · ESTIMATED rep-max table
+  (best real set at ≥N reps with date; estimated = inverse-Epley `repMax`
+  in stats.ts off the best 1RM; rows to 12), and lifetime totals; warmups
+  can't set records, matching computePRs. Verified on the emulator end to
+  end.
 - 2026-07-07: BottomNav redesigned as a floating dock (reference: iOS
   pill-dock pattern): dark `C.primary` pill floating 8px above the safe
   area (left/right 14, height 62, fully rounded, clay shadow); the active
