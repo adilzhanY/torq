@@ -273,3 +273,15 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Delete-from-library action that flips live). The old My-exercises/
   Exercise-database card layout and DbExerciseCard are gone. Verified on
   the emulator: browse, detail open, add→delete round-trip.
+- 2026-07-07: BottomNav redesigned as a floating dock (reference: iOS
+  pill-dock pattern): dark `C.primary` pill floating 8px above the safe
+  area (left/right 14, height 62, fully rounded, clay shadow); the active
+  tab is a `C.surface` capsule with icon + bold label, inactive tabs are
+  translucent-white icons. One Animated.Value per tab morphs flex (1→2.6),
+  capsule fill, icon crossfade, and label reveal (maxWidth 0→96 + late
+  opacity ramp) in parallel — the capsule reads as sliding between tabs.
+  Motion is a 260ms Easing.out(cubic) TIMING, not a spring: spring
+  overshoot fed the unclamped flex interpolation below its floor, making
+  the deflating tab dip narrower and wobble ("old icon drags"); all
+  interpolations are also clamped. useNativeDriver:false (flex is layout).
+  No + button by design. Verified on the emulator.
