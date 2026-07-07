@@ -213,3 +213,51 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-07-07: Added `run_android.sh` (see Commands) — single script to boot
   the emulator if needed and start Expo; Adilzhan runs it himself, so don't
   spend turns launching the app manually.
+- 2026-07-07: Strong-style "Add exercises" picker
+  (`src/components/ExercisePicker.tsx`), replacing the old bottom-sheet
+  picker in the live session. Full-screen inline overlay (NOT a Modal —
+  the emulator Modal-clipping gotcha) over ActiveSession, listing the
+  library merged with the whole ExerciseDB catalog (imported dbIds
+  deduped; catalog rows import on add). Toolbar: Search (toggles the
+  token-search field; `matches()` moved to `src/lib/search.ts`, shared
+  with the Exercises tab), Filter (centered dialog, multi-select body
+  part + category chips, live match count in the title, funnel icon gets
+  a lime badge when active), Order (anchored popover: Name → letter
+  sections / Frequency → Strong buckets "26+ / 11–25 / 6–10 / 1–5 times /
+  Not performed" with per-exercise session counts / Last performed →
+  recency buckets), Plus (bottom-sheet "New exercise" form — name +
+  chips; saving auto-selects the new row). Rows multi-select (lime tint)
+  into an "Add N exercises" CTA that appends all picks to the session.
+  `addExercise` in the store now returns the created row; `SlideUp` moved
+  to `components/anim.tsx`; hardware Back peels overlays then closes.
+  Gotcha hit while verifying: after Metro restarts, Expo Go happily keeps
+  running its cached JS — `adb shell am force-stop host.exp.exponent`
+  then reopen `exp://<host>:8081` to force a fresh bundle. Verified on
+  the emulator (sections, all three sorts, filter counts, create + add
+  flow).
+- 2026-07-07: Custom (gif-less) exercises now show a dumbbell-icon tile in
+  the thumbnail slot (Exercises tab + picker), and "My exercises" rows show
+  body part/equipment as Pill badges like the catalog cards. Verified.
+- 2026-07-07: Strong-style post-workout summary
+  (`src/components/WorkoutSummary.tsx`, full-screen inline overlay like the
+  picker): auto-named title, long date line, per-exercise cards with a
+  per-set estimated-1RM column (Epley, `src/lib/stats.ts`), trophy PR pills
+  (1RM / Weight / Vol.) on record-setting sets, pinned footer with duration ·
+  total volume · PR count. Shows right after Finish workout (finishWorkout
+  now returns the finished Workout; `Workout()` holds `summary` state) and
+  when tapping a History card (History cards are now Pressable).
+  `computePRs` judges each set against all earlier workouts plus earlier
+  sets of the same session (only the record-setting set gets the badge;
+  warmups ineligible; ties don't count). Quick-start sessions are now
+  auto-named by local hour (`workoutName`: Morning/Afternoon/Evening/Night
+  Workout); routine starts keep the routine name. `SET_TYPE_META` moved to
+  `src/theme.ts`; `fmtDuration` moved into stats.ts (History imports it).
+  Verified on the emulator: finish flow, History detail, first-ever-exercise
+  PRs, tie-no-PR, 0-PRs-when-history-is-heavier, Evening auto-name.
+- 2026-07-07: Adding a known exercise to a live session now replays its most
+  recent finished workout (`lastSetsFor` in stats.ts): same set count and
+  types (warmups and drop sets kept, FAILURE sets dropped), KG/REPS/per-set
+  rest prefilled from last time, all unchecked; first-time exercises still
+  get one empty set. Wired into ExercisePicker's onAdd in Workout.tsx.
+  Verified on the emulator against a real 6-set bench session (W 20×15
+  replayed as W with values; PREVIOUS column aligns per index).

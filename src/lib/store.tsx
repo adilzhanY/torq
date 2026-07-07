@@ -13,6 +13,7 @@ import React, {
 } from "react";
 import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
+import { workoutName } from "./stats";
 import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
@@ -37,7 +38,8 @@ interface StoreValue {
   settings: Settings;
   activeWorkout: Workout | null;
 
-  addExercise: (e: Omit<Exercise, "id" | "updatedAt">) => void;
+  /** Returns the created row (the picker selects it right away). */
+  addExercise: (e: Omit<Exercise, "id" | "updatedAt">) => Exercise;
   deleteExercise: (id: string) => void;
 
   saveRoutine: (name: string, entries: WorkoutEntry[], id?: string) => void;
@@ -47,7 +49,8 @@ interface StoreValue {
   /** Start a recommended template: imports missing catalog exercises first. */
   startRecommended: (template: RecommendedRoutine) => void;
   updateActiveWorkout: (patch: Partial<Workout>) => void;
-  finishWorkout: () => void;
+  /** Returns the finished workout (drives the post-workout summary). */
+  finishWorkout: () => Workout | null;
   discardWorkout: () => void;
   deleteWorkout: (id: string) => void;
 
@@ -124,8 +127,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     activeWorkout: dbRef.current.activeWorkout,
 
     addExercise: (e) => {
-      dbRef.current.exercises.push(stamp({ ...e, id: uid(), updatedAt: 0 }));
+      const row = stamp({ ...e, id: uid(), updatedAt: 0 });
+      dbRef.current.exercises.push(row);
       commit();
+      return row;
     },
     deleteExercise: (id) => {
       dbRef.current.exercises = dbRef.current.exercises.filter((e) => e.id !== id);
@@ -157,7 +162,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }));
       dbRef.current.activeWorkout = stamp({
         id: uid(),
-        name: routine?.name ?? "Workout",
+        name: routine?.name ?? workoutName(Date.now()),
         routineId: routine?.id,
         startedAt: Date.now(),
         entries,
@@ -211,15 +216,17 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     finishWorkout: () => {
       const w = dbRef.current.activeWorkout;
-      if (!w) return;
+      if (!w) return null;
       // Keep only sets that were actually done (drop empty planned rows).
       const entries = w.entries
         .map((e) => ({ ...e, sets: e.sets.filter((s) => s.done) }))
         .filter((e) => e.sets.length > 0);
-      dbRef.current.workouts.push(stamp({ ...w, entries, endedAt: Date.now() }));
+      const finished = stamp({ ...w, entries, endedAt: Date.now() });
+      dbRef.current.workouts.push(finished);
       dbRef.current.activeWorkout = null;
       bury("active", w.id);
       commit();
+      return finished;
     },
     discardWorkout: () => {
       const w = dbRef.current.activeWorkout;

@@ -8,46 +8,38 @@ import {
   Animated,
   Dimensions,
   Easing,
-  FlatList,
   Modal,
   Pressable,
   ScrollView,
   TextInput,
   Vibration,
   View,
-  type ViewStyle,
 } from "react-native";
 import { Image } from "expo-image";
-import { C, R, clay, claySm } from "../theme";
+import { C, R, SET_TYPE_META, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
+import { lastSetsFor } from "../lib/stats";
+import { ExercisePicker } from "../components/ExercisePicker";
 import {
   Card,
-  Divider,
   NumberField,
   Pill,
   PrimaryButton,
   SectionTitle,
-  TextField,
   Txt,
 } from "../components/ui";
-import { PopIn, Squish } from "../components/anim";
+import { PopIn, SlideUp, Squish } from "../components/anim";
 import { useStore } from "../lib/store";
 import {
   workoutSets,
   workoutVolume,
-  type SetType,
+  type Workout as WorkoutModel,
   type WorkoutEntry,
   type WorkoutSet,
 } from "../types";
-
-/** Letter + color for non-normal set types (Strong-style W/D/F badges). */
-const SET_TYPE_META: Record<Exclude<SetType, "normal">, { letter: string; color: string; label: string }> = {
-  warmup: { letter: "W", color: C.warnAcc, label: "Warm up" },
-  drop: { letter: "D", color: "#7c5cd6", label: "Drop set" },
-  failure: { letter: "F", color: C.badAcc, label: "Failure" },
-};
+import { WorkoutSummary } from "../components/WorkoutSummary";
 
 /** 95 → "1:35", 3675 → "1:01:15". */
 function fmtClock(totalSec: number): string {
@@ -116,28 +108,6 @@ function SetNumInput({
       selectTextOnFocus={done}
       onBlur={() => setEditing(false)}
     />
-  );
-}
-
-/** Slides its content up from below on mount (the rest pad entrance). */
-function SlideUp({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
-  const v = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.spring(v, { toValue: 1, useNativeDriver: true, friction: 10, tension: 120 }).start();
-  }, [v]);
-  return (
-    <Animated.View
-      style={[
-        style,
-        {
-          transform: [
-            { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) },
-          ],
-        },
-      ]}
-    >
-      {children}
-    </Animated.View>
   );
 }
 
@@ -358,64 +328,7 @@ function RestDivider({
   );
 }
 
-function ExercisePicker({
-  open,
-  onClose,
-  onPick,
-}: {
-  open: boolean;
-  onClose: () => void;
-  onPick: (exerciseId: string) => void;
-}) {
-  const { exercises } = useStore();
-  const [q, setQ] = useState("");
-  const list = exercises
-    .filter((e) => e.name.toLowerCase().includes(q.trim().toLowerCase()))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  return (
-    <Modal visible={open} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={{ flex: 1, backgroundColor: "rgba(20,26,24,0.4)", justifyContent: "flex-end" }}>
-        <View
-          style={{
-            backgroundColor: C.page,
-            borderTopLeftRadius: R.lg,
-            borderTopRightRadius: R.lg,
-            padding: 16,
-            maxHeight: "75%",
-            gap: 12,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-            <Txt size={17} weight="extrabold">Add exercise</Txt>
-            <Pressable onPress={onClose} hitSlop={8}>
-              <Icon name="X" size={20} color={C.inkSoft} />
-            </Pressable>
-          </View>
-          <TextField value={q} onChange={setQ} placeholder="Search exercises…" />
-          <FlatList
-            data={list}
-            keyExtractor={(e) => e.id}
-            renderItem={({ item }) => (
-              <Pressable
-                onPress={() => {
-                  onPick(item.id);
-                  onClose();
-                }}
-                style={{ paddingVertical: 10, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}
-              >
-                <Txt weight="semibold">{item.name}</Txt>
-                <Pill text={item.bodyPart} color={C.inkSoft} bg={C.page2} />
-              </Pressable>
-            )}
-            ItemSeparatorComponent={Divider}
-          />
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-function ActiveSession() {
+function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }) {
   const {
     activeWorkout,
     exercises,
@@ -713,21 +626,13 @@ function ActiveSession() {
         label="Finish workout"
         background={C.accent}
         color={C.accentInk}
-        onPress={finishWorkout}
+        onPress={() => {
+          const finished = finishWorkout();
+          if (finished) onFinished(finished);
+        }}
         disabled={workoutSets(w) === 0}
       />
       <PrimaryButton label="Discard" background={C.badSurf} color={C.badAcc} onPress={discardWorkout} />
-
-      <ExercisePicker
-        open={picker}
-        onClose={() => setPicker(false)}
-        onPick={(exerciseId) =>
-          setEntries([
-            ...w.entries,
-            { exerciseId, sets: [{ type: "normal", weight: 0, reps: 0, done: false }] },
-          ])
-        }
-      />
 
       <Modal
         visible={typeMenu !== null}
@@ -873,6 +778,24 @@ function ActiveSession() {
           </View>
         </SlideUp>
       ) : null}
+
+      <ExercisePicker
+        open={picker}
+        onClose={() => setPicker(false)}
+        onAdd={(ids) =>
+          setEntries([
+            ...w.entries,
+            ...ids.map((exerciseId) => ({
+              exerciseId,
+              // Replay last time's sets (prefilled weights/reps, warmups kept)
+              // for a known exercise; a single empty set for a first-timer.
+              sets: lastSetsFor(exerciseId, workouts) ?? [
+                { type: "normal" as const, weight: 0, reps: 0, done: false },
+              ],
+            })),
+          ])
+        }
+      />
     </View>
   );
 }
@@ -914,10 +837,13 @@ function RecommendedCard({ routine }: { routine: RecommendedRoutine }) {
 
 export function Workout() {
   const { activeWorkout, routines, startWorkout, deleteRoutine } = useStore();
+  /** The just-finished session, shown as the post-workout summary. */
+  const [summary, setSummary] = useState<WorkoutModel | null>(null);
 
-  if (activeWorkout) return <ActiveSession />;
+  if (activeWorkout) return <ActiveSession onFinished={setSummary} />;
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">Start Workout</Txt>
 
@@ -983,5 +909,10 @@ export function Workout() {
         <RecommendedCard key={r.name} routine={r} />
       ))}
     </ScrollView>
+
+      {summary ? (
+        <WorkoutSummary workout={summary} onClose={() => setSummary(null)} />
+      ) : null}
+    </View>
   );
 }

@@ -50,6 +50,28 @@ export function PopIn({ children, style }: { children: React.ReactNode; style?: 
   );
 }
 
+/** Slides its content up from below on mount (bottom-sheet entrance). */
+export function SlideUp({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
+  const v = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(v, { toValue: 1, useNativeDriver: true, friction: 10, tension: 120 }).start();
+  }, [v]);
+  return (
+    <Animated.View
+      style={[
+        style,
+        {
+          transform: [
+            { translateY: v.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) },
+          ],
+        },
+      ]}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
 /** A one-shot "+N" that floats up and fades (keyed remount restarts it). */
 export function FloatUp({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const v = useRef(new Animated.Value(0)).current;

@@ -40,6 +40,13 @@ export const C = {
 
 export const R = { lg: 28, md: 22, sm: 16, pill: 999 } as const;
 
+/** Letter + color for non-normal set types (Strong-style W/D/F badges). */
+export const SET_TYPE_META = {
+  warmup: { letter: "W", color: C.warnAcc, label: "Warm up" },
+  drop: { letter: "D", color: "#7c5cd6", label: "Drop set" },
+  failure: { letter: "F", color: C.badAcc, label: "Failure" },
+} as const;
+
 export const FONT = {
   regular: "Onest_400Regular",
   medium: "Onest_500Medium",

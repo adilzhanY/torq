@@ -21,23 +21,11 @@ import {
 
 /** How many catalog matches to render at once (there are 1500+). */
 const DB_PAGE = 30;
+import { matches, tokenize } from "../lib/search";
 import type { BodyPart, Equipment } from "../types";
 
 const BODY_PARTS: BodyPart[] = ["chest", "back", "legs", "shoulders", "arms", "core", "other"];
 const EQUIPMENT: Equipment[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight", "other"];
-
-function tokenize(q: string): string[] {
-  return q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-}
-
-/** Every query word must appear somewhere in the haystack, in any order —
- * so "bicep curl" finds "Cable Biceps Curl". */
-function matches(q: string, hay: string[]): boolean {
-  const tokens = tokenize(q);
-  if (!tokens.length) return true;
-  const text = hay.join(" ").toLowerCase();
-  return tokens.every((t) => text.includes(t));
-}
 
 function DbExerciseCard({ ex }: { ex: DbExercise }) {
   const { exercises, addExercise } = useStore();
@@ -241,12 +229,26 @@ export function Exercises() {
                     contentFit="cover"
                     cachePolicy="memory-disk"
                   />
-                ) : null}
-                <View style={{ gap: 2, flex: 1 }}>
+                ) : (
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 10,
+                      backgroundColor: C.page2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon name="Dumbbell" size={20} color={C.inkSoft} />
+                  </View>
+                )}
+                <View style={{ gap: 4, flex: 1 }}>
                   <Txt weight="semibold">{e.name}</Txt>
-                  <Txt size={11} color={C.inkFaint}>
-                    {e.bodyPart} · {e.equipment}
-                  </Txt>
+                  <View style={{ flexDirection: "row", gap: 4, flexWrap: "wrap" }}>
+                    <Pill text={e.bodyPart} color={C.inkSoft} bg={C.page2} />
+                    <Pill text={e.equipment} color={C.inkSoft} bg={C.page2} />
+                  </View>
                 </View>
                 <Pressable hitSlop={8} onPress={() => deleteExercise(e.id)}>
                   <Icon name="Trash2" size={15} color={C.inkFaint} />

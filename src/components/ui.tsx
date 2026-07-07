@@ -217,11 +217,13 @@ export function TextField({
   onChange,
   placeholder,
   onSubmit,
+  autoFocus,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   onSubmit?: () => void;
+  autoFocus?: boolean;
 }) {
   return (
     <TextInput
@@ -230,6 +232,7 @@ export function TextField({
       placeholder={placeholder}
       placeholderTextColor={C.inkFaint}
       onSubmitEditing={onSubmit}
+      autoFocus={autoFocus}
       returnKeyType="done"
       style={{
         backgroundColor: C.page2,
