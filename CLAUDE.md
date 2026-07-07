@@ -94,6 +94,9 @@ template's target reps.
 
 ## Commands
 
+- `./run_android.sh` — one-shot run: boots the `torq` AVD if needed (handles
+  `ANDROID_AVD_HOME`, `-gpu host`), then `npx expo start --android`. Preferred
+  way to run the app.
 - `npm start` / `npm run android` — dev server
 - `npm run tsc` — typecheck (keep this clean)
 - `CI=1 npx expo export --platform android` — verify the bundle compiles
@@ -207,3 +210,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   (`hw.keyboard = yes` in its config.ini + device setting
   `show_ime_with_hard_keyboard 0`) so you can type in the emulator with the
   host keyboard.
+- 2026-07-07: Added `run_android.sh` (see Commands) — single script to boot
+  the emulator if needed and start Expo; Adilzhan runs it himself, so don't
+  spend turns launching the app manually.
