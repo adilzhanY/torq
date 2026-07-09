@@ -4,7 +4,9 @@ import { Pressable, ScrollView, View } from "react-native";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { Card, NumberField, Pill, PrimaryButton, SectionTitle, Txt } from "../components/ui";
+import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
+import type { Measurement } from "../types";
 
 const KINDS: { kind: string; unit: (u: string) => string }[] = [
   { kind: "Body weight", unit: (u) => u },
@@ -19,6 +21,7 @@ export function Measure() {
   const { measurements, addMeasurement, deleteMeasurement, settings } = useStore();
   const [kind, setKind] = useState(KINDS[0]);
   const [value, setValue] = useState("");
+  const [confirming, setConfirming] = useState<Measurement | null>(null);
 
   const unit = kind.unit(settings.unit);
   const sorted = [...measurements].sort((a, b) => b.at - a.at);
@@ -31,6 +34,7 @@ export function Measure() {
   };
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">Measure</Txt>
 
@@ -88,7 +92,7 @@ export function Measure() {
                 </View>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                   <Pill text={`${m.value} ${m.unit}`} color={C.goodAcc} bg={C.goodSurf} />
-                  <Pressable hitSlop={8} onPress={() => deleteMeasurement(m.id)}>
+                  <Pressable hitSlop={8} onPress={() => setConfirming(m)}>
                     <Icon name="Trash2" size={15} color={C.inkFaint} />
                   </Pressable>
                 </View>
@@ -98,5 +102,15 @@ export function Measure() {
         </Card>
       )}
     </ScrollView>
+
+      {confirming ? (
+        <ConfirmDialog
+          title="Delete measurement?"
+          message={`${confirming.kind} — ${confirming.value} ${confirming.unit} will be removed from the log.`}
+          onConfirm={() => deleteMeasurement(confirming.id)}
+          onClose={() => setConfirming(null)}
+        />
+      ) : null}
+    </View>
   );
 }

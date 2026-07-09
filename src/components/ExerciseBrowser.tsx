@@ -13,7 +13,8 @@ import { Image } from "expo-image";
 import { C, R, clay, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { PopIn, SlideUp, Squish } from "./anim";
-import { Card, Divider, SectionTitle, TextField, Txt } from "./ui";
+import { CenterDialog } from "./Dialog";
+import { Divider, SectionTitle, TextField, Txt } from "./ui";
 import { useStore } from "../lib/store";
 import { matches } from "../lib/search";
 import {
@@ -417,23 +418,7 @@ export function ExerciseBrowser({
 
       {/* Filter dialog */}
       {filterOpen ? (
-        <Pressable
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-            backgroundColor: "rgba(20,26,24,0.4)",
-            justifyContent: "center",
-            padding: 16,
-          }}
-          onPress={() => setFilterOpen(false)}
-        >
-          <PopIn>
-            {/* Swallow taps inside the card so they don't dismiss. */}
-            <Pressable onPress={() => {}}>
-              <Card style={{ gap: 12 }}>
+        <CenterDialog onClose={() => setFilterOpen(false)}>
                 <Txt size={18} weight="extrabold">Filter ({chipFiltered.length})</Txt>
                 <SectionTitle>Body part</SectionTitle>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
@@ -486,10 +471,7 @@ export function ExerciseBrowser({
                     <Txt size={14} weight="extrabold" color={C.goodAcc}>OK</Txt>
                   </Pressable>
                 </View>
-              </Card>
-            </Pressable>
-          </PopIn>
-        </Pressable>
+        </CenterDialog>
       ) : null}
 
       {/* New-exercise bottom sheet */}

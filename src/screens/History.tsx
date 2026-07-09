@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { C } from "../theme";
 import { Card, SectionTitle, Txt } from "../components/ui";
+import { ConfirmDialog } from "../components/Dialog";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { useStore } from "../lib/store";
@@ -12,6 +13,7 @@ import type { Workout } from "../types";
 export function History() {
   const { workouts, deleteWorkout } = useStore();
   const [selected, setSelected] = useState<Workout | null>(null);
+  const [confirming, setConfirming] = useState<Workout | null>(null);
   const sorted = [...workouts].sort((a, b) => b.startedAt - a.startedAt);
 
   return (
@@ -32,11 +34,20 @@ export function History() {
             key={w.id}
             workout={w}
             onPress={() => setSelected(w)}
-            onDelete={() => deleteWorkout(w.id)}
+            onDelete={() => setConfirming(w)}
           />
         ))
       )}
     </ScrollView>
+
+      {confirming ? (
+        <ConfirmDialog
+          title="Delete workout?"
+          message={`"${confirming.name}" will be removed from your history. Records may change.`}
+          onConfirm={() => deleteWorkout(confirming.id)}
+          onClose={() => setConfirming(null)}
+        />
+      ) : null}
 
       {selected ? (
         <WorkoutSummary workout={selected} onClose={() => setSelected(null)} />

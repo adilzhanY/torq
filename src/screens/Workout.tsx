@@ -32,6 +32,7 @@ import {
   Txt,
 } from "../components/ui";
 import { PopIn, SlideUp, Squish } from "../components/anim";
+import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
 import {
   workoutSets,
@@ -356,6 +357,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [editReq, setEditReq] = useState<{ key: string; n: number } | null>(null);
   /** Which set's type menu is open + where to anchor it (touch position). */
   const [typeMenu, setTypeMenu] = useState<{ ei: number; si: number; x: number; y: number } | null>(null);
+  /** Entry index pending delete confirmation. */
+  const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
   const weightRefs = useRef<Record<string, TextInput | null>>({});
   const now = useNow(!!activeWorkout);
 
@@ -507,10 +510,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 </Txt>
               </View>
             </Pressable>
-            <Pressable
-              hitSlop={8}
-              onPress={() => setEntries(w.entries.filter((_, i) => i !== ei))}
-            >
+            <Pressable hitSlop={8} onPress={() => setConfirmRemove(ei)}>
               <Icon name="Trash2" size={17} color={C.badAcc} />
             </Pressable>
           </View>
@@ -799,6 +799,16 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         </SlideUp>
       ) : null}
 
+      {confirmRemove != null ? (
+        <ConfirmDialog
+          title="Remove exercise?"
+          message={`${name(w.entries[confirmRemove].exerciseId)} and its sets will be removed from this workout.`}
+          confirmLabel="Remove"
+          onConfirm={() => setEntries(w.entries.filter((_, i) => i !== confirmRemove))}
+          onClose={() => setConfirmRemove(null)}
+        />
+      ) : null}
+
       {info
         ? (() => {
             const e = exercises.find((x) => x.id === info);
@@ -878,6 +888,7 @@ export function Workout() {
   const { activeWorkout, routines, startWorkout, deleteRoutine } = useStore();
   /** The just-finished session, shown as the post-workout summary. */
   const [summary, setSummary] = useState<WorkoutModel | null>(null);
+  const [confirmRoutine, setConfirmRoutine] = useState<{ id: string; name: string } | null>(null);
 
   if (activeWorkout) return <ActiveSession onFinished={setSummary} />;
 
@@ -931,7 +942,7 @@ export function Workout() {
           <Card key={r.id} style={{ gap: 8 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <Txt size={15} weight="bold">{r.name}</Txt>
-              <Pressable hitSlop={8} onPress={() => deleteRoutine(r.id)}>
+              <Pressable hitSlop={8} onPress={() => setConfirmRoutine({ id: r.id, name: r.name })}>
                 <Icon name="Trash2" size={16} color={C.badAcc} />
               </Pressable>
             </View>
@@ -948,6 +959,15 @@ export function Workout() {
         <RecommendedCard key={r.name} routine={r} />
       ))}
     </ScrollView>
+
+      {confirmRoutine ? (
+        <ConfirmDialog
+          title="Delete routine?"
+          message={`"${confirmRoutine.name}" will be deleted. Finished workouts stay in your history.`}
+          onConfirm={() => deleteRoutine(confirmRoutine.id)}
+          onClose={() => setConfirmRoutine(null)}
+        />
+      ) : null}
 
       {summary ? (
         <WorkoutSummary workout={summary} onClose={() => setSummary(null)} />

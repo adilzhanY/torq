@@ -301,3 +301,15 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   the deflating tab dip narrower and wobble ("old icon drags"); all
   interpolations are also clamped. useNativeDriver:false (flex is layout).
   No + button by design. Verified on the emulator.
+- 2026-07-09: Shared centered dialog (`src/components/Dialog.tsx`):
+  `CenterDialog` (dim backdrop + PopIn Card, tap-outside dismiss — the
+  Filter-dialog pattern extracted; inline overlay, NOT a Modal, so mount it
+  inside a flex-1 screen root) and `ConfirmDialog` built on it (title,
+  optional message, Cancel / red confirm-then-close). ExerciseBrowser's
+  filter dialog now uses CenterDialog, and every destructive action
+  confirms via ConfirmDialog: removing an exercise from a live session
+  (the previously unguarded trash button), deleting a routine (Workout
+  start screen), a workout (History), a measurement (Measure — its root
+  gained a flex-1 View wrapper for the overlay), and an exercise from the
+  library (ExerciseInfo About tab). Use these for any future centered
+  modal.

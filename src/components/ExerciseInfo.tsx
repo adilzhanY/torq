@@ -17,6 +17,7 @@ import { C, R } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Card, Divider, Pill, PrimaryButton, SectionTitle, Txt } from "./ui";
+import { ConfirmDialog } from "./Dialog";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
@@ -69,6 +70,7 @@ export function ExerciseInfo({
   const [tab, setTab] = useState<InfoTab>("about");
   /** A history workout opened as a full summary (exercise highlighted). */
   const [viewing, setViewing] = useState<Workout | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   // Re-resolve against the store so importing flips the About actions live.
   const libRow = exercises.find((e) =>
@@ -245,10 +247,7 @@ export function ExerciseInfo({
                 label="Delete from my exercises"
                 background={C.badSurf}
                 color={C.badAcc}
-                onPress={() => {
-                  deleteExercise(libRow.id);
-                  onClose();
-                }}
+                onPress={() => setConfirmingDelete(true)}
               />
             )}
           </>
@@ -332,6 +331,18 @@ export function ExerciseInfo({
           )
         ) : null}
       </ScrollView>
+
+      {confirmingDelete && libRow ? (
+        <ConfirmDialog
+          title="Delete exercise?"
+          message={`"${libRow.name}" will be removed from your library. Logged workouts keep their history.`}
+          onConfirm={() => {
+            deleteExercise(libRow.id);
+            onClose();
+          }}
+          onClose={() => setConfirmingDelete(false)}
+        />
+      ) : null}
 
       {viewing ? (
         <WorkoutSummary
