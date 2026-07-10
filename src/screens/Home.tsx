@@ -10,7 +10,7 @@
  *  - 7-day volume sparkline (teaser for the Progress tab).
  *  - Day-aware workout list (Today → recents; other days → that day).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
@@ -18,7 +18,7 @@ import { PopIn, Squish } from "../components/anim";
 import { Card, Divider, SectionTitle, Txt } from "../components/ui";
 import { ArcGauge, SegmentedBar, Sparkline } from "../components/charts";
 import { CalendarDialog } from "../components/CalendarDialog";
-import { CenterDialog } from "../components/Dialog";
+import { StreakDialog } from "../components/StreakDialog";
 import { computeStreak, type Streak } from "../lib/streak";
 import { DateRuler, addDays, dayStart } from "../components/DateRuler";
 import { WorkoutCard } from "../components/WorkoutCard";
@@ -223,7 +223,8 @@ function TodayHero({
 }
 
 export function Home() {
-  const { workouts, activeWorkout, exercises, measurements, routines, settings } = useStore();
+  const { workouts, activeWorkout, exercises, measurements, routines, settings, updateSettings } =
+    useStore();
   const [selected, setSelected] = useState<Workout | null>(null);
   const [day, setDay] = useState(() => dayStart(Date.now()));
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -253,6 +254,17 @@ export function Home() {
   const streak = computeStreak(workouts, routines, now);
   const todayHit = workouts.some((w) => w.endedAt && dayStart(w.startedAt) === today);
   const streakTodayPending = !!todaysRoutine && !todayHit;
+
+  // Auto-celebrate: the first Home visit after logging today's first
+  // workout pops the streak modal, once per trained day.
+  useEffect(() => {
+    if (!todayHit || streak.current === 0 || settings.streakCelebratedDay === today) return;
+    updateSettings({ streakCelebratedDay: today });
+    // No cleanup: marking the day re-runs this effect immediately, and a
+    // cleanup would cancel the timer before the dialog ever opened.
+    setTimeout(() => setStreakOpen(true), 450); // let the tab settle first
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [todayHit, today, settings.streakCelebratedDay]);
 
   // ----- Selected-day data --------------------------------------------------
   const dayFinished = workouts.filter((w) => dayStart(w.startedAt) === day);
@@ -408,40 +420,12 @@ export function Home() {
       ) : null}
 
       {streakOpen ? (
-        <CenterDialog onClose={() => setStreakOpen(false)}>
-          <View style={{ alignItems: "center", gap: 4, paddingVertical: 6 }}>
-            <Icon
-              name="Flame"
-              size={34}
-              color={streak.current > 0 ? C.warnAcc : C.inkFaint}
-            />
-            <Txt size={30} weight="extrabold">{streak.current}</Txt>
-            <Txt size={13} weight="bold" color={C.inkSoft}>
-              day streak
-            </Txt>
-            {streak.startedAt ? (
-              <Txt size={12} color={C.inkFaint}>
-                since {new Date(streak.startedAt).getDate()}{" "}
-                {MONTHS_SHORT[new Date(streak.startedAt).getMonth()]}
-              </Txt>
-            ) : null}
-          </View>
-          {streak.atRisk ? (
-            <Txt size={13} weight="bold" color={C.warnAcc}>
-              One more missed session and it resets — train today!
-            </Txt>
-          ) : null}
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Icon name="Trophy" size={16} color={C.gold} />
-            <Txt size={14} weight="bold">
-              Longest: {streak.longest} day{streak.longest === 1 ? "" : "s"}
-            </Txt>
-          </View>
-          <Txt size={12} color={C.inkFaint}>
-            Every training day counts — rest days never hurt. Miss 3 planned
-            sessions in a row and the streak resets.
-          </Txt>
-        </CenterDialog>
+        <StreakDialog
+          streak={streak}
+          workouts={workouts}
+          userName={settings.name}
+          onClose={() => setStreakOpen(false)}
+        />
       ) : null}
     </View>
   );

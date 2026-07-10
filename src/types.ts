@@ -137,6 +137,9 @@ export interface Settings {
   plan?: PlanPrefs;
   /** Welcome flow finished (or skipped). */
   onboarded?: boolean;
+  /** Day (local midnight ms) whose streak celebration was already shown —
+   *  the Home modal auto-pops once per trained day. */
+  streakCelebratedDay?: number;
   updatedAt: number;
 }
 

@@ -637,6 +637,36 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   count, since-date, at-risk warning, gold-trophy longest, rule sentence);
   Stats page gained a lifetime "current / longest streak" card under the
   overview row (not month-scoped). Verified on the emulator incl. dialog.
+- 2026-07-11: Streak modal auto-pops once per trained day: Home effect —
+  first visit after today's first FINISHED workout opens StreakDialog
+  after 450ms; `Settings.streakCelebratedDay` (local-midnight ms, synced)
+  marks the day so it never repeats. GOTCHA: don't clearTimeout in the
+  effect cleanup — updateSettings changes a dep, re-runs the effect, and
+  the cleanup would cancel the timer before it fired. The pill stays
+  tappable for on-demand opens.
+- 2026-07-11: CenterDialog gained an EXIT animation (Adilzhan: dialogs
+  popped in but vanished instantly): one Animated.Value drives backdrop
+  dim + card scale/fade both ways — backdrop tap plays a 150ms ease-in
+  shrink/fade before calling onClose (guarded against double-close).
+  Children that close the dialog themselves can use the new
+  `useDialogClose()` context hook for the animated path — ConfirmDialog's
+  Cancel/confirm buttons now do; menu rows that call their own setState
+  still unmount instantly (adopt the hook when touching them). PopIn no
+  longer used by Dialog.tsx.
+- 2026-07-11: Streak dialog redesigned to a Duolingo-style celebration
+  (Adilzhan's reference image): new `src/components/StreakDialog.tsx` —
+  hand-authored Lottie flame (`assets/flame.json`, 2s loop: squash &
+  stretch + rotation flicker anchored at the flame base, counter-phased
+  amber mid + white core layers, two rising embers; played via
+  lottie-react-native 7.x, bundled in Expo Go) inside a soft peach halo,
+  giant count, "Day Streak", personalized encouragement (settings.name;
+  at-risk variant in warnAcc), Monday-first week strip (orange
+  LinearGradient check circles on trained days, plain day numbers
+  otherwise, today bold), gold-trophy longest line. Home's old inline
+  streak dialog replaced. NOTE: killing a Metro the app is attached to
+  makes Expo Go show "Cannot connect to Expo CLI" — force-stop + reopen
+  the exp:// URL. Verified on the emulator (two captures confirm the
+  loop is animating).
 - 2026-07-11: WorkoutCard restructured (Adilzhan's spec): pills row gone —
   top shows CalendarDays "Fri, Jul 10 · 18:57" + Clock duration; the
   exercise list sits between Dividers; bottom row is icon stats CheckCheck
