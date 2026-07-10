@@ -50,6 +50,10 @@ export interface WorkoutSet {
   done: boolean;
   /** Per-set rest override in seconds (falls back to Settings.restSec). */
   restSec?: number;
+  /** Live-session marker: the weight was prefilled by the progression
+   *  engine (up = increase, down = deload). Cleared on edit; stripped when
+   *  the workout finishes. */
+  suggested?: "up" | "down";
 }
 
 /** One exercise inside a workout/routine with its sets. */

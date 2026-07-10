@@ -156,7 +156,18 @@ export function ExerciseInfo({
         backgroundColor: C.page,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, padding: 16, paddingBottom: 10 }}>
+      {/* Fixed header — it, not the scroll content, must clear the floating
+          top bar. */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          paddingHorizontal: 16,
+          paddingTop: TOP_BAR_SPACE + 12,
+          paddingBottom: 10,
+        }}
+      >
         <Pressable hitSlop={8} onPress={onClose}>
           <Icon name="ChevronLeft" size={24} color={C.ink} />
         </Pressable>
@@ -184,7 +195,7 @@ export function ExerciseInfo({
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 140, gap: 12 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
         {tab === "about" ? (
           <>
             <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>

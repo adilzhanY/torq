@@ -15,11 +15,10 @@ import {
   Vibration,
   View,
 } from "react-native";
-import { Image } from "expo-image";
 import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
-import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
+import { RECOMMENDED } from "../lib/recommended";
 import { lastSetsFor } from "../lib/stats";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { ExerciseInfo } from "../components/ExerciseInfo";
@@ -652,14 +651,40 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 <Txt size={12} weight="semibold" color={C.inkFaint} style={{ flex: 1 }} numberOfLines={1}>
                   {prevSets ? (prev ? `${prev.weight} ${settings.unit} × ${prev.reps}` : "—") : ""}
                 </Txt>
-                <SetNumInput
-                  value={set.weight ? String(set.weight) : ""}
-                  done={set.done}
-                  onChange={(v) => patchSet(ei, si, { weight: Number(v) || 0 })}
-                  inputRef={(r) => {
-                    weightRefs.current[restKey] = r;
-                  }}
-                />
+                <View>
+                  <SetNumInput
+                    value={set.weight ? String(set.weight) : ""}
+                    done={set.done}
+                    onChange={(v) =>
+                      // Editing the weight makes it the user's number, not
+                      // the engine's — drop the suggestion badge.
+                      patchSet(ei, si, { weight: Number(v) || 0, suggested: undefined })
+                    }
+                    inputRef={(r) => {
+                      weightRefs.current[restKey] = r;
+                    }}
+                  />
+                  {set.suggested && !set.done ? (
+                    <View
+                      pointerEvents="none"
+                      style={{
+                        position: "absolute",
+                        top: -5,
+                        right: -5,
+                        backgroundColor: set.suggested === "up" ? C.goodSurf : C.warnSurf,
+                        borderRadius: 7,
+                        padding: 2,
+                      }}
+                    >
+                      <Icon
+                        name={set.suggested === "up" ? "TrendingUp" : "TrendingDown"}
+                        size={9}
+                        color={set.suggested === "up" ? C.goodAcc : C.warnAcc}
+                        strokeWidth={3}
+                      />
+                    </View>
+                  ) : null}
+                </View>
                 <SetNumInput
                   value={set.reps ? String(set.reps) : ""}
                   done={set.done}
@@ -1066,46 +1091,90 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   );
 }
 
-function RecommendedCard({ routine }: { routine: RecommendedRoutine }) {
-  const { startRecommended } = useStore();
+/** Lines shown per routine card before the ⋯ overflow marker. */
+const ROUTINE_CARD_LINES = 4;
+const ROUTINE_CARD_H = 168;
+
+/**
+ * Uniform grid cell for the Start-Workout routine grids (user + plan +
+ * recommended): fixed height, name, "N × Exercise" lines, a ⋯ row when
+ * there are more. Tapping the card starts the routine.
+ */
+function RoutineGridCard({
+  name,
+  lines,
+  onPress,
+  onDelete,
+}: {
+  name: string;
+  lines: string[];
+  onPress: () => void;
+  onDelete?: () => void;
+}) {
+  const shown = lines.slice(0, ROUTINE_CARD_LINES);
   return (
-    <Card style={{ gap: 10 }}>
-      <View style={{ gap: 2 }}>
-        <Txt size={15} weight="bold">{routine.name}</Txt>
-        <Txt size={12} color={C.inkFaint}>{routine.blurb}</Txt>
+    <Squish
+      onPress={onPress}
+      style={[
+        {
+          backgroundColor: C.surface,
+          borderRadius: R.md,
+          padding: 14,
+          height: ROUTINE_CARD_H,
+          overflow: "hidden",
+          gap: 8,
+        },
+        claySm(),
+      ]}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Txt size={14} weight="extrabold" style={{ flex: 1 }} numberOfLines={1}>
+          {name}
+        </Txt>
+        {onDelete ? (
+          <Pressable hitSlop={8} onPress={onDelete}>
+            <Icon name="Trash2" size={14} color={C.badAcc} />
+          </Pressable>
+        ) : null}
       </View>
-      <View style={{ gap: 6 }}>
-        {routine.items.map((item) => {
-          const ex = DB_BY_ID[item.dbId];
-          if (!ex) return null;
-          return (
-            <View key={item.dbId} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Image
-                source={{ uri: DB_GIF_BY_ID[item.dbId] }}
-                style={{ width: 32, height: 32, borderRadius: 9, backgroundColor: "#fff" }}
-                contentFit="cover"
-                cachePolicy="memory-disk"
-              />
-              <Txt size={13} weight="bold" color={C.inkSoft} style={{ width: 44 }}>
-                {item.sets}×{item.reps}
-              </Txt>
-              <Txt size={13} weight="semibold" style={{ flex: 1 }} numberOfLines={1}>
-                {titleCase(ex.name)}
-              </Txt>
-            </View>
-          );
-        })}
+      <View style={{ gap: 4 }}>
+        {shown.map((line, i) => (
+          <Txt key={i} size={12} weight="semibold" color={C.inkSoft} numberOfLines={1}>
+            {line}
+          </Txt>
+        ))}
+        {lines.length > ROUTINE_CARD_LINES ? (
+          <Txt size={12} weight="extrabold" color={C.inkFaint}>· · ·</Txt>
+        ) : null}
       </View>
-      <PrimaryButton label="Start routine" onPress={() => startRecommended(routine)} />
-    </Card>
+    </Squish>
+  );
+}
+
+/** Cells laid out two per row (odd counts get an invisible filler). */
+function TwoColumnGrid({ cells }: { cells: React.ReactNode[] }) {
+  const rows: React.ReactNode[][] = [];
+  for (let i = 0; i < cells.length; i += 2) rows.push(cells.slice(i, i + 2));
+  return (
+    <View style={{ gap: 10 }}>
+      {rows.map((row, i) => (
+        <View key={i} style={{ flexDirection: "row", gap: 10 }}>
+          {/* flex:1 wrappers — flex on a Squish itself collapses (gotcha) */}
+          <View style={{ flex: 1 }}>{row[0]}</View>
+          <View style={{ flex: 1 }}>{row[1] ?? null}</View>
+        </View>
+      ))}
+    </View>
   );
 }
 
 export function Workout() {
-  const { activeWorkout, routines, startWorkout, deleteRoutine } = useStore();
+  const { activeWorkout, exercises, routines, startWorkout, startRecommended, deleteRoutine } =
+    useStore();
   /** The just-finished session, shown as the post-workout summary. */
   const [summary, setSummary] = useState<WorkoutModel | null>(null);
   const [confirmRoutine, setConfirmRoutine] = useState<{ id: string; name: string } | null>(null);
+  const exName = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
 
   if (activeWorkout) return <ActiveSession onFinished={setSummary} />;
 
@@ -1155,26 +1224,32 @@ export function Workout() {
           </Txt>
         </Card>
       ) : (
-        routines.map((r) => (
-          <Card key={r.id} style={{ gap: 8 }}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Txt size={15} weight="bold">{r.name}</Txt>
-              <Pressable hitSlop={8} onPress={() => setConfirmRoutine({ id: r.id, name: r.name })}>
-                <Icon name="Trash2" size={16} color={C.badAcc} />
-              </Pressable>
-            </View>
-            <Txt size={12} color={C.inkFaint}>
-              {r.entries.length} exercises
-            </Txt>
-            <PrimaryButton label="Start routine" onPress={() => startWorkout(r)} />
-          </Card>
-        ))
+        <TwoColumnGrid
+          cells={routines.map((r) => (
+            <RoutineGridCard
+              key={r.id}
+              name={r.name}
+              lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
+              onPress={() => startWorkout(r)}
+              onDelete={() => setConfirmRoutine({ id: r.id, name: r.name })}
+            />
+          ))}
+        />
       )}
 
       <SectionTitle>Recommended</SectionTitle>
-      {RECOMMENDED.map((r) => (
-        <RecommendedCard key={r.name} routine={r} />
-      ))}
+      <TwoColumnGrid
+        cells={RECOMMENDED.map((r) => (
+          <RoutineGridCard
+            key={r.name}
+            name={r.name}
+            lines={r.items
+              .filter((item) => DB_BY_ID[item.dbId])
+              .map((item) => `${item.sets} × ${titleCase(DB_BY_ID[item.dbId].name)}`)}
+            onPress={() => startRecommended(r)}
+          />
+        ))}
+      />
     </ScrollView>
 
       {confirmRoutine ? (

@@ -15,6 +15,7 @@ import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
 import { workoutName } from "./stats";
 import { buildPlan, GOAL_META } from "./plan";
+import { suggestWeight, targetRepsOf } from "./suggest";
 import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
@@ -225,10 +226,28 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     startWorkout: (routine) => {
       if (dbRef.current.activeWorkout) return;
-      const entries: WorkoutEntry[] = (routine?.entries ?? []).map((e) => ({
-        ...e,
-        sets: e.sets.map((s) => ({ ...s, done: false })),
-      }));
+      const entries: WorkoutEntry[] = (routine?.entries ?? []).map((e) => {
+        const base = e.sets.map((s) => ({ ...s, done: false }));
+        // Hand-typed routine weights are respected; weight-less entries
+        // (plan routines) get the progression engine's suggestion.
+        if (base.some((s) => s.weight > 0)) return { ...e, sets: base };
+        const sug = suggestWeight(
+          e.exerciseId,
+          targetRepsOf(base),
+          dbRef.current.workouts,
+          dbRef.current.settings.unit,
+        );
+        if (!sug) return { ...e, sets: base };
+        const tag = sug.kind === "increase" ? ("up" as const) : sug.kind === "deload" ? ("down" as const) : undefined;
+        return {
+          ...e,
+          sets: base.map((s) =>
+            s.type === "warmup"
+              ? s
+              : { ...s, weight: sug.weight, ...(tag ? { suggested: tag } : {}) },
+          ),
+        };
+      });
       dbRef.current.activeWorkout = stamp({
         id: uid(),
         name: routine?.name ?? workoutName(Date.now()),
@@ -274,9 +293,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     finishWorkout: () => {
       const w = dbRef.current.activeWorkout;
       if (!w) return null;
-      // Keep only sets that were actually done (drop empty planned rows).
+      // Keep only sets that were actually done (drop empty planned rows);
+      // the suggestion marker is live-session UI, not history.
       const entries = w.entries
-        .map((e) => ({ ...e, sets: e.sets.filter((s) => s.done) }))
+        .map((e) => ({
+          ...e,
+          sets: e.sets
+            .filter((s) => s.done)
+            .map(({ suggested: _suggested, ...s }) => s as typeof e.sets[number]),
+        }))
         .filter((e) => e.sets.length > 0);
       const finished = stamp({ ...w, entries, endedAt: Date.now() });
       dbRef.current.workouts.push(finished);

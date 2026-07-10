@@ -388,6 +388,33 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Start-Workout routines as a 2-column grid (Adilzhan's spec):
+  shared `RoutineGridCard` in Workout.tsx — fixed 168px height, no gifs,
+  name + up to 4 "N × Exercise" lines (sets count only, no reps), "· · ·"
+  overflow row, small trash for user routines; whole card tap starts the
+  routine. `TwoColumnGrid` chunks cells into flex rows (flex:1 wrapper
+  Views — the Squish gotcha again). Applies to user/plan routines AND
+  Recommended (old RecommendedCard with gif thumbnails + Start button
+  deleted). Verified on the emulator.
+- 2026-07-10: History grouped by month (Strong-style, Adilzhan's request):
+  month name left + "N workouts" right per section, newest first; months
+  outside the current year render as "July 2025". The old flat
+  "N workouts" SectionTitle is gone. Verified on the emulator.
+- 2026-07-10: Suggested next weights (roadmap task 4).
+  `src/lib/suggest.ts` — double progression: every top-weight working set
+  hit the target reps last session → +1 step (2.5 kg / 5 lb, rounded to
+  step); missed once → repeat; missed twice at the SAME top weight →
+  deload to ~90% (≥1 step below, floored at 1 step → repeat). Warmups and
+  bodyweight (0-weight) history never count; only finished workouts.
+  Applied in `startWorkout` ONLY to routine entries with no hand-typed
+  weights (plan routines are weight-less; typed routine weights are
+  respected) using `targetRepsOf` (modal non-warmup reps). Prefilled sets
+  carry `WorkoutSet.suggested: "up"|"down"` → the logger's weight cell
+  shows a tiny TrendingUp/Down corner badge (good/warn colors), cleared
+  the moment the user edits the weight and stripped in `finishWorkout`.
+  Ad-hoc picker adds still replay last session verbatim (no prescription →
+  no honest judgement). Verified: 23-scenario table (hits, misses, stalls,
+  deload rounding/floor, warmups, backoffs, lb steps, unsorted history).
 - 2026-07-10: Home hero reworked around the plan (roadmap task 3). New
   TodayHero (see Screens above) replaces the generic dark CTA; gauges went
   plan-relative WEEK-scope (workouts/sets/minutes vs the stored plan
@@ -466,7 +493,11 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   ExerciseBrowser toolbar — which also covers ExercisePicker) pads
   `TOP_BAR_SPACE + <old padding>`. Render order in Root: content → top bar
   → BottomNav → Profile, so the bar (like the dock) stays visible over
-  in-tab overlays but Profile covers both.
+  in-tab overlays but Profile covers both. CAREFUL: overlays with a FIXED
+  header outside their ScrollView (ExerciseInfo, ExerciseBrowser toolbar)
+  need the TOP_BAR_SPACE padding on the HEADER, not the scroll content —
+  ExerciseInfo shipped with it on the wrong one (header hidden under the
+  bar, content double-spaced) and was fixed after Adilzhan hit it.
 - 2026-07-10: WorkoutSummary compacted + ⋯ menu. All exercises now render
   in ONE Card (sections split by Divider, 1RM column label on the first
   section only; the old card-per-exercise ate too much space —
