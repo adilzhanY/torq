@@ -388,7 +388,7 @@ export function ExerciseBrowser({
           style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
           onPress={() => setOrderOpen(false)}
         >
-          <PopIn style={{ position: "absolute", top: 42, right: 16, width: 210 }}>
+          <PopIn style={{ position: "absolute", top: TOP_BAR_SPACE + 42, right: 16, width: 210 }}>
             <View style={[{ backgroundColor: C.surface, borderRadius: R.md, padding: 4 }, clay()]}>
               {SORTS.map((s) => (
                 <Pressable

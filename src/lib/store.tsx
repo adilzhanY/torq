@@ -265,11 +265,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         // Hand-typed routine weights are respected; weight-less entries
         // (plan routines) get the progression engine's suggestion.
         if (base.some((s) => s.weight > 0)) return { ...e, sets: base };
+        const ex = dbRef.current.exercises.find((x) => x.id === e.exerciseId);
         const sug = suggestWeight(
           e.exerciseId,
           targetRepsOf(base),
           dbRef.current.workouts,
           dbRef.current.settings.unit,
+          ex?.equipment,
         );
         if (!sug) return { ...e, sets: base };
         const tag = sug.kind === "increase" ? ("up" as const) : sug.kind === "deload" ? ("down" as const) : undefined;

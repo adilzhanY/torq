@@ -14,7 +14,7 @@
  * Warmup sets never count; bodyweight history (no logged weight) yields no
  * suggestion.
  */
-import type { Unit, Workout, WorkoutSet } from "../types";
+import type { Equipment, Unit, Workout, WorkoutSet } from "../types";
 
 export type SuggestionKind = "increase" | "repeat" | "deload";
 
@@ -23,8 +23,20 @@ export interface WeightSuggestion {
   weight: number;
 }
 
-/** Smallest sensible plate jump per unit. */
+/** Smallest sensible plate jump per unit for standard equipment (barbell, machine, etc.). */
 export const WEIGHT_STEP: Record<Unit, number> = { kg: 2.5, lb: 5 };
+
+/** Micro-loading plate jump per unit for equipment that is harder to progress (dumbbell, cable, etc.). */
+export const LIGHT_WEIGHT_STEP: Record<Unit, number> = { kg: 1, lb: 2 };
+
+const LIGHT_EQUIPMENT = new Set<Equipment>(["dumbbell", "cable", "kettlebell", "band"]);
+
+export function getWeightStep(unit: Unit, equipment?: Equipment): number {
+  if (equipment && LIGHT_EQUIPMENT.has(equipment)) {
+    return LIGHT_WEIGHT_STEP[unit];
+  }
+  return WEIGHT_STEP[unit];
+}
 
 function roundToStep(w: number, step: number): number {
   return Math.round((w + 1e-9) / step) * step;
@@ -71,6 +83,7 @@ export function suggestWeight(
   targetReps: number,
   workouts: Workout[],
   unit: Unit,
+  equipment?: Equipment,
 ): WeightSuggestion | null {
   if (targetReps <= 0) return null;
   const history = workouts
@@ -80,7 +93,7 @@ export function suggestWeight(
     .sort((a, b) => b.at - a.at);
   if (history.length === 0) return null;
 
-  const step = WEIGHT_STEP[unit];
+  const step = getWeightStep(unit, equipment);
   const [last, prev] = history;
   const topWeight = Math.max(...last.sets.map((s) => s.weight));
 

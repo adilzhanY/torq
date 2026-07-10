@@ -598,3 +598,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Undo2, List, SlidersVertical) EXCEPT Remove exercise (X, red), which
   routes to the existing ConfirmDialog since the trash is gone. Verified
   on the emulator end to end.
+- 2026-07-10: Fixed the order/sort menu positioning on the Exercises page ([ExerciseBrowser.tsx](file:///home/wopler/dev/torq/src/components/ExerciseBrowser.tsx)) by shifting its absolute `top` coordinate by `TOP_BAR_SPACE` (setting it to `TOP_BAR_SPACE + 42` instead of hardcoded `42`). This positions the dropdown menu correctly under the Order button toolbar icon and prevents it from overlapping with/rendering under the floating top bar.
+- 2026-07-10: Customized weight progression steps in the suggestion engine ([suggest.ts](file:///home/wopler/dev/torq/src/lib/suggest.ts)) based on equipment type. Added a dynamic `getWeightStep` helper that returns micro-loading steps (1 kg / 2 lb) for dumbbells, cables, kettlebells, and bands, while maintaining default steps (2.5 kg / 5 lb) for barbell/machine compound exercises. Integrated in `startWorkout` ([store.tsx](file:///home/wopler/dev/torq/src/lib/store.tsx)).
+
