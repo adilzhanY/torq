@@ -5,6 +5,7 @@ import { C } from "../theme";
 import { Icon } from "./Icon";
 import { Card, Divider, Pill, Txt } from "./ui";
 import { useStore } from "../lib/store";
+import { bodyProfileAt, workoutCalories } from "../lib/calories";
 import { fmtDuration } from "../lib/stats";
 import { workoutSets, workoutVolume, type Workout } from "../types";
 
@@ -31,8 +32,14 @@ export function WorkoutCard({
   onPress?: () => void;
   onDelete?: () => void;
 }) {
-  const { exercises, settings } = useStore();
+  const { exercises, measurements, settings } = useStore();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
+  const kcal = workoutCalories(
+    w,
+    exercises,
+    bodyProfileAt(settings, measurements, w.startedAt),
+    settings,
+  );
   return (
     <Pressable onPress={onPress} disabled={!onPress}>
       <Card style={{ gap: 10 }}>
@@ -60,6 +67,7 @@ export function WorkoutCard({
             color={C.prAcc}
             bg={C.prSurf}
           />
+          {kcal > 0 ? <Pill text={`${kcal} kcal`} color={C.warnAcc} bg={C.warnSurf} /> : null}
         </View>
         <Divider />
         <View style={{ gap: 4 }}>

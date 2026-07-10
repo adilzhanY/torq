@@ -377,8 +377,11 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   stats).
 - 2026-07-10: WorkoutCard's date pill now includes the completion time —
   "Fri, Jul 10 · 9:41" (`endedAt`, falling back to `startedAt`); no schema
-  change, the field was already stored. Shows everywhere the card is used
-  (History, Home recents, exercise-info History).
+  change, the field was already stored. Also added a calories pill (warm
+  orange `warnAcc`/`warnSurf`, hidden at 0 kcal, computed on the fly via
+  `workoutCalories` with the body profile as of the workout). Both show
+  everywhere the card is used (History, Home recents, exercise-info
+  History).
 - 2026-07-10: Strong-style exercise header in the live session — the trash
   button is gone, replaced by a focus-metric pill + a ⋯ menu (both
   anchored popovers, same Modal+PopIn+statusBarTranslucent pattern as the
