@@ -13,7 +13,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { Image } from "expo-image";
-import { C, R } from "../theme";
+import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Card, Divider, Pill, PrimaryButton, SectionTitle, Txt } from "./ui";
@@ -184,7 +184,7 @@ export function ExerciseInfo({
         ))}
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 140, gap: 12 }}>
         {tab === "about" ? (
           <>
             <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>

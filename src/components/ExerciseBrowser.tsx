@@ -10,7 +10,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { BackHandler, Pressable, SectionList, View } from "react-native";
 import { Image } from "expo-image";
-import { C, R, clay, claySm } from "../theme";
+import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { PopIn, SlideUp, Squish } from "./anim";
 import { CenterDialog } from "./Dialog";
@@ -301,7 +301,7 @@ export function ExerciseBrowser({
           flexDirection: "row",
           alignItems: "center",
           paddingHorizontal: 16,
-          paddingTop: 12,
+          paddingTop: TOP_BAR_SPACE + 12,
           gap: 20,
         }}
       >

@@ -382,6 +382,16 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Floating top bar — the dock's light twin. The in-flow
+  logo/greeting/avatar row in App.tsx became an absolute pill (top 8,
+  left/right 14, height 52, `C.surface`, radius 999, clay shadow; logo
+  left, greeting centered, avatar right) so tab content scrolls under it.
+  `TOP_BAR_SPACE` (60) in theme.ts = screen top → below the bar; every tab
+  ScrollView and in-tab overlay (WorkoutSummary, ExerciseInfo,
+  ExerciseBrowser toolbar — which also covers ExercisePicker) pads
+  `TOP_BAR_SPACE + <old padding>`. Render order in Root: content → top bar
+  → BottomNav → Profile, so the bar (like the dock) stays visible over
+  in-tab overlays but Profile covers both.
 - 2026-07-10: WorkoutSummary compacted + ⋯ menu. All exercises now render
   in ONE Card (sections split by Divider, 1RM column label on the first
   section only; the old card-per-exercise ate too much space —

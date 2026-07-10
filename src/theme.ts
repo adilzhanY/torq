@@ -40,6 +40,13 @@ export const C = {
 
 export const R = { lg: 28, md: 22, sm: 16, pill: 999 } as const;
 
+/**
+ * Distance from the screen top to below the floating top bar (8 gap +
+ * 52 bar). Tab screens and in-tab overlays add their own padding on top
+ * of this; content scrolls under the bar.
+ */
+export const TOP_BAR_SPACE = 60;
+
 /** Letter + color for non-normal set types (Strong-style W/D/F badges). */
 export const SET_TYPE_META = {
   warmup: { letter: "W", color: C.warnAcc, label: "Warm up" },

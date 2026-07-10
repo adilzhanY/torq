@@ -1,7 +1,7 @@
 /** Measure tab — body measurements over time (weight, body fat, girths). */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { C, R } from "../theme";
+import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
 import { Card, NumberField, Pill, PrimaryButton, SectionTitle, Txt } from "../components/ui";
 import { ConfirmDialog } from "../components/Dialog";
@@ -35,7 +35,7 @@ export function Measure() {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">Measure</Txt>
 
       <Card style={{ gap: 10 }}>

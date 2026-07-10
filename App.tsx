@@ -14,7 +14,7 @@ import {
 import { AuthProvider } from "./src/lib/auth";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
-import { C } from "./src/theme";
+import { C, clay } from "./src/theme";
 import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
 import { Icon } from "./src/components/Icon";
@@ -43,32 +43,48 @@ function Root() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.page }}>
-      {/* Top bar: logo + greeting, profile on the right */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          gap: 8,
-          paddingHorizontal: 16,
-          paddingTop: 2,
-          paddingBottom: 4,
-        }}
-      >
-        <Logo size={26} />
-        <Txt size={16} weight="extrabold" style={{ flex: 1 }} numberOfLines={1}>
-          {name ? `Hello, ${name}.` : "Torq"}
-        </Txt>
-        <Pressable hitSlop={8} onPress={() => setProfileOpen(true)}>
-          <Icon name="UserCircle" size={26} color={C.ink} />
-        </Pressable>
-      </View>
-
       <View style={{ flex: 1 }}>
         {tab === "home" && <Home />}
         {tab === "workout" && <Workout />}
         {tab === "history" && <History />}
         {tab === "exercises" && <Exercises />}
         {tab === "measure" && <Measure />}
+      </View>
+
+      {/* Floating top bar — the dock pill's light twin: logo left, greeting
+          centered, profile right. Content scrolls under it (screens pad
+          TOP_BAR_SPACE); rendered before overlays like Profile so they
+          cover it. */}
+      <View
+        style={[
+          {
+            position: "absolute",
+            top: 8,
+            left: 14,
+            right: 14,
+            height: 52,
+            borderRadius: 999,
+            backgroundColor: C.surface,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            paddingHorizontal: 16,
+          },
+          clay(),
+        ]}
+      >
+        <Logo size={26} />
+        <Txt
+          size={15}
+          weight="extrabold"
+          style={{ flex: 1, textAlign: "center" }}
+          numberOfLines={1}
+        >
+          {name ? `Hello, ${name}.` : "Torq"}
+        </Txt>
+        <Pressable hitSlop={8} onPress={() => setProfileOpen(true)}>
+          <Icon name="UserCircle" size={26} color={C.ink} />
+        </Pressable>
       </View>
 
       <BottomNav />

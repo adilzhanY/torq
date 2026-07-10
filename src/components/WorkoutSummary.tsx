@@ -13,7 +13,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { BackHandler, Pressable, ScrollView, Share, View } from "react-native";
-import { C, R, SET_TYPE_META, clay } from "../theme";
+import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Card, Divider, Txt } from "./ui";
@@ -163,7 +163,7 @@ export function WorkoutSummary({
         backgroundColor: C.page,
       }}
     >
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable hitSlop={8} onPress={onClose}>
             <Icon name="ChevronLeft" size={24} color={C.ink} />

@@ -16,7 +16,7 @@ import {
   View,
 } from "react-native";
 import { Image } from "expo-image";
-import { C, R, SET_TYPE_META, clay, claySm } from "../theme";
+import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
@@ -506,7 +506,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 14 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 140, gap: 14 }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <View style={{ gap: 2 }}>
           <Txt size={20} weight="extrabold">{w.name}</Txt>
@@ -1111,7 +1111,7 @@ export function Workout() {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">Start Workout</Txt>
 
       <Squish

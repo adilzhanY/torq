@@ -2,7 +2,7 @@
  * full summary (sets, 1RMs, PR badges — same screen as after finishing). */
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
-import { C } from "../theme";
+import { C, TOP_BAR_SPACE } from "../theme";
 import { Card, SectionTitle, Txt } from "../components/ui";
 import { ConfirmDialog } from "../components/Dialog";
 import { WorkoutCard } from "../components/WorkoutCard";
@@ -18,7 +18,7 @@ export function History() {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
+    <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">History</Txt>
       <SectionTitle>{sorted.length} workouts</SectionTitle>
 
