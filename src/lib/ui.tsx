@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type Tab = "home" | "history" | "workout" | "exercises" | "measure";
+export type Tab = "home" | "history" | "workout" | "exercises" | "stats";
 
 interface UiValue {
   tab: Tab;

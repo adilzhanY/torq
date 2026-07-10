@@ -22,7 +22,8 @@ import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
 import { DB_BY_ID } from "../lib/exercisedb";
-import { est1RM, repMax } from "../lib/stats";
+import { est1RM, exerciseSeries, repMax } from "../lib/stats";
+import { BarChart, LineChart } from "./charts";
 import type { BodyPart, Equipment, Workout } from "../types";
 
 /** Everything the page needs to know about the exercise being shown.
@@ -37,11 +38,12 @@ export interface ExerciseRef {
   gifUrl?: string;
 }
 
-type InfoTab = "about" | "history" | "records";
+type InfoTab = "about" | "history" | "records" | "charts";
 const TABS: { key: InfoTab; label: string }[] = [
   { key: "about", label: "About" },
   { key: "history", label: "History" },
   { key: "records", label: "Records" },
+  { key: "charts", label: "Charts" },
 ];
 
 const MONTHS3 = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -101,6 +103,12 @@ export function ExerciseInfo({
     }
     return out;
   }, [workouts, libRow]);
+
+  /** Per-session series for the Charts tab. */
+  const series = useMemo(
+    () => (libRow ? exerciseSeries(libRow.id, workouts) : []),
+    [libRow, workouts],
+  );
 
   const related = useMemo(
     () =>
@@ -337,6 +345,55 @@ export function ExerciseInfo({
                 <StatRow label="Total reps" value={`${rec.totalReps} reps`} />
                 <Divider />
                 <StatRow label="Total volume" value={`${Math.round(rec.totalVol)} ${u}`} />
+              </Card>
+            </>
+          )
+        ) : null}
+
+        {tab === "charts" ? (
+          series.length === 0 ? (
+            <Card>
+              <Txt size={13} color={C.inkFaint}>
+                No data yet — charts appear after the first finished workout
+                with this exercise.
+              </Txt>
+            </Card>
+          ) : (
+            <>
+              <Card style={{ gap: 12 }}>
+                <SectionTitle>Estimated 1RM ({u})</SectionTitle>
+                <LineChart points={series.map((p) => ({ x: p.at, y: p.best1RM }))} height={130} />
+              </Card>
+              <Card style={{ gap: 12 }}>
+                <SectionTitle>Heaviest weight ({u})</SectionTitle>
+                <LineChart
+                  points={series.map((p) => ({ x: p.at, y: p.topWeight }))}
+                  height={110}
+                  color={C.prAcc}
+                />
+              </Card>
+              <Card style={{ gap: 12 }}>
+                <SectionTitle>Session volume ({u}) · last {Math.min(series.length, 10)}</SectionTitle>
+                <BarChart
+                  height={90}
+                  bars={series.slice(-10).map((p, i, arr) => {
+                    const d = new Date(p.at);
+                    return {
+                      label: `${d.getDate()}/${d.getMonth() + 1}`,
+                      value: Math.round(p.volume),
+                      highlight: i === arr.length - 1,
+                    };
+                  })}
+                />
+              </Card>
+              <Card style={{ gap: 12 }}>
+                <SectionTitle>Total reps per session</SectionTitle>
+                <LineChart
+                  points={series.map((p) => ({ x: p.at, y: p.reps }))}
+                  height={90}
+                  color={C.goodAcc}
+                  formatY={(v) => String(Math.round(v))}
+                />
               </Card>
             </>
           )

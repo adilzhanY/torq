@@ -23,7 +23,7 @@ const ITEMS: { tab: Tab; label: string; icon: string }[] = [
   { tab: "history", label: "History", icon: "History" },
   { tab: "workout", label: "Workout", icon: "Dumbbell" },
   { tab: "exercises", label: "Exercises", icon: "BicepsFlexed" },
-  { tab: "measure", label: "Measure", icon: "Ruler" },
+  { tab: "stats", label: "Stats", icon: "ChartColumn" },
 ];
 
 const IDLE_ICON = "rgba(255,255,255,0.68)";

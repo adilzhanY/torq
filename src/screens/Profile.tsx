@@ -248,7 +248,7 @@ export function Profile({
   /** Reopens the onboarding wizard to regenerate the training plan. */
   onRebuildPlan: () => void;
 }) {
-  const { workouts, settings, updateSettings } = useStore();
+  const { workouts, settings, updateSettings, seedDemoWorkouts, removeDemoWorkouts } = useStore();
   const totalVolume = workouts.reduce((s, w) => s + workoutVolume(w), 0);
 
   useEffect(() => {
@@ -341,6 +341,26 @@ export function Profile({
 
       <SectionTitle>Account & sync</SectionTitle>
       <Account />
+
+      <SectionTitle>Developer</SectionTitle>
+      <Card style={{ gap: 10 }}>
+        <PrimaryButton
+          label="Seed demo workouts (12 weeks)"
+          background={C.page2}
+          color={C.ink}
+          onPress={seedDemoWorkouts}
+        />
+        <PrimaryButton
+          label="Remove demo workouts"
+          background={C.badSurf}
+          color={C.badAcc}
+          onPress={removeDemoWorkouts}
+        />
+        <Txt size={11} color={C.inkFaint}>
+          Fake progressive PPL history for trying the charts — tagged, so
+          removal only deletes seeded workouts.
+        </Txt>
+      </Card>
     </ScrollView>
     </SlideUp>
   );

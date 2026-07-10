@@ -24,7 +24,7 @@ import { Onboarding } from "./src/screens/Onboarding";
 import { Workout } from "./src/screens/Workout";
 import { History } from "./src/screens/History";
 import { Exercises } from "./src/screens/Exercises";
-import { Measure } from "./src/screens/Measure";
+import { Stats } from "./src/screens/Stats";
 import { Profile } from "./src/screens/Profile";
 
 function Root() {
@@ -53,7 +53,7 @@ function Root() {
         {tab === "workout" && <Workout />}
         {tab === "history" && <History />}
         {tab === "exercises" && <Exercises />}
-        {tab === "measure" && <Measure />}
+        {tab === "stats" && <Stats />}
       </View>
 
       {/* Floating top bar — the dock pill's light twin: logo left, greeting

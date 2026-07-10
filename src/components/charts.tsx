@@ -1,15 +1,177 @@
 /**
- * Custom charts for the Home day dashboard (nutrition-app reference):
- *  - SegmentedBar → barcode-style progress: a row of rounded vertical bars,
- *    filled left-to-right by an animated width mask.
- *  - ArcGauge → radial segmented gauge: round-cap ticks along a 270° arc,
- *    swept in one by one by an animated counter, value/goal in the middle.
+ * Torq's shared chart kit (all react-native-svg, clay-styled):
+ *  - SegmentedBar → barcode-style progress (animated width mask).
+ *  - ArcGauge → radial segmented gauge (animated tick sweep).
+ *  - Sparkline → tiny unlabeled trend line.
+ *  - LineChart → labeled trend line: y min/max, first/last date, area fill,
+ *    lime dot on the latest point.
+ *  - BarChart → vertical bars with value-on-top and x labels (weekly stats).
+ *  - HBars → horizontal labeled bars (e.g. volume by muscle group).
  */
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, View } from "react-native";
-import Svg, { Circle, Line, Polyline } from "react-native-svg";
+import Svg, { Circle, Line, Polygon, Polyline } from "react-native-svg";
 import { C } from "../theme";
 import { Txt } from "./ui";
+
+/** "10 Jul" */
+function shortDate(ms: number): string {
+  const d = new Date(ms);
+  const m = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  return `${d.getDate()} ${m[d.getMonth()]}`;
+}
+
+/** Compact value labels: 12800 → "12.8k". */
+export function fmtShort(n: number): string {
+  if (Math.abs(n) >= 10000) return `${Math.round(n / 1000)}k`;
+  if (Math.abs(n) >= 1000) return `${Math.round(n / 100) / 10}k`;
+  return String(Math.round(n));
+}
+
+/**
+ * Labeled trend line for time series. Points must be in ascending x (ms).
+ * Renders min/max y labels, first/last date labels, a soft area fill, and
+ * a lime dot on the latest point.
+ */
+export function LineChart({
+  points,
+  height = 140,
+  color = C.ink,
+  formatY = fmtShort,
+}: {
+  points: { x: number; y: number }[];
+  height?: number;
+  color?: string;
+  formatY?: (v: number) => string;
+}) {
+  const [width, setWidth] = useState(0);
+  if (points.length === 0) return null;
+
+  const ys = points.map((p) => p.y);
+  const xs = points.map((p) => p.x);
+  const yMin = Math.min(...ys);
+  const yMax = Math.max(...ys);
+  const xMin = Math.min(...xs);
+  const xMax = Math.max(...xs);
+  const ySpan = yMax - yMin || 1;
+  const xSpan = xMax - xMin || 1;
+  const padX = 6;
+  const padTop = 8;
+  const padBottom = 8;
+
+  const chartH = height - padTop - padBottom;
+  const px = (x: number) => padX + ((x - xMin) / xSpan) * (Math.max(1, width) - 2 * padX);
+  const py = (y: number) => padTop + (1 - (y - yMin) / ySpan) * chartH;
+  const pts = points.map((p) => ({ x: px(p.x), y: py(p.y) }));
+  const line = pts.map((p) => `${p.x},${p.y}`).join(" ");
+  const area = `${padX},${height - padBottom} ${line} ${pts[pts.length - 1].x},${height - padBottom}`;
+  const last = pts[pts.length - 1];
+
+  return (
+    <View style={{ gap: 4 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Txt size={10} weight="bold" color={C.inkFaint}>{formatY(yMax)}</Txt>
+        <Txt size={10} weight="bold" color={C.inkFaint}>
+          {points.length === 1 ? "" : `min ${formatY(yMin)}`}
+        </Txt>
+      </View>
+      <View style={{ height }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+        {width > 0 ? (
+          <Svg width={width} height={height}>
+            {points.length > 1 ? (
+              <>
+                <Polygon points={area} fill={color} opacity={0.08} />
+                <Polyline
+                  points={line}
+                  fill="none"
+                  stroke={color}
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </>
+            ) : null}
+            <Circle cx={last.x} cy={last.y} r={4.5} fill={C.accent} stroke={C.ink} strokeWidth={1.5} />
+          </Svg>
+        ) : null}
+      </View>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Txt size={10} weight="bold" color={C.inkFaint}>{shortDate(xMin)}</Txt>
+        <Txt size={10} weight="bold" color={C.inkFaint}>{shortDate(xMax)}</Txt>
+      </View>
+    </View>
+  );
+}
+
+/** Vertical bars with the value on top and a label under each bar. */
+export function BarChart({
+  bars,
+  height = 120,
+  color = C.ink,
+  formatValue = fmtShort,
+}: {
+  bars: { label: string; value: number; highlight?: boolean }[];
+  height?: number;
+  color?: string;
+  formatValue?: (v: number) => string;
+}) {
+  const max = Math.max(...bars.map((b) => b.value), 1);
+  return (
+    <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 6 }}>
+      {bars.map((b, i) => (
+        <View key={i} style={{ flex: 1, alignItems: "center", gap: 3 }}>
+          <Txt size={9} weight="bold" color={C.inkFaint}>
+            {b.value > 0 ? formatValue(b.value) : ""}
+          </Txt>
+          <View
+            style={{
+              alignSelf: "stretch",
+              height: Math.max(3, (b.value / max) * height),
+              borderRadius: 5,
+              backgroundColor: b.highlight ? C.accent : b.value > 0 ? color : C.page2,
+            }}
+          />
+          <Txt size={9} weight="bold" color={C.inkFaint} numberOfLines={1}>
+            {b.label}
+          </Txt>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Horizontal labeled bars (largest first looks best — caller sorts). */
+export function HBars({
+  rows,
+  formatValue = fmtShort,
+}: {
+  rows: { label: string; value: number; color?: string }[];
+  formatValue?: (v: number) => string;
+}) {
+  const max = Math.max(...rows.map((r) => r.value), 1);
+  return (
+    <View style={{ gap: 8 }}>
+      {rows.map((r, i) => (
+        <View key={i} style={{ gap: 3 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Txt size={11} weight="bold" color={C.inkSoft}>{r.label}</Txt>
+            <Txt size={11} weight="extrabold">{formatValue(r.value)}</Txt>
+          </View>
+          <View style={{ height: 10, borderRadius: 5, backgroundColor: C.page2, overflow: "hidden" }}>
+            <View
+              style={{
+                width: `${Math.max(2, (r.value / max) * 100)}%`,
+                height: "100%",
+                borderRadius: 5,
+                backgroundColor: r.color ?? C.ink,
+              }}
+            />
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 /** Progress 0..1, clamped. */
 function pct(value: number, goal: number): number {

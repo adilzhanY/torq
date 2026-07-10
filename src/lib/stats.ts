@@ -79,6 +79,38 @@ export function lastSetsFor(exerciseId: string, workouts: Workout[]): WorkoutSet
   return sets.length ? sets : null;
 }
 
+/** One session's numbers for a single exercise (charts). */
+export interface ExercisePoint {
+  at: number;
+  best1RM: number;
+  topWeight: number;
+  volume: number;
+  reps: number;
+}
+
+/**
+ * Per-session series for an exercise, ascending by date — working
+ * (non-warmup, loaded) sets only. Feeds the ExerciseInfo Charts tab.
+ */
+export function exerciseSeries(exerciseId: string, workouts: Workout[]): ExercisePoint[] {
+  const points: ExercisePoint[] = [];
+  for (const w of workouts) {
+    if (!w.endedAt) continue;
+    const entry = w.entries.find((e) => e.exerciseId === exerciseId);
+    if (!entry) continue;
+    const sets = entry.sets.filter((s) => s.type !== "warmup" && s.weight > 0 && s.reps > 0);
+    if (!sets.length) continue;
+    points.push({
+      at: w.startedAt,
+      best1RM: Math.max(...sets.map((s) => est1RM(s.weight, s.reps))),
+      topWeight: Math.max(...sets.map((s) => s.weight)),
+      volume: sets.reduce((t, s) => t + s.weight * s.reps, 0),
+      reps: sets.reduce((t, s) => t + s.reps, 0),
+    });
+  }
+  return points.sort((a, b) => a.at - b.at);
+}
+
 export interface SetPRs {
   rm: boolean;
   weight: boolean;

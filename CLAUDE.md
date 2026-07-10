@@ -83,9 +83,13 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
-Five tabs: Home (default) · History · Workout · Exercises · Measure. Profile
+Five tabs: Home (default) · History · Workout · Exercises · Stats. Profile
 is NOT a tab — it opens as a full-screen overlay from the avatar button on
-the top bar's right. Home is the coach's "Today" screen: big date header
+the top bar's right. Stats (replaced Measure; tab id "stats", ChartColumn
+icon) is the analytics home: lifetime overview cards, weekly volume +
+workout-count BarCharts (8 weeks, current week lime), muscle-split HBars
+(30-day working-set volume by body part), body-weight LineChart, and the
+old Measure logging (kind chips + history) at the bottom. Home is the coach's "Today" screen: big date header
 ("Today"/"Yesterday"/weekday) with a calendar button (custom
 CalendarDialog), a scrubbable DateRuler, then the TodayHero — today's
 planned session with one-tap Start (states: live session lime / plan day
@@ -394,6 +398,24 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Stats tab + chart kit + exercise Charts (roadmap task 5,
+  Adilzhan's spec). charts.tsx grew into the shared kit: `LineChart`
+  (min/max + date labels, area fill, lime latest-dot), `BarChart` (value
+  on top, label under, lime highlight), `HBars` (horizontal labeled bars),
+  `fmtShort` (12800→"12.8k"), plus existing SegmentedBar/ArcGauge/
+  Sparkline. Measure tab → Stats (see Screens; Measure.tsx deleted, tab id
+  "stats"). stats.ts gained `exerciseSeries` (per-session best-1RM / top
+  weight / volume / reps, working sets only). ExerciseInfo gained a 4th
+  "Charts" tab: est-1RM line, heaviest-weight line (purple), last-10
+  session-volume bars, total-reps line (teal). Store gained dev actions
+  `seedDemoWorkouts` (12 weeks of progressive PPL, verified catalog dbIds,
+  plateau at week 5 + deload at week 8, tagged notes:"demo-seed") and
+  `removeDemoWorkouts` (deletes only the tag) behind a Profile "Developer"
+  card. Verified on the torq2 emulator: seeded 36 workouts, Stats page +
+  bench Charts all render (progression + deload dip visible). GOTCHA: the
+  Expo Go "Tools button" floating gear overlays the app (it sat on the
+  profile avatar) — toggle it off in the Expo dev menu when driving the
+  UI by adb taps.
 - 2026-07-10: Routine ⋯ menus + editor (Adilzhan's spec, Strong reference).
   Grid cards' trash → Ellipsis opening a CenterDialog menu (MenuRow
   extracted from WorkoutSummary into Dialog.tsx): my routines get

@@ -69,6 +69,11 @@ interface StoreValue {
 
   updateSettings: (patch: Partial<Settings>) => void;
   syncNow: () => Promise<void>;
+
+  /** Dev: 12 weeks of realistic progressive PPL workouts (tagged
+   *  notes:"demo-seed") so charts have something to show. */
+  seedDemoWorkouts: () => void;
+  removeDemoWorkouts: () => void;
 }
 
 const Ctx = createContext<StoreValue | null>(null);
@@ -349,6 +354,100 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     deleteWorkout: (id) => {
       dbRef.current.workouts = dbRef.current.workouts.filter((w) => w.id !== id);
       bury("workouts", id);
+      commit();
+    },
+
+    seedDemoWorkouts: () => {
+      // Weekly progression factor: steady gains, a plateau, a deload dip,
+      // then recovery past the old top — makes honest-looking charts.
+      const PROG = [0, 1, 2, 3, 4, 4, 5, 6, 4, 6, 7, 8];
+      const DEMO: {
+        name: string;
+        weekday: number; // 1 = Monday …
+        items: { dbId: string; base: number; sets: number; reps: number; compound: boolean }[];
+      }[] = [
+        {
+          name: "Push Day",
+          weekday: 1,
+          items: [
+            { dbId: "EIeI8Vf", base: 50, sets: 4, reps: 8, compound: true },  // bench press
+            { dbId: "3TZduzM", base: 35, sets: 3, reps: 10, compound: true }, // incline bench
+            { dbId: "znQUdHY", base: 27.5, sets: 3, reps: 10, compound: true }, // shoulder press
+            { dbId: "DsgkuIt", base: 7.5, sets: 3, reps: 12, compound: false }, // lateral raise
+            { dbId: "3ZflifB", base: 30, sets: 3, reps: 12, compound: false }, // pushdown
+          ],
+        },
+        {
+          name: "Pull Day",
+          weekday: 3,
+          items: [
+            { dbId: "ila4NZS", base: 80, sets: 4, reps: 6, compound: true },  // deadlift
+            { dbId: "RVwzP10", base: 45, sets: 4, reps: 10, compound: true }, // pulldown
+            { dbId: "fUBheHs", base: 40, sets: 3, reps: 10, compound: true }, // seated row
+            { dbId: "25GPyDY", base: 20, sets: 3, reps: 12, compound: false }, // barbell curl
+          ],
+        },
+        {
+          name: "Leg Day",
+          weekday: 5,
+          items: [
+            { dbId: "qXTaZnJ", base: 70, sets: 4, reps: 8, compound: true },  // squat
+            { dbId: "wQ2c4XD", base: 60, sets: 3, reps: 10, compound: true }, // RDL
+            { dbId: "my33uHU", base: 35, sets: 3, reps: 12, compound: false }, // leg extension
+            { dbId: "17lJ1kr", base: 30, sets: 3, reps: 12, compound: false }, // leg curl
+            { dbId: "8ozhUIZ", base: 55, sets: 4, reps: 15, compound: false }, // calf raise
+          ],
+        },
+      ];
+      const t = new Date();
+      const monday = new Date(t.getFullYear(), t.getMonth(), t.getDate() - ((t.getDay() + 6) % 7));
+      for (let week = 0; week < PROG.length; week++) {
+        for (const day of DEMO) {
+          const startedAt = new Date(
+            monday.getFullYear(),
+            monday.getMonth(),
+            monday.getDate() - 7 * (PROG.length - 1 - week) + (day.weekday - 1),
+            18,
+            0,
+          ).getTime();
+          if (startedAt > Date.now()) continue;
+          const entries: WorkoutEntry[] = [];
+          for (const item of day.items) {
+            const ex = ensureCatalog(item.dbId);
+            if (!ex) continue;
+            const weight =
+              item.base + 2.5 * (item.compound ? PROG[week] : Math.floor(PROG[week] / 2));
+            entries.push({
+              exerciseId: ex.id,
+              sets: Array.from({ length: item.sets }, (_, si) => ({
+                type: "normal" as const,
+                weight,
+                // The odd grinder: last set drops a rep some weeks.
+                reps: item.reps - (si === item.sets - 1 && (week + si) % 4 === 3 ? 1 : 0),
+                done: true,
+              })),
+            });
+          }
+          dbRef.current.workouts.push(
+            stamp({
+              id: uid(),
+              name: day.name,
+              startedAt,
+              endedAt: startedAt + (50 + ((week * 7 + day.weekday) % 15)) * 60000,
+              entries,
+              notes: "demo-seed",
+              updatedAt: 0,
+            }),
+          );
+        }
+      }
+      commit();
+    },
+    removeDemoWorkouts: () => {
+      for (const w of dbRef.current.workouts) {
+        if (w.notes === "demo-seed") bury("workouts", w.id);
+      }
+      dbRef.current.workouts = dbRef.current.workouts.filter((w) => w.notes !== "demo-seed");
       commit();
     },
 
