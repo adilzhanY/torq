@@ -398,6 +398,28 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Charts upgraded to react-native-gifted-charts (Adilzhan
+  judged the hand-rolled SVG charts "cheap"; reference: iOS strength-app
+  card). New `src/components/ProCharts.tsx`: `TrendLine` (curved area
+  line, grid + vertical rules, y-axis floored near the data via
+  yAxisOffset, sparse date labels, HOLD-to-inspect tooltip — dark pill
+  with "Mon, 1 Jun · 79 kg" in lime, pointerConfig with
+  activatePointersOnLongPress so scrolling isn't hijacked — and an
+  optional reference line; GOTCHA: referenceLine1Position takes the RAW
+  value, gifted subtracts yAxisOffset itself — pre-subtracting made the
+  line invisible), `ProBars` (rounded bars, top value labels, lime
+  highlight, maxValue pinned ~1.2× data max — the auto axis leaves short
+  bars swimming), `RangePills` (14D/1M/3M/6M/12M/All), `MetricPills`
+  (outlined chips), `MinMaxTiles`, `MuscleBreakdown` (single stacked bar
+  in a monochrome ink ramp + legend dots with %, top-4 + Other).
+  ExerciseInfo Charts tab redesigned to the reference: big current value +
+  week-over-week trend arrow/line, range + metric selectors (1RM / Top
+  Weight / Volume / Reps), TrendLine with an all-time-PR reference line,
+  Min/Max tiles. Stats tab now uses ProBars / MuscleBreakdown / TrendLine.
+  The old hand-rolled LineChart/BarChart/HBars were deleted from charts.tsx
+  (SegmentedBar/ArcGauge/Sparkline/fmtShort remain). Deps added:
+  react-native-gifted-charts + expo-linear-gradient. Verified on the
+  emulator incl. the live tooltip.
 - 2026-07-10: Stats tab + chart kit + exercise Charts (roadmap task 5,
   Adilzhan's spec). charts.tsx grew into the shared kit: `LineChart`
   (min/max + date labels, area fill, lime latest-dot), `BarChart` (value

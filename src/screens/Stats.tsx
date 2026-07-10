@@ -13,7 +13,8 @@ import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
 import { Card, NumberField, Pill, PrimaryButton, SectionTitle, Txt } from "../components/ui";
-import { BarChart, HBars, LineChart, fmtShort } from "../components/charts";
+import { fmtShort } from "../components/charts";
+import { MuscleBreakdown, ProBars, TrendLine } from "../components/ProCharts";
 import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
 import { workoutSets, workoutVolume, type BodyPart, type Measurement } from "../types";
@@ -34,15 +35,6 @@ function weekStartOf(ms: number): number {
   const d = new Date(ms);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)).getTime();
 }
-
-const MUSCLE_COLORS: Partial<Record<BodyPart, string>> = {
-  chest: C.chart1,
-  back: C.chart2,
-  legs: C.chart4,
-  shoulders: C.chart3,
-  arms: C.gold,
-  core: C.goodAcc,
-};
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -102,13 +94,20 @@ export function Stats() {
       if (vol > 0) split.set(part, (split.get(part) ?? 0) + vol);
     }
   }
-  const splitRows = [...split.entries()]
+  const splitAll = [...split.entries()]
     .sort((a, b) => b[1] - a[1])
     .map(([part, vol]) => ({
       label: part[0].toUpperCase() + part.slice(1),
       value: Math.round(vol),
-      color: MUSCLE_COLORS[part] ?? C.inkSoft,
     }));
+  // Top 4 + everything else folded into "Other" (one stacked bar reads best).
+  const splitRows =
+    splitAll.length > 5
+      ? [
+          ...splitAll.slice(0, 4),
+          { label: "Other", value: splitAll.slice(4).reduce((s, r) => s + r.value, 0) },
+        ]
+      : splitAll;
 
   // ----- Body weight trend --------------------------------------------------
   const weightPoints = measurements
@@ -137,13 +136,13 @@ export function Stats() {
 
       <Card style={{ gap: 12 }}>
         <SectionTitle>Volume · weekly ({settings.unit})</SectionTitle>
-        <BarChart bars={weeks.map((w) => ({ label: w.label, value: w.volume, highlight: w.highlight }))} />
+        <ProBars bars={weeks.map((w) => ({ label: w.label, value: w.volume, highlight: w.highlight }))} />
       </Card>
 
       <Card style={{ gap: 12 }}>
         <SectionTitle>Workouts · weekly</SectionTitle>
-        <BarChart
-          height={70}
+        <ProBars
+          height={80}
           bars={weeks.map((w) => ({ label: w.label, value: w.count, highlight: w.highlight }))}
           formatValue={(v) => String(v)}
         />
@@ -151,15 +150,22 @@ export function Stats() {
 
       {splitRows.length > 0 ? (
         <Card style={{ gap: 12 }}>
-          <SectionTitle>Muscle split · last 30 days ({settings.unit})</SectionTitle>
-          <HBars rows={splitRows} />
+          <SectionTitle>Muscle breakdown</SectionTitle>
+          <MuscleBreakdown rows={splitRows} caption={`Working-set volume · last 30 days (${settings.unit})`} />
         </Card>
       ) : null}
 
       {weightPoints.length > 0 ? (
         <Card style={{ gap: 12 }}>
-          <SectionTitle>Body weight</SectionTitle>
-          <LineChart points={weightPoints} height={110} formatY={(v) => `${Math.round(v * 10) / 10}`} />
+          <SectionTitle>Body weight ({settings.unit})</SectionTitle>
+          <TrendLine
+            points={weightPoints}
+            unit={settings.unit}
+            color={C.goodAcc}
+            height={140}
+            formatValue={(v) => `${Math.round(v * 10) / 10}`}
+          />
+          <Txt size={10} color={C.inkFaint}>Hold a point to inspect it.</Txt>
         </Card>
       ) : null}
 

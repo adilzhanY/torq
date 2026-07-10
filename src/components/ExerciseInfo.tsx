@@ -23,7 +23,15 @@ import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
 import { DB_BY_ID } from "../lib/exercisedb";
 import { est1RM, exerciseSeries, repMax } from "../lib/stats";
-import { BarChart, LineChart } from "./charts";
+import { fmtShort } from "./charts";
+import {
+  MetricPills,
+  MinMaxTiles,
+  RangePills,
+  RANGE_DAYS,
+  TrendLine,
+  type RangeKey,
+} from "./ProCharts";
 import type { BodyPart, Equipment, Workout } from "../types";
 
 /** Everything the page needs to know about the exercise being shown.
@@ -73,6 +81,9 @@ export function ExerciseInfo({
   /** A history workout opened as a full summary (exercise highlighted). */
   const [viewing, setViewing] = useState<Workout | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // Charts tab: time range + plotted metric.
+  const [range, setRange] = useState<RangeKey>("3M");
+  const [metric, setMetric] = useState<"rm" | "weight" | "volume" | "reps">("rm");
 
   // Re-resolve against the store so importing flips the About actions live.
   const libRow = exercises.find((e) =>
@@ -359,43 +370,83 @@ export function ExerciseInfo({
               </Txt>
             </Card>
           ) : (
-            <>
-              <Card style={{ gap: 12 }}>
-                <SectionTitle>Estimated 1RM ({u})</SectionTitle>
-                <LineChart points={series.map((p) => ({ x: p.at, y: p.best1RM }))} height={130} />
-              </Card>
-              <Card style={{ gap: 12 }}>
-                <SectionTitle>Heaviest weight ({u})</SectionTitle>
-                <LineChart
-                  points={series.map((p) => ({ x: p.at, y: p.topWeight }))}
-                  height={110}
-                  color={C.prAcc}
-                />
-              </Card>
-              <Card style={{ gap: 12 }}>
-                <SectionTitle>Session volume ({u}) · last {Math.min(series.length, 10)}</SectionTitle>
-                <BarChart
-                  height={90}
-                  bars={series.slice(-10).map((p, i, arr) => {
-                    const d = new Date(p.at);
-                    return {
-                      label: `${d.getDate()}/${d.getMonth() + 1}`,
-                      value: Math.round(p.volume),
-                      highlight: i === arr.length - 1,
-                    };
-                  })}
-                />
-              </Card>
-              <Card style={{ gap: 12 }}>
-                <SectionTitle>Total reps per session</SectionTitle>
-                <LineChart
-                  points={series.map((p) => ({ x: p.at, y: p.reps }))}
-                  height={90}
-                  color={C.goodAcc}
-                  formatY={(v) => String(Math.round(v))}
-                />
-              </Card>
-            </>
+            (() => {
+              const METRICS = {
+                rm: { label: "1 Rep Max", color: C.ink, unit: u, get: (p: (typeof series)[number]) => p.best1RM },
+                weight: { label: "Top Weight", color: C.prAcc, unit: u, get: (p: (typeof series)[number]) => p.topWeight },
+                volume: { label: "Volume", color: C.warnAcc, unit: u, get: (p: (typeof series)[number]) => p.volume },
+                reps: { label: "Reps", color: C.goodAcc, unit: "reps", get: (p: (typeof series)[number]) => p.reps },
+              } as const;
+              const m = METRICS[metric];
+              const cutoff = Date.now() - RANGE_DAYS[range] * 86400000;
+              const shown = series.filter((p) => range === "All" || p.at >= cutoff);
+              const values = shown.map(m.get);
+              const latest = shown.length ? m.get(shown[shown.length - 1]) : 0;
+              const allTimeBest = Math.max(...series.map(m.get));
+              // Week-over-week: latest vs the last session ≥7 days older.
+              const prevWeek = [...series]
+                .reverse()
+                .find((p) => p.at <= series[series.length - 1].at - 7 * 86400000);
+              const delta = prevWeek ? m.get(series[series.length - 1]) - m.get(prevWeek) : null;
+
+              return (
+                <>
+                  <Card style={{ gap: 14 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                      <Txt size={32} weight="extrabold">
+                        {fmtShort(latest)} {m.unit}
+                      </Txt>
+                      {delta != null && delta !== 0 ? (
+                        <Icon
+                          name={delta > 0 ? "TrendingUp" : "TrendingDown"}
+                          size={22}
+                          color={delta > 0 ? C.goodAcc : C.badAcc}
+                        />
+                      ) : null}
+                    </View>
+                    <Txt size={12} color={C.inkFaint}>
+                      {delta == null
+                        ? "First sessions — nothing to compare yet."
+                        : delta === 0
+                          ? "Level with last week."
+                          : `Compared to last week: ${delta > 0 ? "up" : "down"} ${fmtShort(Math.abs(delta))} ${m.unit}.`}
+                    </Txt>
+
+                    <RangePills value={range} onChange={setRange} />
+                    <MetricPills
+                      options={[
+                        { key: "rm" as const, label: "1 Rep Max" },
+                        { key: "weight" as const, label: "Top Weight" },
+                        { key: "volume" as const, label: "Volume" },
+                        { key: "reps" as const, label: "Reps" },
+                      ]}
+                      value={metric}
+                      onChange={setMetric}
+                    />
+
+                    {shown.length === 0 ? (
+                      <Txt size={13} color={C.inkFaint} style={{ paddingVertical: 24 }}>
+                        No sessions in this range — pick a longer one.
+                      </Txt>
+                    ) : (
+                      <TrendLine
+                        points={shown.map((p) => ({ x: p.at, y: m.get(p) }))}
+                        unit={m.unit}
+                        color={m.color}
+                        goal={{ value: allTimeBest, label: `PR ${fmtShort(allTimeBest)}` }}
+                      />
+                    )}
+                    <Txt size={10} color={C.inkFaint}>
+                      Hold a point to inspect it. The green line marks your all-time best.
+                    </Txt>
+                  </Card>
+
+                  {shown.length > 0 ? (
+                    <MinMaxTiles min={Math.min(...values)} max={Math.max(...values)} unit={m.unit} />
+                  ) : null}
+                </>
+              );
+            })()
           )
         ) : null}
       </ScrollView>
