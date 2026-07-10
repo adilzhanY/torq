@@ -10,7 +10,7 @@
  */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { C, R, TOP_BAR_SPACE } from "../theme";
+import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { Card, NumberField, Pill, PrimaryButton, SectionTitle, Txt } from "../components/ui";
 import { fmtShort } from "../components/charts";
@@ -18,6 +18,11 @@ import { MuscleBreakdown, ProBars, TrendLine } from "../components/ProCharts";
 import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
 import { workoutSets, workoutVolume, type BodyPart, type Measurement } from "../types";
+
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 const KINDS: { kind: string; unit: (u: string) => string }[] = [
   { kind: "Body weight", unit: (u) => u },
@@ -52,38 +57,79 @@ export function Stats() {
   const [value, setValue] = useState("");
   const [confirming, setConfirming] = useState<Measurement | null>(null);
 
+  // Month Switcher state
+  const now = new Date();
+  const [currentMonth, setCurrentMonth] = useState(now.getMonth());
+  const [currentYear, setCurrentYear] = useState(now.getFullYear());
+
+  const prevMonth = () => {
+    if (currentMonth === 0) {
+      setCurrentMonth(11);
+      setCurrentYear((y) => y - 1);
+    } else {
+      setCurrentMonth((m) => m - 1);
+    }
+  };
+
+  const nextMonth = () => {
+    const today = new Date();
+    if (currentYear < today.getFullYear() || (currentYear === today.getFullYear() && currentMonth < today.getMonth())) {
+      if (currentMonth === 11) {
+        setCurrentMonth(0);
+        setCurrentYear((y) => y + 1);
+      } else {
+        setCurrentMonth((m) => m + 1);
+      }
+    }
+  };
+
+  const today = new Date();
+  const isCurrentMonth = currentYear === today.getFullYear() && currentMonth === today.getMonth();
+
+  const monthStart = new Date(currentYear, currentMonth, 1).getTime();
+  const monthEnd = new Date(currentYear, currentMonth + 1, 1).getTime();
+
   const unit = kind.unit(settings.unit);
-  const sortedM = [...measurements].sort((a, b) => b.at - a.at);
+  const monthMeasurements = measurements.filter((m) => m.at >= monthStart && m.at < monthEnd);
+  const sortedM = [...monthMeasurements].sort((a, b) => b.at - a.at);
+  
   const finished = workouts.filter((w) => w.endedAt);
+  const monthWorkouts = finished.filter((w) => w.startedAt >= monthStart && w.startedAt < monthEnd);
 
-  // ----- Lifetime overview --------------------------------------------------
-  const totalVolume = finished.reduce((s, w) => s + workoutVolume(w), 0);
-  const totalSets = finished.reduce((s, w) => s + workoutSets(w), 0);
+  // ----- Overview stats (filtered by selected month) ------------------------
+  const totalVolume = monthWorkouts.reduce((s, w) => s + workoutVolume(w), 0);
+  const totalSets = monthWorkouts.reduce((s, w) => s + workoutSets(w), 0);
   const totalHours =
-    finished.reduce((s, w) => s + ((w.endedAt ?? w.startedAt) - w.startedAt), 0) / 3600000;
+    monthWorkouts.reduce((s, w) => s + ((w.endedAt ?? w.startedAt) - w.startedAt), 0) / 3600000;
 
-  // ----- Weekly buckets (last 8 weeks incl. current) ------------------------
-  const thisWeek = weekStartOf(Date.now());
-  const weeks = Array.from({ length: 8 }, (_, i) => {
-    const d = new Date(thisWeek);
-    const start = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7 * (7 - i)).getTime();
-    const end = new Date(d.getFullYear(), d.getMonth(), d.getDate() - 7 * (6 - i)).getTime();
+  // ----- Weekly buckets (weeks starting or falling in the selected month) ----
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const firstMonday = weekStartOf(firstDay.getTime());
+  const lastDay = new Date(currentYear, currentMonth + 1, 0); // last day of the month
+  const endLimit = lastDay.getTime();
+
+  let currentWeekStart = firstMonday;
+  const weeks = [];
+  const thisWeekStart = weekStartOf(Date.now());
+  
+  while (currentWeekStart <= endLimit) {
+    const start = currentWeekStart;
+    const end = start + 7 * DAY_MS;
     const inWeek = finished.filter((w) => w.startedAt >= start && w.startedAt < end);
     const s = new Date(start);
-    return {
+    weeks.push({
       label: `${s.getDate()}/${s.getMonth() + 1}`,
       volume: Math.round(inWeek.reduce((t, w) => t + workoutVolume(w), 0)),
       count: inWeek.length,
-      highlight: start === thisWeek,
-    };
-  });
+      highlight: start === thisWeekStart,
+    });
+    currentWeekStart += 7 * DAY_MS;
+  }
 
-  // ----- Muscle split (last 30 days, working-set volume by body part) -------
+  // ----- Muscle split (working-set volume by body part, selected month) -------
   const bodyPartOf = new Map(exercises.map((e) => [e.id, e.bodyPart]));
-  const splitSince = Date.now() - 30 * DAY_MS;
   const split = new Map<BodyPart, number>();
-  for (const w of finished) {
-    if (w.startedAt < splitSince) continue;
+  for (const w of monthWorkouts) {
     for (const e of w.entries) {
       const part = bodyPartOf.get(e.exerciseId);
       if (!part) continue;
@@ -109,9 +155,9 @@ export function Stats() {
         ]
       : splitAll;
 
-  // ----- Body weight trend --------------------------------------------------
+  // ----- Body weight trend (selected month) ---------------------------------
   const weightPoints = measurements
-    .filter((m) => m.kind === "Body weight")
+    .filter((m) => m.kind === "Body weight" && m.at >= monthStart && m.at < monthEnd)
     .sort((a, b) => a.at - b.at)
     .map((m) => ({ x: m.at, y: m.value }));
 
@@ -127,8 +173,38 @@ export function Stats() {
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
       <Txt size={22} weight="extrabold">Stats</Txt>
 
+      {/* Month Switcher */}
+      <View
+        style={[
+          {
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: C.surface,
+            borderRadius: R.md,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+          },
+          claySm(),
+        ]}
+      >
+        <Pressable hitSlop={12} onPress={prevMonth}>
+          <Icon name="ChevronLeft" size={22} color={C.ink} />
+        </Pressable>
+        <Txt size={16} weight="extrabold" color={C.ink}>
+          {MONTHS[currentMonth]} {currentYear}
+        </Txt>
+        <Pressable hitSlop={12} onPress={nextMonth} disabled={isCurrentMonth} style={{ opacity: isCurrentMonth ? 0.3 : 1 }}>
+          <Icon
+            name="ChevronRight"
+            size={22}
+            color={isCurrentMonth ? C.inkFaint : C.ink}
+          />
+        </Pressable>
+      </View>
+
       <View style={{ flexDirection: "row", gap: 8 }}>
-        <Stat label="WORKOUTS" value={String(finished.length)} />
+        <Stat label="WORKOUTS" value={String(monthWorkouts.length)} />
         <Stat label={`VOLUME (${settings.unit.toUpperCase()})`} value={fmtShort(totalVolume)} />
         <Stat label="SETS" value={String(totalSets)} />
         <Stat label="HOURS" value={fmtShort(Math.round(totalHours))} />
@@ -151,7 +227,7 @@ export function Stats() {
       {splitRows.length > 0 ? (
         <Card style={{ gap: 12 }}>
           <SectionTitle>Muscle breakdown</SectionTitle>
-          <MuscleBreakdown rows={splitRows} caption={`Working-set volume · last 30 days (${settings.unit})`} />
+          <MuscleBreakdown rows={splitRows} caption={`Working-set volume · ${MONTHS[currentMonth]} ${currentYear} (${settings.unit})`} />
         </Card>
       ) : null}
 

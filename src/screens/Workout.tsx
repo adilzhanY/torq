@@ -111,7 +111,9 @@ function SetNumInput({
       compact
       center
       autoFocus={done && editing}
-      selectTextOnFocus={done}
+      // Prefilled values (suggestions, replays) select on tap so typing
+      // replaces them instead of appending digits.
+      selectTextOnFocus
       onBlur={() => setEditing(false)}
     />
   );
@@ -624,7 +626,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   marginHorizontal: -16,
                   paddingHorizontal: 16,
                   paddingVertical: 3,
-                  backgroundColor: set.done ? "rgba(160,210,20,0.42)" : "transparent",
+                  backgroundColor: set.done ? "rgba(160,210,20,0.16)" : "transparent",
                 }}
               >
                 <Pressable
@@ -711,19 +713,23 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   <Icon name="Check" size={16} color={set.done ? C.accentInk : C.inkFaint} />
                 </Squish>
               </View>
-              <RestDivider
-                seconds={restFor(set)}
-                remaining={
-                  rest?.key === restKey
-                    ? Math.ceil((rest.paused ? rest.pausedMs : rest.endsAt - now) / 1000)
-                    : undefined
-                }
-                endsAt={rest?.key === restKey ? rest.endsAt : undefined}
-                paused={rest?.key === restKey ? rest.paused : false}
-                onPressBar={() => setPad((p) => !p)}
-                onChangeSeconds={(sec) => patchSet(ei, si, { restSec: sec })}
-                editNonce={editReq?.key === restKey ? editReq.n : 0}
-              />
+              {/* The rest between two already-done sets is history — hide its
+                  divider (unless its countdown is still running). */}
+              {set.done && entry.sets[si + 1]?.done && rest?.key !== restKey ? null : (
+                <RestDivider
+                  seconds={restFor(set)}
+                  remaining={
+                    rest?.key === restKey
+                      ? Math.ceil((rest.paused ? rest.pausedMs : rest.endsAt - now) / 1000)
+                      : undefined
+                  }
+                  endsAt={rest?.key === restKey ? rest.endsAt : undefined}
+                  paused={rest?.key === restKey ? rest.paused : false}
+                  onPressBar={() => setPad((p) => !p)}
+                  onChangeSeconds={(sec) => patchSet(ei, si, { restSec: sec })}
+                  editNonce={editReq?.key === restKey ? editReq.n : 0}
+                />
+              )}
             </Wrap>
             );
           })}

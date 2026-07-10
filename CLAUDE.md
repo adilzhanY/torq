@@ -600,4 +600,16 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   on the emulator end to end.
 - 2026-07-10: Fixed the order/sort menu positioning on the Exercises page ([ExerciseBrowser.tsx](file:///home/wopler/dev/torq/src/components/ExerciseBrowser.tsx)) by shifting its absolute `top` coordinate by `TOP_BAR_SPACE` (setting it to `TOP_BAR_SPACE + 42` instead of hardcoded `42`). This positions the dropdown menu correctly under the Order button toolbar icon and prevents it from overlapping with/rendering under the floating top bar.
 - 2026-07-10: Customized weight progression steps in the suggestion engine ([suggest.ts](file:///home/wopler/dev/torq/src/lib/suggest.ts)) based on equipment type. Added a dynamic `getWeightStep` helper that returns micro-loading steps (1 kg / 2 lb) for dumbbells, cables, kettlebells, and bands, while maintaining default steps (2.5 kg / 5 lb) for barbell/machine compound exercises. Integrated in `startWorkout` ([store.tsx](file:///home/wopler/dev/torq/src/lib/store.tsx)).
+- 2026-07-11: Live-session done-set polish (Adilzhan): the RestDivider
+  between two DONE sets is hidden (rest already happened; it stays while
+  its countdown still runs, and at the done→open boundary), and the
+  done-row tint lightened rgba(160,210,20,0.42) → 0.16 — the old wash
+  read too heavy. Verified on the emulator.
+- 2026-07-11: Live-session KG/REPS inputs select their content on every
+  tap (`SetNumInput` in Workout.tsx now passes `selectTextOnFocus`
+  unconditionally, not just for done-set re-edits) — prefilled values
+  (suggestions, replays, plan reps) get replaced by typing instead of
+  appended to. Verified on the emulator (tap → full-value selection).
+- 2026-07-11: Implemented a month switcher on the Stats page ([Stats.tsx](file:///home/wopler/dev/torq/src/screens/Stats.tsx)). Users can click left/right arrows to switch months, with the right arrow disabled for the future (relative to the current real month). Overview cards (workouts, volume, sets, hours), weekly charts (custom Monday-start weeks that fall in the month), body weight trendline, and logged measurements list are all scoped/filtered to the selected month.
+
 
