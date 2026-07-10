@@ -1,5 +1,7 @@
 /** Icon wrapper over lucide-react-native, name-mapped like grit's Icon. */
 import {
+  Archive,
+  ArchiveRestore,
   ArrowUpDown,
   BicepsFlexed,
   CalendarDays,
@@ -10,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Copy,
   Diff,
   Dumbbell,
   Ellipsis,
@@ -50,7 +53,7 @@ import {
 import { C } from "../theme";
 
 const MAP: Record<string, LucideIcon> = {
-  ArrowUpDown, BicepsFlexed, CalendarDays, ChartColumn, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, Clock, Diff, Dumbbell,
+  Archive, ArchiveRestore, ArrowUpDown, BicepsFlexed, CalendarDays, ChartColumn, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, Clock, Copy, Diff, Dumbbell,
   Ellipsis, FileText, Filter, Flame, History, House, List, ListChecks, ListPlus, Minus, Moon, Pause, Pencil, Pin, Play, Plus, Repeat, Ruler,
   Save, Scale, Search, Share2, SlidersVertical, Sparkles, Timer, TrendingDown, TrendingUp, Trash2, Trophy, Undo2, UserCircle, Waypoints, X,
 };

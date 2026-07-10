@@ -17,7 +17,7 @@ import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Card, Divider, Txt } from "./ui";
-import { CenterDialog, ConfirmDialog } from "./Dialog";
+import { CenterDialog, ConfirmDialog, MenuRow } from "./Dialog";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
@@ -49,37 +49,6 @@ function StatItem({ icon, text }: { icon: string; text: string }) {
       <Icon name={icon} size={15} color={C.inkSoft} />
       <Txt size={13} weight="extrabold">{text}</Txt>
     </View>
-  );
-}
-
-function MenuRow({
-  icon,
-  label,
-  color = C.ink,
-  disabled,
-  onPress,
-}: {
-  icon: string;
-  label: string;
-  color?: string;
-  disabled?: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      disabled={disabled}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        paddingVertical: 10,
-        opacity: disabled ? 0.35 : 1,
-      }}
-    >
-      <Icon name={icon} size={18} color={color} />
-      <Txt size={14} weight="semibold" color={color}>{label}</Txt>
-    </Pressable>
   );
 }
 

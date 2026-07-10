@@ -11,6 +11,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Share,
   TextInput,
   Vibration,
   View,
@@ -18,25 +19,28 @@ import {
 import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
-import { RECOMMENDED } from "../lib/recommended";
+import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
 import { lastSetsFor } from "../lib/stats";
+import { targetRepsOf } from "../lib/suggest";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { ExerciseInfo } from "../components/ExerciseInfo";
+import { RoutineEditor } from "../components/RoutineEditor";
 import {
   Card,
   NumberField,
   Pill,
   PrimaryButton,
-  SectionTitle,
+  TextField,
   Txt,
 } from "../components/ui";
 import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
-import { ConfirmDialog } from "../components/Dialog";
+import { CenterDialog, ConfirmDialog, MenuRow } from "../components/Dialog";
 import { useStore } from "../lib/store";
 import {
   workoutSets,
   workoutVolume,
   type FocusMetric,
+  type Routine,
   type Workout as WorkoutModel,
   type WorkoutEntry,
   type WorkoutSet,
@@ -1098,18 +1102,19 @@ const ROUTINE_CARD_H = 168;
 /**
  * Uniform grid cell for the Start-Workout routine grids (user + plan +
  * recommended): fixed height, name, "N × Exercise" lines, a ⋯ row when
- * there are more. Tapping the card starts the routine.
+ * there are more. Tapping the card starts the routine; the ⋯ button opens
+ * the routine menu.
  */
 function RoutineGridCard({
   name,
   lines,
   onPress,
-  onDelete,
+  onMenu,
 }: {
   name: string;
   lines: string[];
   onPress: () => void;
-  onDelete?: () => void;
+  onMenu: () => void;
 }) {
   const shown = lines.slice(0, ROUTINE_CARD_LINES);
   return (
@@ -1131,11 +1136,9 @@ function RoutineGridCard({
         <Txt size={14} weight="extrabold" style={{ flex: 1 }} numberOfLines={1}>
           {name}
         </Txt>
-        {onDelete ? (
-          <Pressable hitSlop={8} onPress={onDelete}>
-            <Icon name="Trash2" size={14} color={C.badAcc} />
-          </Pressable>
-        ) : null}
+        <Pressable hitSlop={10} onPress={onMenu}>
+          <Icon name="Ellipsis" size={18} color={C.inkSoft} />
+        </Pressable>
       </View>
       <View style={{ gap: 4 }}>
         {shown.map((line, i) => (
@@ -1168,15 +1171,95 @@ function TwoColumnGrid({ cells }: { cells: React.ReactNode[] }) {
   );
 }
 
+/** "Home" → "Home (1)", skipping suffixes already in use. */
+function uniqueName(base: string, taken: string[]): string {
+  const stripped = base.replace(/ \(\d+\)$/, "");
+  const names = new Set(taken);
+  for (let n = 1; ; n++) {
+    const candidate = `${stripped} (${n})`;
+    if (!names.has(candidate)) return candidate;
+  }
+}
+
+/** The routine ⋯ menu's subject. */
+type RoutineMenuTarget =
+  | { kind: "mine"; routine: Routine }
+  | { kind: "rec"; rec: RecommendedRoutine };
+
+function RenameDialog({
+  initial,
+  onSave,
+  onClose,
+}: {
+  initial: string;
+  onSave: (name: string) => void;
+  onClose: () => void;
+}) {
+  const [draft, setDraft] = useState(initial);
+  return (
+    <CenterDialog onClose={onClose}>
+      <Txt size={18} weight="extrabold">Rename routine</Txt>
+      <TextField value={draft} onChange={setDraft} placeholder="Routine name" />
+      <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 22, marginTop: 2 }}>
+        <Pressable hitSlop={8} onPress={onClose}>
+          <Txt size={14} weight="bold" color={C.inkFaint}>Cancel</Txt>
+        </Pressable>
+        <Pressable
+          hitSlop={8}
+          onPress={() => {
+            if (draft.trim()) onSave(draft.trim());
+            onClose();
+          }}
+        >
+          <Txt size={14} weight="extrabold" color={C.goodAcc}>Save</Txt>
+        </Pressable>
+      </View>
+    </CenterDialog>
+  );
+}
+
 export function Workout() {
-  const { activeWorkout, exercises, routines, startWorkout, startRecommended, deleteRoutine } =
-    useStore();
+  const {
+    activeWorkout,
+    exercises,
+    routines,
+    startWorkout,
+    startRecommended,
+    saveRoutine,
+    updateRoutine,
+    deleteRoutine,
+    importRecommended,
+  } = useStore();
   /** The just-finished session, shown as the post-workout summary. */
   const [summary, setSummary] = useState<WorkoutModel | null>(null);
   const [confirmRoutine, setConfirmRoutine] = useState<{ id: string; name: string } | null>(null);
+  const [menu, setMenu] = useState<RoutineMenuTarget | null>(null);
+  const [renaming, setRenaming] = useState<Routine | null>(null);
+  const [editing, setEditing] = useState<Routine | null>(null);
   const exName = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
+  const routineNames = routines.map((r) => r.name);
+
+  const duplicateMine = (r: Routine) => {
+    saveRoutine(
+      uniqueName(r.name, routineNames),
+      r.entries.map((e) => ({ ...e, sets: e.sets.map((s) => ({ ...s, done: false })) })),
+    );
+  };
+
+  const shareRoutine = (name: string, lines: string[]) =>
+    void Share.share({ message: `${name}\n\n${lines.join("\n")}\n\nShared from Torq` });
+
+  const mineLines = (r: Routine) =>
+    r.entries.map((e) => {
+      const top = Math.max(...e.sets.map((s) => s.weight), 0);
+      const reps = targetRepsOf(e.sets);
+      return `${e.sets.length} × ${reps || "?"} ${exName(e.exerciseId)}${top > 0 ? ` @ ${top}` : ""}`;
+    });
 
   if (activeWorkout) return <ActiveSession onFinished={setSummary} />;
+
+  const visible = routines.filter((r) => !r.archived);
+  const archived = routines.filter((r) => r.archived);
 
   return (
     <View style={{ flex: 1 }}>
@@ -1215,8 +1298,8 @@ export function Workout() {
         </View>
       </Squish>
 
-      <SectionTitle>Routines</SectionTitle>
-      {routines.length === 0 ? (
+      <Txt size={18} weight="extrabold">Routines ({visible.length})</Txt>
+      {visible.length === 0 ? (
         <Card>
           <Txt size={13} color={C.inkFaint}>
             No routines yet. Start with a recommended one below — finishing it
@@ -1225,19 +1308,19 @@ export function Workout() {
         </Card>
       ) : (
         <TwoColumnGrid
-          cells={routines.map((r) => (
+          cells={visible.map((r) => (
             <RoutineGridCard
               key={r.id}
               name={r.name}
               lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
               onPress={() => startWorkout(r)}
-              onDelete={() => setConfirmRoutine({ id: r.id, name: r.name })}
+              onMenu={() => setMenu({ kind: "mine", routine: r })}
             />
           ))}
         />
       )}
 
-      <SectionTitle>Recommended</SectionTitle>
+      <Txt size={18} weight="extrabold">Recommended</Txt>
       <TwoColumnGrid
         cells={RECOMMENDED.map((r) => (
           <RoutineGridCard
@@ -1247,10 +1330,132 @@ export function Workout() {
               .filter((item) => DB_BY_ID[item.dbId])
               .map((item) => `${item.sets} × ${titleCase(DB_BY_ID[item.dbId].name)}`)}
             onPress={() => startRecommended(r)}
+            onMenu={() => setMenu({ kind: "rec", rec: r })}
           />
         ))}
       />
+
+      {archived.length > 0 ? (
+        <>
+          <Txt size={18} weight="extrabold" color={C.inkFaint}>
+            Archived ({archived.length})
+          </Txt>
+          <TwoColumnGrid
+            cells={archived.map((r) => (
+              <RoutineGridCard
+                key={r.id}
+                name={r.name}
+                lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
+                onPress={() => setMenu({ kind: "mine", routine: r })}
+                onMenu={() => setMenu({ kind: "mine", routine: r })}
+              />
+            ))}
+          />
+        </>
+      ) : null}
     </ScrollView>
+
+      {menu?.kind === "mine" ? (
+        <CenterDialog onClose={() => setMenu(null)}>
+          <Txt size={18} weight="extrabold" numberOfLines={1}>{menu.routine.name}</Txt>
+          <View>
+            {!menu.routine.archived ? (
+              <>
+                <MenuRow
+                  icon="Pencil"
+                  label="Edit"
+                  onPress={() => {
+                    setMenu(null);
+                    setEditing(menu.routine);
+                  }}
+                />
+                <MenuRow
+                  icon="FileText"
+                  label="Rename"
+                  onPress={() => {
+                    setMenu(null);
+                    setRenaming(menu.routine);
+                  }}
+                />
+                <MenuRow
+                  icon="Archive"
+                  label="Archive"
+                  onPress={() => {
+                    updateRoutine(menu.routine.id, { archived: true });
+                    setMenu(null);
+                  }}
+                />
+              </>
+            ) : (
+              <MenuRow
+                icon="ArchiveRestore"
+                label="Unarchive"
+                onPress={() => {
+                  updateRoutine(menu.routine.id, { archived: undefined });
+                  setMenu(null);
+                }}
+              />
+            )}
+            <MenuRow
+              icon="Copy"
+              label="Duplicate"
+              onPress={() => {
+                duplicateMine(menu.routine);
+                setMenu(null);
+              }}
+            />
+            <MenuRow
+              icon="Share2"
+              label="Share"
+              onPress={() => {
+                setMenu(null);
+                shareRoutine(menu.routine.name, mineLines(menu.routine));
+              }}
+            />
+            <MenuRow
+              icon="Trash2"
+              label="Delete"
+              color={C.badAcc}
+              onPress={() => {
+                setMenu(null);
+                setConfirmRoutine({ id: menu.routine.id, name: menu.routine.name });
+              }}
+            />
+          </View>
+        </CenterDialog>
+      ) : null}
+
+      {menu?.kind === "rec" ? (
+        <CenterDialog onClose={() => setMenu(null)}>
+          <Txt size={18} weight="extrabold" numberOfLines={1}>{menu.rec.name}</Txt>
+          <View>
+            <MenuRow
+              icon="Copy"
+              label="Duplicate to my routines"
+              onPress={() => {
+                // Plain name unless it's already taken (plan days often are).
+                const name = routineNames.includes(menu.rec.name)
+                  ? uniqueName(menu.rec.name, routineNames)
+                  : menu.rec.name;
+                importRecommended(menu.rec, name);
+                setMenu(null);
+              }}
+            />
+          </View>
+        </CenterDialog>
+      ) : null}
+
+      {renaming ? (
+        <RenameDialog
+          initial={renaming.name}
+          onSave={(name) => updateRoutine(renaming.id, { name })}
+          onClose={() => setRenaming(null)}
+        />
+      ) : null}
+
+      {editing ? (
+        <RoutineEditor routine={editing} onClose={() => setEditing(null)} />
+      ) : null}
 
       {confirmRoutine ? (
         <ConfirmDialog

@@ -106,8 +106,11 @@ template's target reps.
 
 ## Commands
 
-- `./run_android.sh` — one-shot run: boots the `torq` AVD if needed (handles
-  `ANDROID_AVD_HOME`, `-gpu host`), then `npx expo start --android`. Preferred
+- `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
+  `torq`) if needed, pins all adb/expo work to that emulator's serial via
+  `ANDROID_SERIAL` (safe while other emulators run other projects), installs
+  Expo Go from `~/.expo/android-apk-cache` on fresh AVDs, auto-picks the
+  first free Metro port, and opens `exp://10.0.2.2:<port>` there. Preferred
   way to run the app.
 - `npm start` / `npm run android` — dev server
 - `npm run tsc` — typecheck (keep this clean)
@@ -117,8 +120,11 @@ template's target reps.
 
 Android tooling lives user-locally (no root): JDK 21 at `~/.local/jdk`,
 Android SDK at `~/Android/Sdk` (platform-tools, emulator, android-36 image).
-AVD `torq` (Pixel 7) is at `~/.config/.android/avd` — the emulator only finds
-it with `ANDROID_AVD_HOME=~/.config/.android/avd` exported. Launch:
+AVDs `torq` and `torq2` (both Pixel 7, hw.keyboard=yes) are at
+`~/.config/.android/avd` — the emulator only finds them with
+`ANDROID_AVD_HOME=~/.config/.android/avd` exported. `torq2` exists so Torq
+can run beside Adilzhan's other project (which occupies `torq`/8081):
+`./run_android.sh torq2`. Launch:
 `ANDROID_AVD_HOME=~/.config/.android/avd ~/Android/Sdk/emulator/emulator -avd
 torq -gpu host`, then `npx expo start --android` (Expo Go).
 
@@ -388,6 +394,25 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Routine ⋯ menus + editor (Adilzhan's spec, Strong reference).
+  Grid cards' trash → Ellipsis opening a CenterDialog menu (MenuRow
+  extracted from WorkoutSummary into Dialog.tsx): my routines get
+  Edit / Rename (CenterDialog + TextField) / Archive / Duplicate (name +
+  " (n)" via uniqueName, deep-cloned sets) / Share (text sheet) / Delete
+  (ConfirmDialog); recommended get only "Duplicate to my routines"
+  (`importRecommended` store action; plain name unless taken).
+  `updateRoutine(id, patch)` store action powers rename/archive;
+  `Routine.archived` hides cards into an "Archived (n)" grid section
+  whose menu offers Unarchive/Delete. Section headers are now
+  "Routines (n)" / "Recommended" (18px extrabold, replacing the uppercase
+  SectionTitle). New `src/components/RoutineEditor.tsx`: full-screen
+  overlay (fixed header + lime Save pill) editing a template's sets
+  (weight/reps NumberFields, X to remove, Add set duplicates the last)
+  with a per-exercise ⋯ menu — Replace exercise (ExercisePicker in
+  single-swap mode, keeps the set scheme) / Remove exercise — and an
+  Add-exercises footer (multi picker, new entries 3×10). Back cancels,
+  Save commits via saveRoutine (plan/weekday preserved). Verified on the
+  emulator: grid, menu, editor, exercise menu.
 - 2026-07-10: Start-Workout routines as a 2-column grid (Adilzhan's spec):
   shared `RoutineGridCard` in Workout.tsx — fixed 168px height, no gifs,
   name + up to 4 "N × Exercise" lines (sets count only, no reps), "· · ·"

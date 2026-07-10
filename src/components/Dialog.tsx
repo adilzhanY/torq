@@ -10,8 +10,41 @@
 import type { ReactNode } from "react";
 import { Pressable, View } from "react-native";
 import { C } from "../theme";
+import { Icon } from "./Icon";
 import { PopIn } from "./anim";
 import { Card, Txt } from "./ui";
+
+/** Icon + label row for CenterDialog menus (workout ⋯, routine ⋯…). */
+export function MenuRow({
+  icon,
+  label,
+  color = C.ink,
+  disabled,
+  onPress,
+}: {
+  icon: string;
+  label: string;
+  color?: string;
+  disabled?: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12,
+        paddingVertical: 10,
+        opacity: disabled ? 0.35 : 1,
+      }}
+    >
+      <Icon name={icon} size={18} color={color} />
+      <Txt size={14} weight="semibold" color={color}>{label}</Txt>
+    </Pressable>
+  );
+}
 
 export function CenterDialog({
   onClose,

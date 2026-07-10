@@ -76,6 +76,8 @@ export interface Routine {
   plan?: boolean;
   /** Scheduled weekday for plan routines (0 = Sunday … 6 = Saturday). */
   weekday?: number;
+  /** Hidden from the Start-Workout grid (menu → Archive). */
+  archived?: boolean;
   updatedAt: number;
 }
 

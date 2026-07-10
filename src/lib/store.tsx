@@ -46,7 +46,11 @@ interface StoreValue {
   deleteExercise: (id: string) => void;
 
   saveRoutine: (name: string, entries: WorkoutEntry[], id?: string) => void;
+  /** Patch routine fields in place (rename, archive…). */
+  updateRoutine: (id: string, patch: Partial<Routine>) => void;
   deleteRoutine: (id: string) => void;
+  /** Copy a recommended template into "my routines" (imports exercises). */
+  importRecommended: (template: RecommendedRoutine, name: string) => void;
   /** Build the training plan from onboarding prefs: imports any missing
    *  catalog exercises, replaces previous plan routines, saves the prefs. */
   applyPlan: (prefs: PlanPrefs) => void;
@@ -173,9 +177,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
       commit();
     },
+    updateRoutine: (id, patch) => {
+      const routines = dbRef.current.routines;
+      const i = routines.findIndex((r) => r.id === id);
+      if (i < 0) return;
+      routines[i] = stamp({ ...routines[i], ...patch });
+      commit();
+    },
     deleteRoutine: (id) => {
       dbRef.current.routines = dbRef.current.routines.filter((r) => r.id !== id);
       bury("routines", id);
+      commit();
+    },
+    importRecommended: (template, name) => {
+      const entries: WorkoutEntry[] = [];
+      for (const item of template.items) {
+        const ex = ensureCatalog(item.dbId);
+        if (!ex) continue;
+        entries.push({
+          exerciseId: ex.id,
+          sets: Array.from({ length: item.sets }, () => ({
+            type: "normal" as const,
+            weight: 0,
+            reps: item.reps,
+            done: false,
+          })),
+        });
+      }
+      dbRef.current.routines.push(stamp({ id: uid(), name, entries, updatedAt: 0 }));
       commit();
     },
     applyPlan: (prefs) => {
