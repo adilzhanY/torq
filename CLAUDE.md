@@ -112,10 +112,15 @@ template's target reps.
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
   `torq`) if needed, pins all adb/expo work to that emulator's serial via
-  `ANDROID_SERIAL` (safe while other emulators run other projects), installs
-  Expo Go from `~/.expo/android-apk-cache` on fresh AVDs, auto-picks the
-  first free Metro port, and opens `exp://10.0.2.2:<port>` there. Preferred
-  way to run the app.
+  `ANDROID_SERIAL` (safe while other emulators run other projects), keeps
+  Expo Go IN SYNC with the SDK's required version (queries Expo's versions
+  API, installs from/downloads to `~/.expo/android-apk-cache` on mismatch —
+  Adilzhan's other project keeps downgrading Go on the shared `torq` AVD,
+  which broke launches with "Project is incompatible with this version of
+  Expo Go"), REUSES an already-running Metro of this repo (matched by
+  process cwd) instead of stacking duplicates, else auto-picks the first
+  free port and opens `exp://10.0.2.2:<port>`. Preferred way to run the
+  app.
 - `npm start` / `npm run android` — dev server
 - `npm run tsc` — typecheck (keep this clean)
 - `CI=1 npx expo export --platform android` — verify the bundle compiles
@@ -619,6 +624,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   unconditionally, not just for done-set re-edits) — prefilled values
   (suggestions, replays, plan reps) get replaced by typing instead of
   appended to. Verified on the emulator (tap → full-value selection).
+- 2026-07-11: WorkoutCard restructured (Adilzhan's spec): pills row gone —
+  top shows CalendarDays "Fri, Jul 10 · 18:57" + Clock duration; the
+  exercise list sits between Dividers; bottom row is icon stats CheckCheck
+  sets (goodAcc) · Scale volume (prAcc) · Flame kcal (warnAcc, hidden at
+  0) · Trophy PRs (C.gold, hidden at 0, via computePRs against all
+  workouts, memoized). Local IconStat helper. Verified on the emulator.
 - 2026-07-11: Implemented a month switcher on the Stats page ([Stats.tsx](file:///home/wopler/dev/torq/src/screens/Stats.tsx)). Users can click left/right arrows to switch months, with the right arrow disabled for the future (relative to the current real month). Overview cards (workouts, volume, sets, hours), weekly charts (custom Monday-start weeks that fall in the month), body weight trendline, and logged measurements list are all scoped/filtered to the selected month.
 
 

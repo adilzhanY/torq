@@ -1,12 +1,15 @@
-/** History-style workout card: name, stat pills, per-exercise max lines.
- * Used by the History tab and the exercise-info History tab. */
+/** History-style workout card: name, date/duration on top, per-exercise
+ * max lines, then sets · volume · calories stats with icons at the bottom.
+ * Used by the History tab, Home recents, and the exercise-info History
+ * tab. */
+import { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
-import { Card, Divider, Pill, Txt } from "./ui";
+import { Card, Divider, Txt } from "./ui";
 import { useStore } from "../lib/store";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
-import { fmtDuration } from "../lib/stats";
+import { computePRs, fmtDuration } from "../lib/stats";
 import { workoutSets, workoutVolume, type Workout } from "../types";
 
 function fmtDate(ms: number): string {
@@ -23,6 +26,23 @@ function fmtTime(ms: number): string {
   return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
 }
 
+function IconStat({
+  icon,
+  text,
+  color = C.inkSoft,
+}: {
+  icon: string;
+  text: string;
+  color?: string;
+}) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+      <Icon name={icon} size={14} color={color} />
+      <Txt size={12} weight="bold" color={color}>{text}</Txt>
+    </View>
+  );
+}
+
 export function WorkoutCard({
   workout: w,
   onPress,
@@ -32,7 +52,7 @@ export function WorkoutCard({
   onPress?: () => void;
   onDelete?: () => void;
 }) {
-  const { exercises, measurements, settings } = useStore();
+  const { exercises, workouts, measurements, settings } = useStore();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
   const kcal = workoutCalories(
     w,
@@ -40,6 +60,7 @@ export function WorkoutCard({
     bodyProfileAt(settings, measurements, w.startedAt),
     settings,
   );
+  const prCount = useMemo(() => computePRs(w, workouts).total, [w, workouts]);
   return (
     <Pressable onPress={onPress} disabled={!onPress}>
       <Card style={{ gap: 10 }}>
@@ -51,24 +72,18 @@ export function WorkoutCard({
             </Pressable>
           ) : null}
         </View>
-        <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
-          {/* Completion time; falls back to the start for legacy/odd rows. */}
-          <Pill
+
+        {/* When + how long (completion time falls back to start for legacy rows) */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+          <IconStat
+            icon="CalendarDays"
             text={`${fmtDate(w.startedAt)} · ${fmtTime(w.endedAt ?? w.startedAt)}`}
-            color={C.inkSoft}
-            bg={C.page2}
           />
           {w.endedAt ? (
-            <Pill text={fmtDuration(w.startedAt, w.endedAt)} color={C.inkSoft} bg={C.page2} />
+            <IconStat icon="Clock" text={fmtDuration(w.startedAt, w.endedAt)} />
           ) : null}
-          <Pill text={`${workoutSets(w)} sets`} color={C.goodAcc} bg={C.goodSurf} />
-          <Pill
-            text={`${Math.round(workoutVolume(w))} ${settings.unit}`}
-            color={C.prAcc}
-            bg={C.prSurf}
-          />
-          {kcal > 0 ? <Pill text={`${kcal} kcal`} color={C.warnAcc} bg={C.warnSurf} /> : null}
         </View>
+
         <Divider />
         <View style={{ gap: 4 }}>
           {w.entries.map((e, i) => (
@@ -81,6 +96,25 @@ export function WorkoutCard({
               </Txt>
             </View>
           ))}
+        </View>
+        <Divider />
+
+        {/* The work itself: sets · volume · calories */}
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <IconStat
+            icon="CheckCheck"
+            text={`${workoutSets(w)} set${workoutSets(w) === 1 ? "" : "s"}`}
+            color={C.goodAcc}
+          />
+          <IconStat
+            icon="Scale"
+            text={`${Math.round(workoutVolume(w))} ${settings.unit}`}
+            color={C.prAcc}
+          />
+          {kcal > 0 ? <IconStat icon="Flame" text={`${kcal} kcal`} color={C.warnAcc} /> : null}
+          {prCount > 0 ? (
+            <IconStat icon="Trophy" text={`${prCount} PR${prCount === 1 ? "" : "s"}`} color={C.gold} />
+          ) : null}
         </View>
       </Card>
     </Pressable>
