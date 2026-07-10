@@ -163,7 +163,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       dbRef.current.activeWorkout = stamp({
         id: uid(),
         name: routine?.name ?? workoutName(Date.now()),
-        routineId: routine?.id,
+        routineId: routine?.id || undefined,
         startedAt: Date.now(),
         entries,
         updatedAt: 0,

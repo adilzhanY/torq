@@ -382,6 +382,21 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: WorkoutSummary compacted + ⋯ menu. All exercises now render
+  in ONE Card (sections split by Divider, 1RM column label on the first
+  section only; the old card-per-exercise ate too much space —
+  `highlightExerciseId` now tints the section lime instead of ringing a
+  card). The duration/volume/kcal/PRs stats bar sits ABOVE the exercises
+  card (was a floating footer pinned over the navbar, per Adilzhan). Header gained a ⋯ button opening a CenterDialog menu (the app's
+  shared animated dialog): Repeat workout (starts a fresh session from the
+  workout's entries, all sets unticked, jumps to the Workout tab; disabled
+  while a session is live), Save as routine (`saveRoutine` with unticked
+  sets), Share workout (RN `Share` sheet — name, long date, stats line,
+  per-exercise "N × name — top kg" lines), Delete workout (ConfirmDialog →
+  `deleteWorkout` → close). `startWorkout` now stores
+  `routineId: routine?.id || undefined` so repeating a quick-start workout
+  (ephemeral routine with id "") doesn't stamp an empty routineId. Icon
+  gained Share2.
 - 2026-07-10: Strong-style exercise header in the live session — the trash
   button is gone, replaced by a focus-metric pill + a ⋯ menu (both
   anchored popovers, same Modal+PopIn+statusBarTranslucent pattern as the
