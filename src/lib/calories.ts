@@ -20,6 +20,7 @@
  * 3. REST BETWEEN SETS — 1.8 MET (standing around) for the PLANNED rest per
  *    completed set (per-set override or the default timer, clamped 30s–4min).
  */
+import { LB_TO_KG } from "./units";
 import type { Exercise, Measurement, Settings, Workout } from "../types";
 
 export interface BodyProfile {
@@ -32,8 +33,6 @@ export interface BodyProfile {
 }
 
 const DEFAULTS = { weightKg: 75, heightCm: 175, age: 25, sex: "male" as const };
-
-const LB_TO_KG = 0.45359237;
 
 /** Latest logged "Body weight" measurement at or before `atMs`, in kg. */
 function measuredWeightKg(measurements: Measurement[], atMs: number): number | null {

@@ -8,6 +8,7 @@ import { SlideUp } from "../components/anim";
 import { Card, NumberField, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
+import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
 import { workoutVolume, type Settings, type Unit } from "../types";
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -76,8 +77,6 @@ function Account() {
   );
 }
 
-const LB_TO_KG = 0.45359237;
-
 /** Sex / birth year / height / fallback weight — feeds calorie estimation. */
 function BodyProfileCard({
   settings,
@@ -89,6 +88,9 @@ function BodyProfileCard({
   const isLb = settings.unit === "lb";
   const [birthYear, setBirthYear] = useState(settings.birthYear ? String(settings.birthYear) : "");
   const [height, setHeight] = useState(settings.heightCm ? String(settings.heightCm) : "");
+  const savedFtIn = settings.heightCm ? cmToFtIn(settings.heightCm) : null;
+  const [heightFt, setHeightFt] = useState(savedFtIn ? String(savedFtIn.ft) : "");
+  const [heightIn, setHeightIn] = useState(savedFtIn ? String(savedFtIn.inch) : "");
   const [weight, setWeight] = useState(
     settings.weightKg
       ? String(Math.round(isLb ? settings.weightKg / LB_TO_KG : settings.weightKg))
@@ -131,16 +133,47 @@ function BodyProfileCard({
             onBlur={() => commitNumber(birthYear, (n) => updateSettings({ birthYear: n }))}
           />
         </View>
-        <View style={{ flex: 1 }}>
-          <NumberField
-            label="Height"
-            value={height}
-            onChange={setHeight}
-            suffix="cm"
-            placeholder="175"
-            onBlur={() => commitNumber(height, (n) => updateSettings({ heightCm: n }))}
-          />
-        </View>
+        {isLb ? (
+          <>
+            <View style={{ flex: 1 }}>
+              <NumberField
+                label="Height"
+                value={heightFt}
+                onChange={setHeightFt}
+                suffix="ft"
+                placeholder="5"
+                onBlur={() => {
+                  const cm = ftInToCm(Number(heightFt) || 0, Number(heightIn) || 0);
+                  updateSettings({ heightCm: cm > 0 ? cm : undefined });
+                }}
+              />
+            </View>
+            <View style={{ flex: 1 }}>
+              <NumberField
+                label=" "
+                value={heightIn}
+                onChange={setHeightIn}
+                suffix="in"
+                placeholder="9"
+                onBlur={() => {
+                  const cm = ftInToCm(Number(heightFt) || 0, Number(heightIn) || 0);
+                  updateSettings({ heightCm: cm > 0 ? cm : undefined });
+                }}
+              />
+            </View>
+          </>
+        ) : (
+          <View style={{ flex: 1 }}>
+            <NumberField
+              label="Height"
+              value={height}
+              onChange={setHeight}
+              suffix="cm"
+              placeholder="175"
+              onBlur={() => commitNumber(height, (n) => updateSettings({ heightCm: n }))}
+            />
+          </View>
+        )}
         <View style={{ flex: 1 }}>
           <NumberField
             label="Weight"
@@ -164,7 +197,91 @@ function BodyProfileCard({
   );
 }
 
-export function Profile({ onClose }: { onClose: () => void }) {
+/** Daily goals for the Home dashboard (defaults in lib/stats dailyGoals). */
+function DailyGoalsCard({
+  settings,
+  updateSettings,
+}: {
+  settings: Settings;
+  updateSettings: (patch: Partial<Settings>) => void;
+}) {
+  const [kcal, setKcal] = useState(settings.kcalGoal ? String(settings.kcalGoal) : "");
+  const [min, setMin] = useState(settings.activeMinGoal ? String(settings.activeMinGoal) : "");
+  const [sets, setSets] = useState(settings.setsGoal ? String(settings.setsGoal) : "");
+  const [volume, setVolume] = useState(settings.volumeGoal ? String(settings.volumeGoal) : "");
+
+  const commit = (raw: string, save: (n: number | undefined) => void) => {
+    const n = Number(raw);
+    save(n > 0 ? Math.round(n) : undefined);
+  };
+
+  return (
+    <Card style={{ gap: 10 }}>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Calories"
+            value={kcal}
+            onChange={setKcal}
+            suffix="kcal"
+            placeholder="300"
+            onBlur={() => commit(kcal, (n) => updateSettings({ kcalGoal: n }))}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Active time"
+            value={min}
+            onChange={setMin}
+            suffix="min"
+            placeholder="60"
+            onBlur={() => commit(min, (n) => updateSettings({ activeMinGoal: n }))}
+          />
+        </View>
+      </View>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Sets"
+            value={sets}
+            onChange={setSets}
+            placeholder="25"
+            onBlur={() => commit(sets, (n) => updateSettings({ setsGoal: n }))}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Volume"
+            value={volume}
+            onChange={setVolume}
+            suffix={settings.unit}
+            placeholder="8000"
+            onBlur={() => commit(volume, (n) => updateSettings({ volumeGoal: n }))}
+          />
+        </View>
+      </View>
+      <Txt size={11} color={C.inkFaint}>
+        Per-day targets for the Home dashboard bar and gauges.
+      </Txt>
+    </Card>
+  );
+}
+
+const GOAL_LABEL: Record<string, string> = {
+  muscle: "Build muscle",
+  lean: "Get lean",
+  strength: "Get strong",
+  fit: "Stay fit",
+};
+
+export function Profile({
+  onClose,
+  onRebuildPlan,
+}: {
+  onClose: () => void;
+  /** Reopens the onboarding wizard to regenerate the training plan. */
+  onRebuildPlan: () => void;
+}) {
   const { workouts, settings, updateSettings } = useStore();
   const totalVolume = workouts.reduce((s, w) => s + workoutVolume(w), 0);
 
@@ -231,6 +348,30 @@ export function Profile({ onClose }: { onClose: () => void }) {
 
       <SectionTitle>Body profile</SectionTitle>
       <BodyProfileCard settings={settings} updateSettings={updateSettings} />
+
+      <SectionTitle>Training plan</SectionTitle>
+      <Card style={{ gap: 10 }}>
+        {settings.plan ? (
+          <Txt size={13} weight="semibold">
+            {GOAL_LABEL[settings.plan.goal] ?? settings.plan.goal} ·{" "}
+            {settings.plan.weekdays?.length ?? 0} days a week
+            {settings.plan.focus.length
+              ? ` · focus: ${settings.plan.focus.join(", ")}`
+              : ""}
+          </Txt>
+        ) : (
+          <Txt size={13} color={C.inkFaint}>
+            No plan yet — answer a few questions and Torq builds your week.
+          </Txt>
+        )}
+        <PrimaryButton
+          label={settings.plan ? "Rebuild plan" : "Build my plan"}
+          onPress={onRebuildPlan}
+        />
+      </Card>
+
+      <SectionTitle>Daily goals</SectionTitle>
+      <DailyGoalsCard settings={settings} updateSettings={updateSettings} />
 
       <SectionTitle>Account & sync</SectionTitle>
       <Account />

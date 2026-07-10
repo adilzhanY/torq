@@ -20,6 +20,7 @@ import { BottomNav } from "./src/components/BottomNav";
 import { Icon } from "./src/components/Icon";
 import { Txt } from "./src/components/ui";
 import { Home } from "./src/screens/Home";
+import { Onboarding } from "./src/screens/Onboarding";
 import { Workout } from "./src/screens/Workout";
 import { History } from "./src/screens/History";
 import { Exercises } from "./src/screens/Exercises";
@@ -31,6 +32,8 @@ function Root() {
   const { ready, settings } = useStore();
   const name = settings.name?.trim();
   const [profileOpen, setProfileOpen] = useState(false);
+  // Reopened from Profile → Rebuild plan (first run opens it automatically).
+  const [planWizard, setPlanWizard] = useState(false);
 
   if (!ready) {
     return (
@@ -39,6 +42,10 @@ function Root() {
         <ActivityIndicator color={C.primary} />
       </View>
     );
+  }
+
+  if (!settings.onboarded || planWizard) {
+    return <Onboarding onDone={() => setPlanWizard(false)} />;
   }
 
   return (
@@ -89,7 +96,15 @@ function Root() {
 
       <BottomNav />
 
-      {profileOpen ? <Profile onClose={() => setProfileOpen(false)} /> : null}
+      {profileOpen ? (
+        <Profile
+          onClose={() => setProfileOpen(false)}
+          onRebuildPlan={() => {
+            setProfileOpen(false);
+            setPlanWizard(true);
+          }}
+        />
+      ) : null}
     </View>
   );
 }

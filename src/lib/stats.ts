@@ -1,5 +1,20 @@
 /** Workout math + formatting for the post-workout summary (Strong-style). */
-import type { Workout, WorkoutSet } from "../types";
+import type { Settings, Workout, WorkoutSet } from "../types";
+
+/** Daily Home-dashboard goals with defaults applied. */
+export function dailyGoals(settings: Settings): {
+  kcal: number;
+  activeMin: number;
+  sets: number;
+  volume: number;
+} {
+  return {
+    kcal: settings.kcalGoal ?? 300,
+    activeMin: settings.activeMinGoal ?? 60,
+    sets: settings.setsGoal ?? 25,
+    volume: settings.volumeGoal ?? 8000,
+  };
+}
 
 /** Estimated one-rep max (Epley): weight × (1 + reps/30). */
 export function est1RM(weight: number, reps: number): number {

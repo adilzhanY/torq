@@ -85,11 +85,13 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 Five tabs: Home (default) · History · Workout · Exercises · Measure. Profile
 is NOT a tab — it opens as a full-screen overlay from the avatar button on
-the top bar's right. Home is a dashboard: a "Today" calories-burnt card
-(Flame icon, includes the live session), this-week stat cards (workouts /
-sets / volume), a dark CTA that jumps to the Workout tab (turns lime
-"Workout in progress" while a session is live), and the 3 most recent
-workouts as WorkoutCards opening WorkoutSummary. The Workout tab is
+the top bar's right. Home is a day-centric dashboard: big date header
+("Today"/"Yesterday"/weekday + "13 Mar, Monday") with a calendar button
+(custom CalendarDialog), a scrubbable DateRuler, a daily-goal card (burnt
+kcal vs goal on a SegmentedBar + three ArcGauges: active minutes / sets /
+volume vs goals from Profile), this-week stat cards, a dark CTA that jumps
+to the Workout tab (turns lime while a session is live), and a day-aware
+workout list (Today → 3 most recent; other days → that day's workouts). The Workout tab is
 quick-start + the user's routines + a
 "Recommended" section (3-card push/pull/legs split from
 `src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
@@ -382,6 +384,63 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Training plan + onboarding — the "coach, not notebook" pivot
+  (Adilzhan's direction: differentiate from Strong; roadmap lives in the
+  session task list: next are Home plan-hero, suggested weights, Progress
+  tab). `src/lib/plan.ts`: deterministic generator — the user picks CONCRETE
+  training weekdays (2–6, Monday-first day-row list in onboarding, max 6 so
+  one rest day survives; `PlanPrefs.weekdays`, 0=Sun); the count picks the
+  split (2 FB A/B · 3 PPL · 4 UL×2 · 5 PPL+UL · 6 PPL×2 with B-variants)
+  and templates zip onto the chosen days via `mondayFirst()`. Verified over
+  all 1428 goal×weekday-subset×focus combos (0 problems),
+  goal picks schemes (muscle 4×8/3×12 · lean 3×12/3×15 · fit 3×10/3×12 ·
+  strength runs mains-first: first 2 compounds 5×5×180s, rest 3×8 — flat
+  5×5 made 2-hour sessions, caught by the exhaustive spot-check), focus
+  parts get +1 set + unlock a per-day extra slot, days trimmed from the
+  tail to a 90-min cap. Exercises referenced by VERIFIED dbIds (snapshot
+  names have mojibake, e.g. "sled 45в° leg press" — never match by name);
+  missing ids skip. Verified: 160 goal×days×focus combos, 0 problems.
+  Types: `PlanPrefs` (+ `Settings.plan`/`onboarded`), Routine gains
+  `plan`/`weekday` (0=Sun). Store: `applyPlan` (buries old plan routines,
+  writes new ones with per-set restSec, saves prefs, prefills kcalGoal per
+  goal) and `ensureCatalog(dbId)` (extracted from startRecommended).
+  `src/screens/Onboarding.tsx`: dark premium wizard (C.primary bg, lime
+  accents) — welcome → "How do you measure?" (Metric kg·cm / Imperial
+  lb·ft-in cards) → about-you (sex/weight/height/age, dark fields; imperial
+  shows ft + in height fields, converted via `src/lib/units.ts` —
+  `LB_TO_KG`/`ftInToCm`/`cmToFtIn`, deduped from calories/Profile) → goal →
+  days → focus → pulsing-logo "building" theater → staggered plan-reveal
+  cards. Profile's Body-profile height also switches to ft/in when the
+  unit is lb (heightCm stays canonical in storage). Direction-aware StepSlide transitions;
+  every choice step confirms with an explicit Continue button (auto-advance
+  shipped first, Adilzhan vetoed it — you can't change your mind); Skip
+  everywhere, hardware Back walks steps (first-run not dismissable),
+  answers prefill from Settings on rebuild. GOTCHA (hit again): flex:1 on
+  a Squish inside a row collapses it to 0 width — the days-per-week squares
+  rendered as an empty page; wrap the Squish in a flex:1 View. Root shows it when `!settings.onboarded` (existing installs see
+  it once) or via Profile's new "Training plan" card → Rebuild plan
+  (`onRebuildPlan` prop).
+- 2026-07-10: Home rebuilt as a day dashboard (nutrition-app reference from
+  Adilzhan). New pieces: `DateRuler.tsx` — horizontal snap FlatList of day
+  numbers (ITEM_W 54, window 365 days back, ending at today so the future
+  is unscrollable), scroll-driven native interpolations (scale 0.72→1.25;
+  ink layer crossfaded over a faint layer since text color can't animate
+  natively), 5 tick marks per cell + fixed ▲ caret; exports `dayStart`/
+  `addDays` (calendar-based math — adding 24h blocks drifts an hour across
+  DST, caught by a scratchpad spot-check). `CalendarDialog.tsx` — custom
+  calendar in CenterDialog: ‹month› stepper, tap title → month grid +
+  ‹year› stepper, Mo–Su grid, black capsule selected / ringed today /
+  future disabled. `charts.tsx` — `SegmentedBar` (barcode bars, animated
+  width mask, fills lime at goal) and `ArcGauge` (SVG round-cap ticks on a
+  270° arc, gap at bottom; animated counter sweeps ticks in; value/goal
+  centered). Home: `day` state drives the goal card (BURNT/GOAL numbers,
+  bar, gauges MINUTES orange / SETS teal / VOLUME purple) and the workout
+  list (Today → recents, else that day's workouts); header PopIn-crossfades
+  on date change; live session counts toward today. Settings gained
+  `kcalGoal`/`activeMinGoal`/`setsGoal`/`volumeGoal` (defaults 300/60/25/
+  8000 via `dailyGoals` in stats.ts; volumeGoal is in the display unit),
+  edited in a Profile "Daily goals" card. The old Flame "Today" card is
+  gone.
 - 2026-07-10: Floating top bar — the dock's light twin. The in-flow
   logo/greeting/avatar row in App.tsx became an absolute pill (top 8,
   left/right 14, height 52, `C.surface`, radius 999, clay shadow; logo

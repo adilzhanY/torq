@@ -14,6 +14,7 @@ import React, {
 import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
 import { workoutName } from "./stats";
+import { buildPlan, GOAL_META } from "./plan";
 import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
@@ -21,6 +22,7 @@ import {
   uid,
   type Exercise,
   type Measurement,
+  type PlanPrefs,
   type Routine,
   type Settings,
   type Workout,
@@ -44,6 +46,9 @@ interface StoreValue {
 
   saveRoutine: (name: string, entries: WorkoutEntry[], id?: string) => void;
   deleteRoutine: (id: string) => void;
+  /** Build the training plan from onboarding prefs: imports any missing
+   *  catalog exercises, replaces previous plan routines, saves the prefs. */
+  applyPlan: (prefs: PlanPrefs) => void;
 
   startWorkout: (routine?: Routine) => void;
   /** Start a recommended template: imports missing catalog exercises first. */
@@ -117,6 +122,25 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     dbRef.current.tombstones.push({ table, id, updatedAt: Date.now() });
   };
 
+  /** Library exercise for a catalog dbId — imports it if missing. */
+  const ensureCatalog = (dbId: string): Exercise | null => {
+    const dbEx = DB_BY_ID[dbId];
+    if (!dbEx) return null;
+    let ex = dbRef.current.exercises.find((e) => e.dbId === dbId);
+    if (!ex) {
+      ex = stamp({
+        id: uid(),
+        name: titleCase(dbEx.name),
+        bodyPart: toBodyPart(dbEx.bodyParts[0] ?? "other"),
+        equipment: toEquipment(dbEx.equipments[0] ?? "other"),
+        dbId,
+        updatedAt: 0,
+      });
+      dbRef.current.exercises.push(ex);
+    }
+    return ex;
+  };
+
   const value: StoreValue = {
     ready,
     exercises: dbRef.current.exercises,
@@ -153,6 +177,51 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       bury("routines", id);
       commit();
     },
+    applyPlan: (prefs) => {
+      // Out with the old plan (user-made routines are untouched).
+      for (const r of dbRef.current.routines) {
+        if (r.plan) bury("routines", r.id);
+      }
+      dbRef.current.routines = dbRef.current.routines.filter((r) => !r.plan);
+
+      for (const day of buildPlan(prefs)) {
+        const entries: WorkoutEntry[] = [];
+        for (const item of day.items) {
+          const ex = ensureCatalog(item.dbId);
+          if (!ex) continue;
+          entries.push({
+            exerciseId: ex.id,
+            sets: Array.from({ length: item.sets }, () => ({
+              type: "normal" as const,
+              weight: 0,
+              reps: item.reps,
+              done: false,
+              restSec: item.restSec,
+            })),
+          });
+        }
+        dbRef.current.routines.push(
+          stamp({
+            id: uid(),
+            name: day.name,
+            entries,
+            plan: true,
+            weekday: day.weekday,
+            updatedAt: 0,
+          }),
+        );
+      }
+
+      const s = dbRef.current.settings;
+      dbRef.current.settings = stamp({
+        ...s,
+        plan: prefs,
+        onboarded: true,
+        // Prefill the calorie goal from the goal profile unless already set.
+        kcalGoal: s.kcalGoal ?? GOAL_META[prefs.goal].kcalGoal,
+      });
+      commit();
+    },
 
     startWorkout: (routine) => {
       if (dbRef.current.activeWorkout) return;
@@ -174,21 +243,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (dbRef.current.activeWorkout) return;
       const entries: WorkoutEntry[] = [];
       for (const item of template.items) {
-        const dbEx = DB_BY_ID[item.dbId];
-        if (!dbEx) continue;
         // Reuse the library exercise if it was imported before, else import.
-        let ex = dbRef.current.exercises.find((e) => e.dbId === item.dbId);
-        if (!ex) {
-          ex = stamp({
-            id: uid(),
-            name: titleCase(dbEx.name),
-            bodyPart: toBodyPart(dbEx.bodyParts[0] ?? "other"),
-            equipment: toEquipment(dbEx.equipments[0] ?? "other"),
-            dbId: item.dbId,
-            updatedAt: 0,
-          });
-          dbRef.current.exercises.push(ex);
-        }
+        const ex = ensureCatalog(item.dbId);
+        if (!ex) continue;
         entries.push({
           exerciseId: ex.id,
           sets: Array.from({ length: item.sets }, () => ({
