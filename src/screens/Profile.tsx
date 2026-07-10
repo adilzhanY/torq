@@ -1,11 +1,14 @@
-/** Profile tab — stats summary, settings, and Supabase account/sync. */
-import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+/** Profile — stats summary, settings, and Supabase account/sync. No longer a
+ * tab: opens as a full-screen overlay from the avatar button in the top bar. */
+import { useEffect, useState } from "react";
+import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { C, R } from "../theme";
-import { Card, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
+import { Icon } from "../components/Icon";
+import { SlideUp } from "../components/anim";
+import { Card, NumberField, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
-import { workoutVolume, type Unit } from "../types";
+import { workoutVolume, type Settings, type Unit } from "../types";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
@@ -73,13 +76,124 @@ function Account() {
   );
 }
 
-export function Profile() {
+const LB_TO_KG = 0.45359237;
+
+/** Sex / birth year / height / fallback weight — feeds calorie estimation. */
+function BodyProfileCard({
+  settings,
+  updateSettings,
+}: {
+  settings: Settings;
+  updateSettings: (patch: Partial<Settings>) => void;
+}) {
+  const isLb = settings.unit === "lb";
+  const [birthYear, setBirthYear] = useState(settings.birthYear ? String(settings.birthYear) : "");
+  const [height, setHeight] = useState(settings.heightCm ? String(settings.heightCm) : "");
+  const [weight, setWeight] = useState(
+    settings.weightKg
+      ? String(Math.round(isLb ? settings.weightKg / LB_TO_KG : settings.weightKg))
+      : "",
+  );
+
+  const commitNumber = (raw: string, save: (n: number | undefined) => void) => {
+    const n = Number(raw);
+    save(n > 0 ? n : undefined);
+  };
+
+  return (
+    <Card style={{ gap: 10 }}>
+      <Txt size={12} weight="bold" color={C.inkSoft}>Sex</Txt>
+      <View style={{ flexDirection: "row", gap: 6 }}>
+        {(["male", "female"] as const).map((s) => (
+          <Pressable
+            key={s}
+            onPress={() => updateSettings({ sex: s })}
+            style={{
+              backgroundColor: settings.sex === s ? C.primary : C.page2,
+              borderRadius: R.pill,
+              paddingHorizontal: 16,
+              paddingVertical: 6,
+            }}
+          >
+            <Txt size={13} weight="bold" color={settings.sex === s ? "#fff" : C.inkSoft}>
+              {s === "male" ? "Male" : "Female"}
+            </Txt>
+          </Pressable>
+        ))}
+      </View>
+      <View style={{ flexDirection: "row", gap: 10 }}>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Birth year"
+            value={birthYear}
+            onChange={setBirthYear}
+            placeholder="2000"
+            onBlur={() => commitNumber(birthYear, (n) => updateSettings({ birthYear: n }))}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Height"
+            value={height}
+            onChange={setHeight}
+            suffix="cm"
+            placeholder="175"
+            onBlur={() => commitNumber(height, (n) => updateSettings({ heightCm: n }))}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <NumberField
+            label="Weight"
+            value={weight}
+            onChange={setWeight}
+            suffix={settings.unit}
+            placeholder={isLb ? "165" : "75"}
+            onBlur={() =>
+              commitNumber(weight, (n) =>
+                updateSettings({ weightKg: n == null ? undefined : isLb ? n * LB_TO_KG : n }),
+              )
+            }
+          />
+        </View>
+      </View>
+      <Txt size={11} color={C.inkFaint}>
+        Used to estimate calories burnt. Weight prefers your latest “Body
+        weight” entry on the Measure tab; this one is the fallback.
+      </Txt>
+    </Card>
+  );
+}
+
+export function Profile({ onClose }: { onClose: () => void }) {
   const { workouts, settings, updateSettings } = useStore();
   const totalVolume = workouts.reduce((s, w) => s + workoutVolume(w), 0);
 
+  useEffect(() => {
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      onClose();
+      return true;
+    });
+    return () => sub.remove();
+  }, [onClose]);
+
   return (
+    <SlideUp
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        backgroundColor: C.page,
+      }}
+    >
     <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={22} weight="extrabold">Profile</Txt>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Pressable hitSlop={8} onPress={onClose}>
+          <Icon name="ChevronLeft" size={24} color={C.ink} />
+        </Pressable>
+        <Txt size={22} weight="extrabold" style={{ flex: 1 }}>Profile</Txt>
+      </View>
 
       <View style={{ flexDirection: "row", gap: 10 }}>
         <Stat label="WORKOUTS" value={String(workouts.length)} />
@@ -115,8 +229,12 @@ export function Profile() {
         </View>
       </Card>
 
+      <SectionTitle>Body profile</SectionTitle>
+      <BodyProfileCard settings={settings} updateSettings={updateSettings} />
+
       <SectionTitle>Account & sync</SectionTitle>
       <Account />
     </ScrollView>
+    </SlideUp>
   );
 }

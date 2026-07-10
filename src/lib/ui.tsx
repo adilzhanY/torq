@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 
-export type Tab = "profile" | "history" | "workout" | "exercises" | "measure";
+export type Tab = "home" | "history" | "workout" | "exercises" | "measure";
 
 interface UiValue {
   tab: Tab;
@@ -10,7 +10,7 @@ interface UiValue {
 const Ctx = createContext<UiValue | null>(null);
 
 export function UiProvider({ children }: { children: React.ReactNode }) {
-  const [tab, setTab] = useState<Tab>("workout");
+  const [tab, setTab] = useState<Tab>("home");
   return <Ctx.Provider value={{ tab, setTab }}>{children}</Ctx.Provider>;
 }
 

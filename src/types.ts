@@ -53,10 +53,14 @@ export interface WorkoutSet {
 }
 
 /** One exercise inside a workout/routine with its sets. */
+/** Live-session focus metric shown as a pill next to the exercise name. */
+export type FocusMetric = "volume" | "volumeIncrease" | "reps" | "weightReps";
+
 export interface WorkoutEntry {
   exerciseId: string;
   sets: WorkoutSet[];
   notes?: string;
+  focusMetric?: FocusMetric;
 }
 
 /** A reusable workout template (Strong's "Routine"). */
@@ -97,6 +101,12 @@ export interface Settings {
   unit: Unit;
   /** Default rest timer in seconds. */
   restSec: number;
+  /** Body profile for calorie estimation (see lib/calories.ts). */
+  sex?: "male" | "female";
+  birthYear?: number;
+  heightCm?: number;
+  /** Fallback body weight in kg when no "Body weight" measurement is logged. */
+  weightKg?: number;
   updatedAt: number;
 }
 

@@ -16,6 +16,12 @@ function fmtDate(ms: number): string {
   });
 }
 
+/** "9:41" local, same style as the summary's long date line. */
+function fmtTime(ms: number): string {
+  const d = new Date(ms);
+  return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 export function WorkoutCard({
   workout: w,
   onPress,
@@ -39,7 +45,12 @@ export function WorkoutCard({
           ) : null}
         </View>
         <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
-          <Pill text={fmtDate(w.startedAt)} color={C.inkSoft} bg={C.page2} />
+          {/* Completion time; falls back to the start for legacy/odd rows. */}
+          <Pill
+            text={`${fmtDate(w.startedAt)} · ${fmtTime(w.endedAt ?? w.startedAt)}`}
+            color={C.inkSoft}
+            bg={C.page2}
+          />
           {w.endedAt ? (
             <Pill text={fmtDuration(w.startedAt, w.endedAt)} color={C.inkSoft} bg={C.page2} />
           ) : null}

@@ -83,8 +83,14 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
-Strong-style five tabs: Profile · History · Workout (default) · Exercises ·
-Measure. The Workout tab is quick-start + the user's routines + a
+Five tabs: Home (default) · History · Workout · Exercises · Measure. Profile
+is NOT a tab — it opens as a full-screen overlay from the avatar button on
+the top bar's right. Home is a dashboard: a "Today" calories-burnt card
+(Flame icon, includes the live session), this-week stat cards (workouts /
+sets / volume), a dark CTA that jumps to the Workout tab (turns lime
+"Workout in progress" while a session is live), and the 3 most recent
+workouts as WorkoutCards opening WorkoutSummary. The Workout tab is
+quick-start + the user's routines + a
 "Recommended" section (3-card push/pull/legs split from
 `src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
 becomes the live set-logger while a session is active (`activeWorkout` in
@@ -313,3 +319,79 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   gained a flex-1 View wrapper for the overlay), and an exercise from the
   library (ExerciseInfo About tab). Use these for any future centered
   modal.
+- 2026-07-09: Home tab added, Profile moved to the top bar. New
+  `src/screens/Home.tsx` dashboard (see Screens above); default tab is now
+  `home` (`Tab` type in `src/lib/ui.tsx` swapped profile → home; dock icon
+  `House` added to Icon.tsx). Profile left the dock: the top bar gained a
+  right-aligned `UserCircle` button (App.tsx holds `profileOpen` state) and
+  `Profile.tsx` became a SlideUp full-screen overlay with a ChevronLeft
+  header and hardware-Back close, rendered above the BottomNav so the dock
+  is covered. Verified on the emulator: Home stats/CTA/recents, profile
+  open/close, dock morph with the new Home tab.
+- 2026-07-10: Animated "Add set" — new `GrowIn` primitive in
+  `components/anim.tsx`: mount entrance that grows the content in from zero
+  height (220ms ease-out) while fading/sliding it down, then releases the
+  clip once settled so later inner layout changes flow naturally. GOTCHA:
+  the inner content must be `position: absolute` while animating (same
+  trick as Collapsible) — inside the 0-height clipped parent a normal-flow
+  child lays out at height 0 on Fabric, so onLayout never reports a
+  measurable height and the content stays invisible; it returns to normal
+  flow on settle (no remount, style-only change). In Workout.tsx only sets
+  appended via the Add set button animate: their "ei-si" keys go into the
+  `grownSets` ref and the set block wrapper picks GrowIn vs View off it —
+  restored sessions and last-time prefills mount statically. Verified on
+  the emulator via screenrecord frames (grow + fade visible, settled state
+  correct).
+- 2026-07-10: Set-type menu anchored to the set number. It now anchors to
+  the number element's page origin (pageX/Y − locationX/Y from the touch
+  event) instead of the finger position, offset −16 horizontally so the
+  W/D/F letter column sits exactly under the number, top just below the
+  row. GOTCHA fixed along the way: the app is edge-to-edge but a plain
+  Android Modal's window starts below the status bar, so pageY-anchored
+  children rendered ~a status bar (~43dp) too low — `statusBarTranslucent`
+  on the Modal aligns the two coordinate spaces. Verified with exact-tap
+  screenshots.
+- 2026-07-10: Calorie estimation (`src/lib/calories.ts`), built on the
+  personal Mifflin-St Jeor BMR (weight/height/age/sex → resting kcal).
+  Three per-completed-set components; the wall clock is ignored ENTIRELY,
+  per Adilzhan — activity only (v1 billed idle-session time: one light set
+  showed 186 kcal; v2 capped billing at elapsed time, which crushed
+  workouts backfilled from another app in minutes: a real 22-set session
+  showed 89 kcal): (1) lifting work 0.008 kcal per kg·rep (physics +
+  ~20-25% muscle efficiency + eccentric; set weights converted from the
+  display unit; bodyweight-equipment exercises add 0.6× body mass to the
+  load), (2) work time ~15s + 4s/rep at Compendium METs (resistance 3.5 /
+  olympic 6 / cardio 7), (3) planned per-set rest (set override or
+  `settings.restSec`, clamped 30–240s) at 1.8 MET. 0 done sets → 0 kcal;
+  backfilled and live sessions bill identically. Sanity: ~10 kcal for one
+  70kg×5 set, ~246 kcal for a 22-set ~7000kg session. `Settings` gained optional
+  `sex`/`birthYear`/`heightCm`/`weightKg` (ride along in sync; edited in a
+  new Profile "Body profile" card — weight entered in the display unit,
+  stored in kg). Effective weight prefers the latest Measure-tab "Body
+  weight" entry at/before the workout (`bodyProfileAt`), so history
+  reflects weight at the time; missing fields fall back to
+  75kg/175cm/25/male with `complete:false`, which Home surfaces as a "set
+  your body stats in Profile" hint. Shown as a Home "Today" card (finished
+  workouts today + live session, Flame on lime) and a 4th Flame stat in
+  the WorkoutSummary footer (footer text 13px / padding 14 to fit four
+  stats).
+- 2026-07-10: WorkoutCard's date pill now includes the completion time —
+  "Fri, Jul 10 · 9:41" (`endedAt`, falling back to `startedAt`); no schema
+  change, the field was already stored. Shows everywhere the card is used
+  (History, Home recents, exercise-info History).
+- 2026-07-10: Strong-style exercise header in the live session — the trash
+  button is gone, replaced by a focus-metric pill + a ⋯ menu (both
+  anchored popovers, same Modal+PopIn+statusBarTranslucent pattern as the
+  set-type menu, right-aligned under their buttons). Metric pill: shows a
+  Waypoints icon until a metric is picked in the "Set a Focus Metric"
+  dialog (Total Volume / Volume Increase / Total Reps / Weight/Reps —
+  live values from `metricsFor` in Workout.tsx: done sets only, increase
+  is % vs the most recent finished workout with that exercise, clamped to
+  +0% until something is logged, top set for Weight/Reps); the pick is
+  saved as `WorkoutEntry.focusMetric` (types.ts) so it persists/syncs;
+  re-picking clears it. ⋯ menu is UI-only for now (Add note / Add sticky
+  note / Add warm-up sets / Update rest timers / Replace exercise /
+  Create superset / Preferences — lucide FileText, Pin, Diff, Timer,
+  Undo2, List, SlidersVertical) EXCEPT Remove exercise (X, red), which
+  routes to the existing ConfirmDialog since the trash is gone. Verified
+  on the emulator end to end.

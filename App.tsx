@@ -1,5 +1,6 @@
 import "./src/global.css";
-import { ActivityIndicator, View } from "react-native";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -16,7 +17,9 @@ import { UiProvider, useUi } from "./src/lib/ui";
 import { C } from "./src/theme";
 import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
+import { Icon } from "./src/components/Icon";
 import { Txt } from "./src/components/ui";
+import { Home } from "./src/screens/Home";
 import { Workout } from "./src/screens/Workout";
 import { History } from "./src/screens/History";
 import { Exercises } from "./src/screens/Exercises";
@@ -27,6 +30,7 @@ function Root() {
   const { tab } = useUi();
   const { ready, settings } = useStore();
   const name = settings.name?.trim();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   if (!ready) {
     return (
@@ -39,7 +43,7 @@ function Root() {
 
   return (
     <View style={{ flex: 1, backgroundColor: C.page }}>
-      {/* Top bar: logo + greeting */}
+      {/* Top bar: logo + greeting, profile on the right */}
       <View
         style={{
           flexDirection: "row",
@@ -51,20 +55,25 @@ function Root() {
         }}
       >
         <Logo size={26} />
-        <Txt size={16} weight="extrabold">
+        <Txt size={16} weight="extrabold" style={{ flex: 1 }} numberOfLines={1}>
           {name ? `Hello, ${name}.` : "Torq"}
         </Txt>
+        <Pressable hitSlop={8} onPress={() => setProfileOpen(true)}>
+          <Icon name="UserCircle" size={26} color={C.ink} />
+        </Pressable>
       </View>
 
       <View style={{ flex: 1 }}>
+        {tab === "home" && <Home />}
         {tab === "workout" && <Workout />}
         {tab === "history" && <History />}
         {tab === "exercises" && <Exercises />}
         {tab === "measure" && <Measure />}
-        {tab === "profile" && <Profile />}
       </View>
 
       <BottomNav />
+
+      {profileOpen ? <Profile onClose={() => setProfileOpen(false)} /> : null}
     </View>
   );
 }

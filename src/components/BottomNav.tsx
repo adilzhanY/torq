@@ -19,7 +19,7 @@ import { Icon } from "./Icon";
 import { Txt } from "./ui";
 
 const ITEMS: { tab: Tab; label: string; icon: string }[] = [
-  { tab: "profile", label: "Profile", icon: "UserCircle" },
+  { tab: "home", label: "Home", icon: "House" },
   { tab: "history", label: "History", icon: "History" },
   { tab: "workout", label: "Workout", icon: "Dumbbell" },
   { tab: "exercises", label: "Exercises", icon: "BicepsFlexed" },

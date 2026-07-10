@@ -12,6 +12,7 @@ import { C, R, SET_TYPE_META, clay } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Card, Txt } from "./ui";
+import { bodyProfileAt, workoutCalories } from "../lib/calories";
 import { useStore } from "../lib/store";
 import { computePRs, est1RM, fmtDuration, fmtLongDate } from "../lib/stats";
 import { workoutVolume, type Workout } from "../types";
@@ -37,9 +38,9 @@ function PrPill({ label }: { label: string }) {
 
 function FooterStat({ icon, text }: { icon: string; text: string }) {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-      <Icon name={icon} size={16} color={C.inkSoft} />
-      <Txt size={14} weight="extrabold">{text}</Txt>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+      <Icon name={icon} size={15} color={C.inkSoft} />
+      <Txt size={13} weight="extrabold">{text}</Txt>
     </View>
   );
 }
@@ -54,7 +55,7 @@ export function WorkoutSummary({
   /** Rings this exercise's card in light green (deep-link from exercise info). */
   highlightExerciseId?: string;
 }) {
-  const { exercises, workouts, settings } = useStore();
+  const { exercises, workouts, measurements, settings } = useStore();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
 
   useEffect(() => {
@@ -66,6 +67,16 @@ export function WorkoutSummary({
   }, [onClose]);
 
   const prs = useMemo(() => computePRs(workout, workouts), [workout, workouts]);
+  const kcal = useMemo(
+    () =>
+      workoutCalories(
+        workout,
+        exercises,
+        bodyProfileAt(settings, measurements, workout.startedAt),
+        settings,
+      ),
+    [workout, exercises, settings, measurements],
+  );
 
   return (
     <SlideUp
@@ -156,7 +167,7 @@ export function WorkoutSummary({
             {
               backgroundColor: C.surface,
               borderRadius: R.md,
-              paddingHorizontal: 18,
+              paddingHorizontal: 14,
               paddingVertical: 14,
               flexDirection: "row",
               alignItems: "center",
@@ -173,6 +184,7 @@ export function WorkoutSummary({
             icon="Scale"
             text={`${Math.round(workoutVolume(workout))} ${settings.unit}`}
           />
+          <FooterStat icon="Flame" text={`${kcal} kcal`} />
           <FooterStat icon="Trophy" text={`${prs.total} PR${prs.total === 1 ? "" : "s"}`} />
         </View>
       </View>

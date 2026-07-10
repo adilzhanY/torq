@@ -31,12 +31,13 @@ import {
   SectionTitle,
   Txt,
 } from "../components/ui";
-import { PopIn, SlideUp, Squish } from "../components/anim";
+import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
 import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
 import {
   workoutSets,
   workoutVolume,
+  type FocusMetric,
   type Workout as WorkoutModel,
   type WorkoutEntry,
   type WorkoutSet,
@@ -357,8 +358,14 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [editReq, setEditReq] = useState<{ key: string; n: number } | null>(null);
   /** Which set's type menu is open + where to anchor it (touch position). */
   const [typeMenu, setTypeMenu] = useState<{ ei: number; si: number; x: number; y: number } | null>(null);
+  /** Per-exercise header menus, anchored at the pressed button's pageY. */
+  const [metricMenu, setMetricMenu] = useState<{ ei: number; y: number } | null>(null);
+  const [dotsMenu, setDotsMenu] = useState<{ ei: number; y: number } | null>(null);
   /** Entry index pending delete confirmation. */
   const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
+  /** "ei-si" keys of sets added via Add set this render lifetime — only
+   * those mount with the GrowIn entrance (restored/prefilled rows don't). */
+  const grownSets = useRef<Set<string>>(new Set());
   const weightRefs = useRef<Record<string, TextInput | null>>({});
   const now = useNow(!!activeWorkout);
 
@@ -398,6 +405,35 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   };
 
   const restFor = (set: WorkoutSet) => set.restSec ?? settings.restSec;
+
+  const patchEntry = (ei: number, patch: Partial<WorkoutEntry>) =>
+    setEntries(w.entries.map((e, i) => (i !== ei ? e : { ...e, ...patch })));
+
+  /** Live focus-metric values for one exercise: completed sets only (same
+   * rule as the header's live sets/volume), compared against the most
+   * recent finished workout with this exercise for the increase. */
+  const metricsFor = (entry: WorkoutEntry) => {
+    let vol = 0;
+    let reps = 0;
+    let top: WorkoutSet | null = null;
+    for (const s of entry.sets) {
+      if (!s.done) continue;
+      vol += s.weight * s.reps;
+      reps += s.reps;
+      if (!top || s.weight > top.weight) top = s;
+    }
+    const prev = prevSetsFor(entry.exerciseId);
+    const prevVol = prev ? prev.reduce((s, x) => s + x.weight * x.reps, 0) : 0;
+    // Stays +0% until something is logged — a fresh exercise isn't "-100%".
+    const pct = prevVol > 0 && vol > 0 ? Math.round(((vol - prevVol) / prevVol) * 100) : 0;
+    const u = settings.unit;
+    return {
+      volume: `${Math.round(vol)} ${u}`,
+      volumeIncrease: `${pct >= 0 ? "+" : ""}${pct}%`,
+      reps: `${reps} reps`,
+      weightReps: top ? `${top.weight} ${u} × ${top.reps}` : `0 ${u}`,
+    } satisfies Record<FocusMetric, string>;
+  };
 
   const toggleDone = (ei: number, si: number, set: WorkoutSet) => {
     const done = !set.done;
@@ -491,7 +527,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         const prevSets = prevSetsFor(entry.exerciseId);
         return (
         <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 10 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Pressable
               hitSlop={6}
               onPress={() => setInfo(entry.exerciseId)}
@@ -510,8 +546,40 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 </Txt>
               </View>
             </Pressable>
-            <Pressable hitSlop={8} onPress={() => setConfirmRemove(ei)}>
-              <Icon name="Trash2" size={17} color={C.badAcc} />
+            {/* Focus metric pill: Waypoints until a metric is picked, then
+                its live value. Opens the Set a Focus Metric dialog. */}
+            <Pressable
+              hitSlop={6}
+              onPress={(e) => {
+                const ne = e.nativeEvent;
+                setMetricMenu({ ei, y: ne.pageY - ne.locationY });
+              }}
+              style={{
+                backgroundColor: C.page2,
+                borderRadius: R.pill,
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                minHeight: 26,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {entry.focusMetric ? (
+                <Txt size={12} weight="extrabold" color={C.inkSoft}>
+                  {metricsFor(entry)[entry.focusMetric]}
+                </Txt>
+              ) : (
+                <Icon name="Waypoints" size={15} color={C.inkSoft} />
+              )}
+            </Pressable>
+            <Pressable
+              hitSlop={8}
+              onPress={(e) => {
+                const ne = e.nativeEvent;
+                setDotsMenu({ ei, y: ne.pageY - ne.locationY });
+              }}
+            >
+              <Icon name="Ellipsis" size={20} color={C.inkSoft} />
             </Pressable>
           </View>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
@@ -542,8 +610,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           {entry.sets.map((set, si) => {
             const prev = prevSets?.[si];
             const restKey = `${ei}-${si}`;
+            const Wrap = grownSets.current.has(restKey) ? GrowIn : View;
             return (
-            <View key={si} style={{ gap: 8 }}>
+            <Wrap key={si} style={{ gap: 8 }}>
               <View
                 style={{
                   flexDirection: "row",
@@ -557,9 +626,17 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               >
                 <Pressable
                   hitSlop={6}
-                  onPress={(e) =>
-                    setTypeMenu({ ei, si, x: e.nativeEvent.pageX, y: e.nativeEvent.pageY })
-                  }
+                  onPress={(e) => {
+                    // Anchor the menu to the number itself, not the finger:
+                    // page − location = the pressable's top-left on screen.
+                    const ne = e.nativeEvent;
+                    setTypeMenu({
+                      ei,
+                      si,
+                      x: ne.pageX - ne.locationX,
+                      y: ne.pageY - ne.locationY,
+                    });
+                  }}
                   style={{ width: 28 }}
                 >
                   {set.type === "normal" ? (
@@ -618,13 +695,14 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 onChangeSeconds={(sec) => patchSet(ei, si, { restSec: sec })}
                 editNonce={editReq?.key === restKey ? editReq.n : 0}
               />
-            </View>
+            </Wrap>
             );
           })}
           <Pressable
             onPress={() => {
               const last = entry.sets[entry.sets.length - 1];
               const next = { type: "normal" as const, weight: last?.weight ?? 0, reps: last?.reps ?? 0, done: false };
+              grownSets.current.add(`${ei}-${entry.sets.length}`);
               setEntries(w.entries.map((e, i) => (i !== ei ? e : { ...e, sets: [...e.sets, next] })));
             }}
             style={{ flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 4 }}
@@ -657,6 +735,10 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       <Modal
         visible={typeMenu !== null}
         transparent
+        // Align the modal window with the edge-to-edge app window: without
+        // this it starts below the status bar and every pageY-anchored
+        // position lands ~a status bar too low.
+        statusBarTranslucent
         animationType="none"
         onRequestClose={() => setTypeMenu(null)}
       >
@@ -665,15 +747,18 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
             <PopIn
               style={{
                 position: "absolute",
+                // −16 (menu padding 4 + item padding 12) lines the W/D/F
+                // letter column up exactly under the set number.
                 left: Math.max(
                   12,
-                  Math.min(typeMenu.x - 10, Dimensions.get("window").width - 190 - 12),
+                  Math.min(typeMenu.x - 16, Dimensions.get("window").width - 190 - 12),
                 ),
-                // Flip above the touch point when too close to the bottom.
+                // Just under the number's row; flip above it when too close
+                // to the bottom (menu is ~132 tall).
                 top:
-                  typeMenu.y + 170 > Dimensions.get("window").height
-                    ? typeMenu.y - 178
-                    : typeMenu.y + 10,
+                  typeMenu.y + 26 + 140 > Dimensions.get("window").height
+                    ? typeMenu.y - 140
+                    : typeMenu.y + 26,
                 width: 190,
               }}
             >
@@ -698,6 +783,138 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     </Pressable>
                   );
                 })}
+              </View>
+            </PopIn>
+          ) : null}
+        </Pressable>
+      </Modal>
+
+      {/* Set a Focus Metric — anchored under the exercise's metric pill. */}
+      <Modal
+        visible={metricMenu !== null}
+        transparent
+        statusBarTranslucent
+        animationType="none"
+        onRequestClose={() => setMetricMenu(null)}
+      >
+        <Pressable style={{ flex: 1 }} onPress={() => setMetricMenu(null)}>
+          {metricMenu && w.entries[metricMenu.ei] ? (
+            <PopIn
+              style={{
+                position: "absolute",
+                right: 16,
+                top:
+                  metricMenu.y + 32 + 244 > Dimensions.get("window").height
+                    ? metricMenu.y - 250
+                    : metricMenu.y + 32,
+                width: 280,
+              }}
+            >
+              <View style={[{ backgroundColor: C.surface, borderRadius: R.md, padding: 6 }, clay()]}>
+                <Txt size={15} weight="extrabold" style={{ paddingHorizontal: 10, paddingVertical: 8 }}>
+                  Set a Focus Metric
+                </Txt>
+                {(
+                  [
+                    { key: "volume", label: "Total Volume" },
+                    { key: "volumeIncrease", label: "Volume Increase" },
+                    { key: "reps", label: "Total Reps" },
+                    { key: "weightReps", label: "Weight/Reps" },
+                  ] as { key: FocusMetric; label: string }[]
+                ).map((m) => {
+                  const entry = w.entries[metricMenu.ei];
+                  const cur = entry.focusMetric === m.key;
+                  return (
+                    <Pressable
+                      key={m.key}
+                      onPress={() => {
+                        // Re-picking the active metric clears the pill,
+                        // same revert pattern as the set-type menu.
+                        patchEntry(metricMenu.ei, { focusMetric: cur ? undefined : m.key });
+                        setMetricMenu(null);
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                        paddingHorizontal: 10,
+                        paddingVertical: 11,
+                      }}
+                    >
+                      <Txt size={14} weight="semibold" style={{ flex: 1 }}>
+                        {m.label}
+                      </Txt>
+                      <Txt size={14} weight="bold" color={C.inkSoft}>
+                        {metricsFor(entry)[m.key]}
+                      </Txt>
+                      {cur ? <Icon name="Check" size={15} color={C.inkSoft} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </PopIn>
+          ) : null}
+        </Pressable>
+      </Modal>
+
+      {/* Exercise ⋯ menu — Strong's list; only Remove exercise acts yet. */}
+      <Modal
+        visible={dotsMenu !== null}
+        transparent
+        statusBarTranslucent
+        animationType="none"
+        onRequestClose={() => setDotsMenu(null)}
+      >
+        <Pressable style={{ flex: 1 }} onPress={() => setDotsMenu(null)}>
+          {dotsMenu ? (
+            <PopIn
+              style={{
+                position: "absolute",
+                right: 16,
+                top:
+                  dotsMenu.y + 28 + 396 > Dimensions.get("window").height
+                    ? Math.max(12, dotsMenu.y - 402)
+                    : dotsMenu.y + 28,
+                width: 250,
+              }}
+            >
+              <View style={[{ backgroundColor: C.surface, borderRadius: R.md, padding: 6 }, clay()]}>
+                {(
+                  [
+                    { icon: "FileText", label: "Add note" },
+                    { icon: "Pin", label: "Add sticky note" },
+                    { icon: "Diff", label: "Add warm-up sets" },
+                    { icon: "Timer", label: "Update rest timers" },
+                    { icon: "Undo2", label: "Replace exercise", divider: true },
+                    { icon: "List", label: "Create superset" },
+                    { icon: "SlidersVertical", label: "Preferences", divider: true },
+                    { icon: "X", label: "Remove exercise", divider: true, danger: true },
+                  ] as { icon: string; label: string; divider?: boolean; danger?: boolean }[]
+                ).map((item) => (
+                  <View key={item.label}>
+                    {item.divider ? (
+                      <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.08)", marginVertical: 4 }} />
+                    ) : null}
+                    <Pressable
+                      onPress={() => {
+                        setDotsMenu(null);
+                        if (item.label === "Remove exercise") setConfirmRemove(dotsMenu.ei);
+                      }}
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 12,
+                        paddingHorizontal: 10,
+                        paddingVertical: 11,
+                      }}
+                    >
+                      <Icon name={item.icon} size={17} color={item.danger ? C.badAcc : C.inkSoft} />
+                      <Txt size={14} weight="semibold" color={item.danger ? C.badAcc : C.ink}>
+                        {item.label}
+                      </Txt>
+                    </Pressable>
+                  </View>
+                ))}
               </View>
             </PopIn>
           ) : null}
