@@ -28,12 +28,10 @@ import { Measure } from "./src/screens/Measure";
 import { Profile } from "./src/screens/Profile";
 
 function Root() {
-  const { tab } = useUi();
+  const { tab, planWizard, openPlanWizard, closePlanWizard } = useUi();
   const { ready, settings } = useStore();
   const name = settings.name?.trim();
   const [profileOpen, setProfileOpen] = useState(false);
-  // Reopened from Profile → Rebuild plan (first run opens it automatically).
-  const [planWizard, setPlanWizard] = useState(false);
 
   if (!ready) {
     return (
@@ -45,7 +43,7 @@ function Root() {
   }
 
   if (!settings.onboarded || planWizard) {
-    return <Onboarding onDone={() => setPlanWizard(false)} />;
+    return <Onboarding onDone={closePlanWizard} />;
   }
 
   return (
@@ -101,7 +99,7 @@ function Root() {
           onClose={() => setProfileOpen(false)}
           onRebuildPlan={() => {
             setProfileOpen(false);
-            setPlanWizard(true);
+            openPlanWizard();
           }}
         />
       ) : null}

@@ -124,12 +124,9 @@ export interface Settings {
   heightCm?: number;
   /** Fallback body weight in kg when no "Body weight" measurement is logged. */
   weightKg?: number;
-  /** Daily goals for the Home dashboard (defaults in lib/stats dailyGoals).
-   *  volumeGoal is interpreted in the display unit. */
+  /** Daily calorie-burn goal for the Home dashboard (default in lib/stats
+   *  kcalGoal; prefilled per plan goal). Other targets are plan-derived. */
   kcalGoal?: number;
-  activeMinGoal?: number;
-  setsGoal?: number;
-  volumeGoal?: number;
   /** Training plan built by onboarding (routines carry the actual days). */
   plan?: PlanPrefs;
   /** Welcome flow finished (or skipped). */

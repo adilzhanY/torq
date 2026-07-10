@@ -23,7 +23,7 @@
  * ids are skipped at build time rather than crashing.
  */
 import { DB_BY_ID } from "./exercisedb";
-import type { BodyPart, PlanGoal, PlanPrefs } from "../types";
+import type { BodyPart, PlanGoal, PlanPrefs, Routine } from "../types";
 
 type Kind = "compound" | "isolation";
 
@@ -294,4 +294,23 @@ export function planDayMinutes(items: PlanDayItem[]): number {
     0,
   );
   return Math.round(sec / 60);
+}
+
+/** Same estimate for a stored routine (the plan as it actually exists). */
+export function routineMinutes(routine: Routine, defaultRestSec: number): number {
+  const sec = routine.entries.reduce(
+    (t, e) =>
+      t +
+      e.sets.reduce(
+        (s, set) => s + 15 + 4 * Math.max(0, set.reps) + (set.restSec ?? defaultRestSec),
+        0,
+      ),
+    0,
+  );
+  return Math.round(sec / 60);
+}
+
+/** Count of sets in a routine. */
+export function routineSets(routine: Routine): number {
+  return routine.entries.reduce((t, e) => t + e.sets.length, 0);
 }

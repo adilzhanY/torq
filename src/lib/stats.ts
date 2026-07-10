@@ -1,19 +1,10 @@
 /** Workout math + formatting for the post-workout summary (Strong-style). */
 import type { Settings, Workout, WorkoutSet } from "../types";
 
-/** Daily Home-dashboard goals with defaults applied. */
-export function dailyGoals(settings: Settings): {
-  kcal: number;
-  activeMin: number;
-  sets: number;
-  volume: number;
-} {
-  return {
-    kcal: settings.kcalGoal ?? 300,
-    activeMin: settings.activeMinGoal ?? 60,
-    sets: settings.setsGoal ?? 25,
-    volume: settings.volumeGoal ?? 8000,
-  };
+/** Daily calorie-burn goal (the only typed goal — the rest come from the
+ *  training plan). */
+export function kcalGoal(settings: Settings): number {
+  return settings.kcalGoal ?? 300;
 }
 
 /** Estimated one-rep max (Epley): weight × (1 + reps/30). */

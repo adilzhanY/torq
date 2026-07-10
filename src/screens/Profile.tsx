@@ -197,7 +197,8 @@ function BodyProfileCard({
   );
 }
 
-/** Daily goals for the Home dashboard (defaults in lib/stats dailyGoals). */
+/** The one typed goal — daily calorie burn. Everything else on the Home
+ *  dashboard derives from the training plan. */
 function DailyGoalsCard({
   settings,
   updateSettings,
@@ -206,62 +207,27 @@ function DailyGoalsCard({
   updateSettings: (patch: Partial<Settings>) => void;
 }) {
   const [kcal, setKcal] = useState(settings.kcalGoal ? String(settings.kcalGoal) : "");
-  const [min, setMin] = useState(settings.activeMinGoal ? String(settings.activeMinGoal) : "");
-  const [sets, setSets] = useState(settings.setsGoal ? String(settings.setsGoal) : "");
-  const [volume, setVolume] = useState(settings.volumeGoal ? String(settings.volumeGoal) : "");
-
-  const commit = (raw: string, save: (n: number | undefined) => void) => {
-    const n = Number(raw);
-    save(n > 0 ? Math.round(n) : undefined);
-  };
 
   return (
     <Card style={{ gap: 10 }}>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1 }}>
           <NumberField
-            label="Calories"
+            label="Daily calorie burn"
             value={kcal}
             onChange={setKcal}
             suffix="kcal"
             placeholder="300"
-            onBlur={() => commit(kcal, (n) => updateSettings({ kcalGoal: n }))}
+            onBlur={() => {
+              const n = Number(kcal);
+              updateSettings({ kcalGoal: n > 0 ? Math.round(n) : undefined });
+            }}
           />
         </View>
-        <View style={{ flex: 1 }}>
-          <NumberField
-            label="Active time"
-            value={min}
-            onChange={setMin}
-            suffix="min"
-            placeholder="60"
-            onBlur={() => commit(min, (n) => updateSettings({ activeMinGoal: n }))}
-          />
-        </View>
-      </View>
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <View style={{ flex: 1 }}>
-          <NumberField
-            label="Sets"
-            value={sets}
-            onChange={setSets}
-            placeholder="25"
-            onBlur={() => commit(sets, (n) => updateSettings({ setsGoal: n }))}
-          />
-        </View>
-        <View style={{ flex: 1 }}>
-          <NumberField
-            label="Volume"
-            value={volume}
-            onChange={setVolume}
-            suffix={settings.unit}
-            placeholder="8000"
-            onBlur={() => commit(volume, (n) => updateSettings({ volumeGoal: n }))}
-          />
-        </View>
+        <View style={{ flex: 1 }} />
       </View>
       <Txt size={11} color={C.inkFaint}>
-        Per-day targets for the Home dashboard bar and gauges.
+        Workout, set and time targets come from your training plan.
       </Txt>
     </Card>
   );

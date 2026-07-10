@@ -7,7 +7,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import { Animated, Easing, View } from "react-native";
-import Svg, { Line } from "react-native-svg";
+import Svg, { Circle, Line, Polyline } from "react-native-svg";
 import { C } from "../theme";
 import { Txt } from "./ui";
 
@@ -77,6 +77,44 @@ export function SegmentedBar({ value, goal }: { value: number; goal: number }) {
       ) : (
         <View style={{ height: BAR_H }} />
       )}
+    </View>
+  );
+}
+
+/**
+ * Tiny trend line (7-day volume teaser on Home): normalized polyline with a
+ * lime dot on the last point. Width fills the container via onLayout.
+ */
+export function Sparkline({ data, height = 40 }: { data: number[]; height?: number }) {
+  const [width, setWidth] = useState(0);
+  const max = Math.max(...data, 1);
+  const pad = 5; // keeps the dot and round joins inside the viewBox
+  const pts = data.map((v, i) => ({
+    x: pad + (i / Math.max(1, data.length - 1)) * (width - 2 * pad),
+    y: pad + (1 - v / max) * (height - 2 * pad),
+  }));
+  return (
+    <View style={{ height }} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
+      {width > 0 && data.length > 1 ? (
+        <Svg width={width} height={height}>
+          <Polyline
+            points={pts.map((p) => `${p.x},${p.y}`).join(" ")}
+            fill="none"
+            stroke={C.ink}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Circle
+            cx={pts[pts.length - 1].x}
+            cy={pts[pts.length - 1].y}
+            r={4}
+            fill={C.accent}
+            stroke={C.ink}
+            strokeWidth={1.5}
+          />
+        </Svg>
+      ) : null}
     </View>
   );
 }

@@ -85,13 +85,17 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 Five tabs: Home (default) · History · Workout · Exercises · Measure. Profile
 is NOT a tab — it opens as a full-screen overlay from the avatar button on
-the top bar's right. Home is a day-centric dashboard: big date header
-("Today"/"Yesterday"/weekday + "13 Mar, Monday") with a calendar button
-(custom CalendarDialog), a scrubbable DateRuler, a daily-goal card (burnt
-kcal vs goal on a SegmentedBar + three ArcGauges: active minutes / sets /
-volume vs goals from Profile), this-week stat cards, a dark CTA that jumps
-to the Workout tab (turns lime while a session is live), and a day-aware
-workout list (Today → 3 most recent; other days → that day's workouts). The Workout tab is
+the top bar's right. Home is the coach's "Today" screen: big date header
+("Today"/"Yesterday"/weekday) with a calendar button (custom
+CalendarDialog), a scrubbable DateRuler, then the TodayHero — today's
+planned session with one-tap Start (states: live session lime / plan day
+dark card with exercise preview / done-checked / rest day with next-up /
+no-plan → opens the wizard via `useUi().openPlanWizard`) — a daily-goal
+card (burnt kcal vs `kcalGoal` on a SegmentedBar for the selected day +
+three week-scope ArcGauges: workouts / sets / minutes vs what the PLAN
+routines prescribe — `routineSets`/`routineMinutes`, no typed targets), a
+7-day volume Sparkline card, and a day-aware workout list (Today → 3 most
+recent; other days → that day's workouts). The Workout tab is
 quick-start + the user's routines + a
 "Recommended" section (3-card push/pull/legs split from
 `src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
@@ -384,6 +388,18 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `workoutCalories` with the body profile as of the workout). Both show
   everywhere the card is used (History, Home recents, exercise-info
   History).
+- 2026-07-10: Home hero reworked around the plan (roadmap task 3). New
+  TodayHero (see Screens above) replaces the generic dark CTA; gauges went
+  plan-relative WEEK-scope (workouts/sets/minutes vs the stored plan
+  routines; fallbacks 3/60/180 when plan-less) — typed
+  activeMinGoal/setsGoal/volumeGoal fields DELETED from Settings (never
+  released; kcalGoal survives, Profile's Daily-goals card is now
+  calorie-only), `dailyGoals()` → `kcalGoal()` in stats.ts. plan.ts gained
+  `routineMinutes`/`routineSets` (verified to agree with planDayMinutes);
+  charts.tsx gained `Sparkline` (7-day volume teaser card ending at the
+  selected day, ink polyline + lime end dot). planWizard state moved into
+  `useUi()` (openPlanWizard/closePlanWizard) so Home's no-plan hero and
+  Profile's Rebuild plan share it; Icon gained Moon (rest-day hero).
 - 2026-07-10: Training plan + onboarding — the "coach, not notebook" pivot
   (Adilzhan's direction: differentiate from Strong; roadmap lives in the
   session task list: next are Home plan-hero, suggested weights, Progress
