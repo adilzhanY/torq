@@ -327,10 +327,17 @@ function RestDivider({
     <Pressable
       hitSlop={6}
       onPress={openEditor}
-      style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 28 }}
+      // Slim fixed-height strip — the space between set rows is exactly this.
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 8,
+        paddingHorizontal: 28,
+        height: 12,
+      }}
     >
       <View style={{ flex: 1, height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />
-      <Txt size={11} weight="bold" color={C.inkFaint}>{fmtClock(seconds)}</Txt>
+      <Txt size={10} weight="bold" color={C.inkFaint}>{fmtClock(seconds)}</Txt>
       <View style={{ flex: 1, height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />
     </Pressable>
   );
@@ -531,7 +538,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       {w.entries.map((entry, ei) => {
         const prevSets = prevSetsFor(entry.exerciseId);
         return (
-        <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 10 }}>
+        <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 0 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
             <Pressable
               hitSlop={6}
@@ -587,7 +594,15 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Ellipsis" size={20} color={C.inkSoft} />
             </Pressable>
           </View>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              marginTop: 12,
+              marginBottom: 3,
+            }}
+          >
             <Txt size={11} weight="bold" color={C.inkFaint} style={{ width: 28 }}>SET</Txt>
             <Txt size={11} weight="bold" color={C.inkFaint} style={{ flex: 1 }}>
               {prevSets ? "PREVIOUS" : ""}
@@ -617,7 +632,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
             const restKey = `${ei}-${si}`;
             const Wrap = grownSets.current.has(restKey) ? GrowIn : View;
             return (
-            <Wrap key={si} style={{ gap: 8 }}>
+            <Wrap key={si}>
               <View
                 style={{
                   flexDirection: "row",
@@ -625,7 +640,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   gap: 10,
                   marginHorizontal: -16,
                   paddingHorizontal: 16,
-                  paddingVertical: 3,
+                  paddingVertical: 1,
                   backgroundColor: set.done ? "rgba(160,210,20,0.16)" : "transparent",
                 }}
               >
@@ -713,9 +728,10 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   <Icon name="Check" size={16} color={set.done ? C.accentInk : C.inkFaint} />
                 </Squish>
               </View>
-              {/* The rest between two already-done sets is history — hide its
-                  divider (unless its countdown is still running). */}
-              {set.done && entry.sets[si + 1]?.done && rest?.key !== restKey ? null : (
+              {/* A done set's rest is history — show its divider only while
+                  the countdown is actually running. Idle timers appear under
+                  unfinished sets only. */}
+              {set.done && rest?.key !== restKey ? null : (
                 <RestDivider
                   seconds={restFor(set)}
                   remaining={

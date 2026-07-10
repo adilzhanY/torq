@@ -600,6 +600,15 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   on the emulator end to end.
 - 2026-07-10: Fixed the order/sort menu positioning on the Exercises page ([ExerciseBrowser.tsx](file:///home/wopler/dev/torq/src/components/ExerciseBrowser.tsx)) by shifting its absolute `top` coordinate by `TOP_BAR_SPACE` (setting it to `TOP_BAR_SPACE + 42` instead of hardcoded `42`). This positions the dropdown menu correctly under the Order button toolbar icon and prevents it from overlapping with/rendering under the floating top bar.
 - 2026-07-10: Customized weight progression steps in the suggestion engine ([suggest.ts](file:///home/wopler/dev/torq/src/lib/suggest.ts)) based on equipment type. Added a dynamic `getWeightStep` helper that returns micro-loading steps (1 kg / 2 lb) for dumbbells, cables, kettlebells, and bands, while maintaining default steps (2.5 kg / 5 lb) for barbell/machine compound exercises. Integrated in `startWorkout` ([store.tsx](file:///home/wopler/dev/torq/src/lib/store.tsx)).
+- 2026-07-11: Live-session set rows compacted (Adilzhan, three passes —
+  gap-shaving alone read as no change; the space was the divider strip):
+  final values: exercise Card gap 0, NO set-block gap, idle RestDivider is
+  a fixed 12px-high strip (text 10), set row paddingVertical 1; the
+  SET/PREVIOUS/KG/REPS header row carries its own marginTop 12 (room under
+  the exercise-name pill, per Adilzhan) + marginBottom 3. Consecutive done
+  sets sit flush as one tinted block, and a done set shows NO rest divider
+  at all unless its countdown is actively running — idle "2:00" timers
+  live under unfinished sets only. Verified on the emulator.
 - 2026-07-11: Live-session done-set polish (Adilzhan): the RestDivider
   between two DONE sets is hidden (rest already happened; it stays while
   its countdown still runs, and at the done→open boundary), and the
