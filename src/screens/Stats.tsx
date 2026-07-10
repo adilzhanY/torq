@@ -17,6 +17,7 @@ import { fmtShort } from "../components/charts";
 import { MuscleBreakdown, ProBars, TrendLine } from "../components/ProCharts";
 import { ConfirmDialog } from "../components/Dialog";
 import { useStore } from "../lib/store";
+import { computeStreak } from "../lib/streak";
 import { workoutSets, workoutVolume, type BodyPart, type Measurement } from "../types";
 
 const MONTHS = [
@@ -51,7 +52,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export function Stats() {
-  const { workouts, exercises, measurements, addMeasurement, deleteMeasurement, settings } =
+  const { workouts, exercises, routines, measurements, addMeasurement, deleteMeasurement, settings } =
     useStore();
   const [kind, setKind] = useState(KINDS[0]);
   const [value, setValue] = useState("");
@@ -209,6 +210,30 @@ export function Stats() {
         <Stat label="SETS" value={String(totalSets)} />
         <Stat label="HOURS" value={fmtShort(Math.round(totalHours))} />
       </View>
+
+      {/* Lifetime streaks (not month-scoped — a streak has no month). */}
+      {(() => {
+        const streak = computeStreak(workouts, routines, Date.now());
+        if (!streak.hasPlan) return null;
+        return (
+          <Card style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Icon name="Flame" size={20} color={C.warnAcc} />
+              <View style={{ gap: 1 }}>
+                <Txt size={17} weight="extrabold">{streak.current}</Txt>
+                <Txt size={9} weight="bold" color={C.inkFaint}>CURRENT STREAK</Txt>
+              </View>
+            </View>
+            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <Icon name="Trophy" size={20} color={C.gold} />
+              <View style={{ gap: 1 }}>
+                <Txt size={17} weight="extrabold">{streak.longest}</Txt>
+                <Txt size={9} weight="bold" color={C.inkFaint}>LONGEST STREAK</Txt>
+              </View>
+            </View>
+          </Card>
+        );
+      })()}
 
       <Card style={{ gap: 12 }}>
         <SectionTitle>Volume · weekly ({settings.unit})</SectionTitle>

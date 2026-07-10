@@ -18,6 +18,8 @@ import { PopIn, Squish } from "../components/anim";
 import { Card, Divider, SectionTitle, Txt } from "../components/ui";
 import { ArcGauge, SegmentedBar, Sparkline } from "../components/charts";
 import { CalendarDialog } from "../components/CalendarDialog";
+import { CenterDialog } from "../components/Dialog";
+import { computeStreak, type Streak } from "../lib/streak";
 import { DateRuler, addDays, dayStart } from "../components/DateRuler";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
@@ -31,6 +33,47 @@ import { workoutSets, workoutVolume, type Routine, type Workout } from "../types
 const DAY_MS = 86400000;
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Flame pill on the Today heading. Lime = streak safe for today, ink =
+ * today's planned session still pending, orange = one missed session from
+ * losing it, faint = no live streak.
+ */
+function StreakPill({
+  streak,
+  todayPending,
+  onPress,
+}: {
+  streak: Streak;
+  todayPending: boolean;
+  onPress: () => void;
+}) {
+  const dead = streak.current === 0;
+  const [bg, fg] = streak.atRisk
+    ? [C.warnSurf, C.warnAcc]
+    : dead
+      ? [C.page2, C.inkFaint]
+      : todayPending
+        ? [C.primary, "#fff"]
+        : [C.accent, C.accentInk];
+  return (
+    <Squish
+      onPress={onPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        backgroundColor: bg,
+        borderRadius: R.pill,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+      }}
+    >
+      <Icon name="Flame" size={15} color={fg} />
+      <Txt size={14} weight="extrabold" color={fg}>{streak.current}</Txt>
+    </Squish>
+  );
+}
 
 /** Monday 00:00 of the week containing `dayMs` (local). */
 function weekStartOf(dayMs: number): number {
@@ -184,6 +227,7 @@ export function Home() {
   const [selected, setSelected] = useState<Workout | null>(null);
   const [day, setDay] = useState(() => dayStart(Date.now()));
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [streakOpen, setStreakOpen] = useState(false);
 
   const now = Date.now();
   const today = dayStart(now);
@@ -204,6 +248,11 @@ export function Home() {
     }
     return null;
   })();
+
+  // ----- Streak (plan-aware, see lib/streak.ts) -----------------------------
+  const streak = computeStreak(workouts, routines, now);
+  const todayHit = workouts.some((w) => w.endedAt && dayStart(w.startedAt) === today);
+  const streakTodayPending = !!todaysRoutine && !todayHit;
 
   // ----- Selected-day data --------------------------------------------------
   const dayFinished = workouts.filter((w) => dayStart(w.startedAt) === day);
@@ -251,7 +300,16 @@ export function Home() {
       {/* Date header + calendar button */}
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <PopIn key={day} style={{ flex: 1, gap: 2 }}>
-          <Txt size={26} weight="extrabold">{title}</Txt>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Txt size={26} weight="extrabold">{title}</Txt>
+            {streak.hasPlan ? (
+              <StreakPill
+                streak={streak}
+                todayPending={streakTodayPending}
+                onPress={() => setStreakOpen(true)}
+              />
+            ) : null}
+          </View>
           <Txt size={15} weight="bold" color={C.inkFaint}>{subtitle}</Txt>
         </PopIn>
         <Squish
@@ -347,6 +405,43 @@ export function Home() {
           onPick={setDay}
           onClose={() => setCalendarOpen(false)}
         />
+      ) : null}
+
+      {streakOpen ? (
+        <CenterDialog onClose={() => setStreakOpen(false)}>
+          <View style={{ alignItems: "center", gap: 4, paddingVertical: 6 }}>
+            <Icon
+              name="Flame"
+              size={34}
+              color={streak.current > 0 ? C.warnAcc : C.inkFaint}
+            />
+            <Txt size={30} weight="extrabold">{streak.current}</Txt>
+            <Txt size={13} weight="bold" color={C.inkSoft}>
+              day streak
+            </Txt>
+            {streak.startedAt ? (
+              <Txt size={12} color={C.inkFaint}>
+                since {new Date(streak.startedAt).getDate()}{" "}
+                {MONTHS_SHORT[new Date(streak.startedAt).getMonth()]}
+              </Txt>
+            ) : null}
+          </View>
+          {streak.atRisk ? (
+            <Txt size={13} weight="bold" color={C.warnAcc}>
+              One more missed session and it resets — train today!
+            </Txt>
+          ) : null}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Icon name="Trophy" size={16} color={C.gold} />
+            <Txt size={14} weight="bold">
+              Longest: {streak.longest} day{streak.longest === 1 ? "" : "s"}
+            </Txt>
+          </View>
+          <Txt size={12} color={C.inkFaint}>
+            Every training day counts — rest days never hurt. Miss 3 planned
+            sessions in a row and the streak resets.
+          </Txt>
+        </CenterDialog>
       ) : null}
     </View>
   );

@@ -624,6 +624,19 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   unconditionally, not just for done-set re-edits) — prefilled values
   (suggestions, replays, plan reps) get replaced by typing instead of
   appended to. Verified on the emulator (tap → full-value selection).
+- 2026-07-11: Plan-aware streaks (Adilzhan's idea, mechanics agreed in
+  chat). `src/lib/streak.ts` — pure function of (workouts, plan routines):
+  every day with a finished workout counts 1 (same-day sessions once,
+  rest-day bonus workouts count), streak breaks after 3 CONSECUTIVE missed
+  planned weekdays (scattered misses tolerated; a workout resets the miss
+  counter), today's pending session isn't a miss, no plan → no streak.
+  Longest tracked in the same pass. Verified with a 12-case table. UI:
+  StreakPill next to Home's "Today" (lime = safe today, ink = today's
+  session pending, orange warnSurf = at-risk after 2 consecutive misses,
+  faint = broken; hidden without a plan) → tap opens a CenterDialog (flame
+  count, since-date, at-risk warning, gold-trophy longest, rule sentence);
+  Stats page gained a lifetime "current / longest streak" card under the
+  overview row (not month-scoped). Verified on the emulator incl. dialog.
 - 2026-07-11: WorkoutCard restructured (Adilzhan's spec): pills row gone —
   top shows CalendarDays "Fri, Jul 10 · 18:57" + Clock duration; the
   exercise list sits between Dividers; bottom row is icon stats CheckCheck
