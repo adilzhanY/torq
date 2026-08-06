@@ -50,11 +50,12 @@ export const C = {
 export const R = { lg: 28, md: 22, sm: 16, pill: 999 } as const;
 
 /**
- * Distance from the screen top to below the floating top bar (8 gap +
- * 52 bar). Tab screens and in-tab overlays add their own padding on top
- * of this; content scrolls under the bar.
+ * The floating top bar is GONE (2026-08-06: profile moved into the dock).
+ * The constant stays at 0 so every screen's `TOP_BAR_SPACE + n` padding
+ * collapses to its own base padding — and so a future bar could return by
+ * changing one number.
  */
-export const TOP_BAR_SPACE = 60;
+export const TOP_BAR_SPACE = 0;
 
 /** Letter + color for non-normal set types (Strong-style W/D/F badges). */
 export const SET_TYPE_META = {

@@ -113,7 +113,7 @@ function NavItem({
   );
 }
 
-export function BottomNav() {
+export function BottomNav({ onProfile }: { onProfile: () => void }) {
   const { tab, setTab } = useUi();
   const insets = useSafeAreaInsets();
   return (
@@ -138,6 +138,15 @@ export function BottomNav() {
       {ITEMS.map((it) => (
         <NavItem key={it.tab} item={it} active={tab === it.tab} onPress={() => setTab(it.tab)} />
       ))}
+      {/* Profile: rightmost, opens the overlay — a plain icon button, not a
+          morphing tab (the overlay covers the dock, so no active state). */}
+      <Pressable
+        onPress={onProfile}
+        hitSlop={6}
+        style={{ width: 46, alignItems: "center", justifyContent: "center" }}
+      >
+        <Icon name="UserCircle" size={22} color={IDLE_ICON} />
+      </Pressable>
     </View>
   );
 }

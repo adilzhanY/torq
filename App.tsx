@@ -1,6 +1,6 @@
 import "./src/global.css";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,11 +13,9 @@ import {
 import { AuthProvider } from "./src/lib/auth";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
-import { C, clay } from "./src/theme";
+import { C } from "./src/theme";
 import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
-import { Icon } from "./src/components/Icon";
-import { Txt } from "./src/components/ui";
 import { Home } from "./src/screens/Home";
 import { Onboarding } from "./src/screens/Onboarding";
 import { Workout } from "./src/screens/Workout";
@@ -29,7 +27,6 @@ import { Profile } from "./src/screens/Profile";
 function Root() {
   const { tab, planWizard, openPlanWizard, closePlanWizard } = useUi();
   const { ready, settings } = useStore();
-  const name = settings.name?.trim();
   const [profileOpen, setProfileOpen] = useState(false);
 
   if (!ready) {
@@ -55,45 +52,7 @@ function Root() {
         {tab === "stats" && <Stats />}
       </View>
 
-      {/* Floating top bar — the dock pill's light twin: logo left, greeting
-          centered, profile right. Content scrolls under it (screens pad
-          TOP_BAR_SPACE); rendered before overlays like Profile so they
-          cover it. */}
-      <View
-        style={[
-          {
-            position: "absolute",
-            top: 8,
-            left: 14,
-            right: 14,
-            height: 52,
-            borderRadius: 999,
-            backgroundColor: C.surface,
-            borderWidth: 1,
-            borderColor: C.line,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-            paddingHorizontal: 16,
-          },
-          clay(),
-        ]}
-      >
-        <Logo size={26} />
-        <Txt
-          size={15}
-          weight="extrabold"
-          style={{ flex: 1, textAlign: "center" }}
-          numberOfLines={1}
-        >
-          {name ? `Hello, ${name}.` : "Torq"}
-        </Txt>
-        <Pressable hitSlop={8} onPress={() => setProfileOpen(true)}>
-          <Icon name="UserCircle" size={26} color={C.ink} />
-        </Pressable>
-      </View>
-
-      <BottomNav />
+      <BottomNav onProfile={() => setProfileOpen(true)} />
 
       {profileOpen ? (
         <Profile
