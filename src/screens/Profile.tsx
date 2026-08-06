@@ -5,10 +5,12 @@ import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
-import { Card, NumberField, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
+import { Card, Divider, Eyebrow, NumberField, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
+import { bodyProfileAt } from "../lib/calories";
+import { overallRank, rankLifts, TIER_COLORS, TIER_SHORT, type TierName } from "../lib/rank";
 import { workoutVolume, type Settings, type Unit } from "../types";
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -17,6 +19,140 @@ function Stat({ label, value }: { label: string; value: string }) {
       <Txt size={20} weight="extrabold">{value}</Txt>
       <Txt size={11} weight="bold" color={C.inkFaint}>{label}</Txt>
     </Card>
+  );
+}
+
+/** Translucent tier pill ("GOLD" / "PLAT"), per the rank-card concept. */
+function TierPill({ tier }: { tier: TierName }) {
+  const color = TIER_COLORS[tier];
+  return (
+    <View
+      style={{
+        backgroundColor: `${color}26`, // ~15% alpha
+        borderRadius: R.pill,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+      }}
+    >
+      <Txt size={11} weight="extrabold" color={color} style={{ letterSpacing: 0.8 }}>
+        {TIER_SHORT[tier]}
+      </Txt>
+    </View>
+  );
+}
+
+/**
+ * The Rank Card (PATH.md Phase 1 concept, cardless build): identity row
+ * with the overall tier, big DOTS points, progress to the next tier, and
+ * the top-3 best lifts the score is built from. Points/tiers only — no
+ * percentile claims until the real dataset ships.
+ */
+function RankCard() {
+  const { workouts, exercises, measurements, settings } = useStore();
+  const profile = bodyProfileAt(settings, measurements, Date.now());
+  const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
+  const overall = overallRank(lifts);
+  const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
+  const displayName = settings.name?.trim() || "Athlete";
+
+  if (lifts.length === 0) {
+    return (
+      <View>
+        <Eyebrow>Rank</Eyebrow>
+        <Txt size={13} color={C.inkFaint}>
+          Finish a workout with weighted sets (10 reps or fewer) and your
+          rank appears here.
+        </Txt>
+      </View>
+    );
+  }
+
+  const s = overall.state;
+  return (
+    <View>
+      <Eyebrow>Rank</Eyebrow>
+      {/* Identity row */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: 22,
+            backgroundColor: C.accent,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Txt size={18} weight="extrabold" color={C.accentInk}>
+            {displayName[0].toUpperCase()}
+          </Txt>
+        </View>
+        <View style={{ flex: 1, gap: 1 }}>
+          <Txt size={17} weight="extrabold" numberOfLines={1}>{displayName}</Txt>
+          <Txt size={12} color={C.inkSoft}>
+            {Math.round(profile.weightKg)} kg · {profile.sex === "male" ? "M" : "F"}
+          </Txt>
+        </View>
+        <TierPill tier={s.tier} />
+      </View>
+
+      {/* Points + progress to the next tier */}
+      <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 12 }}>
+        <Txt size={40} weight="extrabold">{Math.round(s.points)}</Txt>
+        <Txt size={14} weight="extrabold" color={C.accent}>pts</Txt>
+      </View>
+      <Txt size={12} color={C.inkSoft}>overall · {s.tier} tier</Txt>
+      <View
+        style={{
+          height: 6,
+          borderRadius: R.pill,
+          backgroundColor: C.page2,
+          marginTop: 10,
+          overflow: "hidden",
+        }}
+      >
+        <View
+          style={{
+            width: `${Math.round(s.progress * 100)}%`,
+            height: "100%",
+            borderRadius: R.pill,
+            backgroundColor: C.accent,
+          }}
+        />
+      </View>
+      <Txt size={12} color={C.inkFaint} style={{ marginTop: 6 }}>
+        {s.next ? `${Math.ceil(s.toNext)} pts to ${s.next}` : "Top of the ladder"}
+      </Txt>
+
+      {/* Best lifts (the top 3 the overall score counts) */}
+      <Eyebrow>Best lifts</Eyebrow>
+      <View>
+        {overall.counted.map((l, i) => (
+          <View key={l.exerciseId}>
+            {i > 0 ? <Divider /> : null}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                gap: 10,
+                paddingVertical: 10,
+              }}
+            >
+              <Txt size={14} weight="semibold" style={{ flex: 1 }} numberOfLines={1}>
+                {name(l.exerciseId)}
+              </Txt>
+              <TierPill tier={l.tier.tier} />
+              <Txt size={15} weight="extrabold" style={{ minWidth: 44, textAlign: "right" }}>
+                {l.e1RM}
+              </Txt>
+            </View>
+          </View>
+        ))}
+      </View>
+      <Txt size={10} color={C.inkFaint} style={{ marginTop: 2 }}>
+        Best estimated 1RM ({settings.unit}) · DOTS-normalized to your body · warmups and 10+ rep sets excluded
+      </Txt>
+    </View>
   );
 }
 
@@ -282,6 +418,8 @@ export function Profile({
         <Stat label="WORKOUTS" value={String(workouts.length)} />
         <Stat label={`VOLUME (${settings.unit.toUpperCase()})`} value={String(Math.round(totalVolume))} />
       </View>
+
+      <RankCard />
 
       <SectionTitle>Settings</SectionTitle>
       <Card style={{ gap: 10 }}>
