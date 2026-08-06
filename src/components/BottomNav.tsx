@@ -20,6 +20,7 @@ import { Txt } from "./ui";
 
 const ITEMS: { tab: Tab; label: string; icon: string }[] = [
   { tab: "home", label: "Home", icon: "House" },
+  { tab: "ranks", label: "Ranks", icon: "Medal" },
   { tab: "history", label: "History", icon: "History" },
   { tab: "workout", label: "Workout", icon: "Dumbbell" },
   { tab: "exercises", label: "Exercises", icon: "BicepsFlexed" },

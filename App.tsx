@@ -17,6 +17,7 @@ import { C } from "./src/theme";
 import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
 import { Home } from "./src/screens/Home";
+import { Ranks } from "./src/screens/Ranks";
 import { Onboarding } from "./src/screens/Onboarding";
 import { Workout } from "./src/screens/Workout";
 import { History } from "./src/screens/History";
@@ -46,6 +47,7 @@ function Root() {
     <View style={{ flex: 1, backgroundColor: C.page }}>
       <View style={{ flex: 1 }}>
         {tab === "home" && <Home />}
+        {tab === "ranks" && <Ranks />}
         {tab === "workout" && <Workout />}
         {tab === "history" && <History />}
         {tab === "exercises" && <Exercises />}
