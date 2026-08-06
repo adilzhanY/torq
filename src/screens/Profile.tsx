@@ -111,13 +111,13 @@ function BodyProfileCard({
             key={s}
             onPress={() => updateSettings({ sex: s })}
             style={{
-              backgroundColor: settings.sex === s ? C.primary : C.page2,
+              backgroundColor: settings.sex === s ? C.accent : C.page2,
               borderRadius: R.pill,
               paddingHorizontal: 16,
               paddingVertical: 6,
             }}
           >
-            <Txt size={13} weight="bold" color={settings.sex === s ? "#fff" : C.inkSoft}>
+            <Txt size={13} weight="bold" color={settings.sex === s ? C.accentInk : C.inkSoft}>
               {s === "male" ? "Male" : "Female"}
             </Txt>
           </Pressable>
@@ -298,13 +298,13 @@ export function Profile({
               key={u}
               onPress={() => updateSettings({ unit: u })}
               style={{
-                backgroundColor: settings.unit === u ? C.primary : C.page2,
+                backgroundColor: settings.unit === u ? C.accent : C.page2,
                 borderRadius: R.pill,
                 paddingHorizontal: 16,
                 paddingVertical: 6,
               }}
             >
-              <Txt size={13} weight="bold" color={settings.unit === u ? "#fff" : C.inkSoft}>
+              <Txt size={13} weight="bold" color={settings.unit === u ? C.accentInk : C.inkSoft}>
                 {u}
               </Txt>
             </Pressable>

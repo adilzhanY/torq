@@ -14,7 +14,7 @@ import { createContext, useContext, useEffect, useRef, type ReactNode } from "re
 import { Animated, Easing, Pressable, View } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
-import { Card, Txt } from "./ui";
+import { Surface, Txt } from "./ui";
 
 const DialogCloseCtx = createContext<() => void>(() => {});
 
@@ -94,7 +94,7 @@ export function CenterDialog({
           right: 0,
           top: 0,
           bottom: 0,
-          backgroundColor: "rgba(20,26,24,0.4)",
+          backgroundColor: "rgba(0,0,0,0.55)",
           opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: "clamp" }),
         }}
       />
@@ -113,7 +113,7 @@ export function CenterDialog({
           {/* Swallow taps inside the card so they don't dismiss. */}
           <Pressable onPress={() => {}}>
             <DialogCloseCtx.Provider value={close}>
-              <Card style={{ gap: 12 }}>{children}</Card>
+              <Surface style={{ gap: 12 }}>{children}</Surface>
             </DialogCloseCtx.Provider>
           </Pressable>
         </Animated.View>

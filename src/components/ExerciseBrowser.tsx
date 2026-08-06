@@ -484,7 +484,7 @@ export function ExerciseBrowser({
               right: 0,
               top: 0,
               bottom: 0,
-              backgroundColor: "rgba(20,26,24,0.4)",
+              backgroundColor: "rgba(0,0,0,0.55)",
             }}
             onPress={() => setCreating(false)}
           />

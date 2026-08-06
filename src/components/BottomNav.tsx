@@ -64,7 +64,7 @@ function NavItem({
             overflow: "hidden",
             backgroundColor: v.interpolate({
               inputRange: [0, 1],
-              outputRange: ["rgba(250,249,245,0)", "rgba(250,249,245,1)"],
+              outputRange: ["rgba(42,47,39,0)", "rgba(42,47,39,1)"],
               extrapolate: "clamp",
             }),
           }}
@@ -85,7 +85,7 @@ function NavItem({
                 opacity: v.interpolate({ inputRange: [0, 1], outputRange: [0, 1], extrapolate: "clamp" }),
               }}
             >
-              <Icon name={item.icon} size={21} color={C.primary} />
+              <Icon name={item.icon} size={21} color={C.ink} />
             </Animated.View>
           </View>
           {/* Collapses to zero width when idle so the lone icon stays centered;
@@ -100,7 +100,7 @@ function NavItem({
             <Txt
               size={13}
               weight="bold"
-              color={C.primary}
+              color={C.ink}
               numberOfLines={1}
               style={{ marginLeft: 7 }}
             >
@@ -127,6 +127,8 @@ export function BottomNav() {
           height: 62,
           borderRadius: 999,
           backgroundColor: C.primary,
+          borderWidth: 1,
+          borderColor: C.line,
           flexDirection: "row",
           padding: 6,
         },

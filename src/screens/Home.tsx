@@ -15,7 +15,7 @@ import { ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { PopIn, Squish } from "../components/anim";
-import { Card, Divider, SectionTitle, Txt } from "../components/ui";
+import { Divider, Eyebrow, Txt } from "../components/ui";
 import { ArcGauge, SegmentedBar, Sparkline } from "../components/charts";
 import { CalendarDialog } from "../components/CalendarDialog";
 import { StreakDialog } from "../components/StreakDialog";
@@ -54,7 +54,7 @@ function StreakPill({
     : dead
       ? [C.page2, C.inkFaint]
       : todayPending
-        ? [C.primary, "#fff"]
+        ? [C.page2, C.ink]
         : [C.accent, C.accentInk];
   return (
     <Squish
@@ -81,7 +81,12 @@ function weekStartOf(dayMs: number): number {
   return addDays(dayMs, -((d.getDay() + 6) % 7));
 }
 
-/** Hero card — today's planned session, in one of its states. */
+/**
+ * CARDLESS hero — today's planned session as a typographic block: eyebrow
+ * label, big title, dim meta, and (when there's an action) a lime pill.
+ * Only the live-session state keeps a full lime surface — it's a giant
+ * interactive CTA.
+ */
 function TodayHero({
   routine,
   done,
@@ -95,130 +100,119 @@ function TodayHero({
   const { setTab, openPlanWizard } = useUi();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
 
-  // Live session → jump back in (same lime state as before).
+  const limePill = (label: string, onPress: () => void) => (
+    <Squish
+      onPress={onPress}
+      style={{
+        alignSelf: "flex-start",
+        marginTop: 10,
+        backgroundColor: C.accent,
+        borderRadius: R.pill,
+        paddingHorizontal: 20,
+        paddingVertical: 9,
+      }}
+    >
+      <Txt size={13} weight="extrabold" color={C.accentInk}>{label}</Txt>
+    </Squish>
+  );
+
+  // Live session → jump back in (interactive lime surface, kept).
   if (activeWorkout) {
     return (
-      <Squish
-        onPress={() => setTab("workout")}
-        style={[
-          {
-            backgroundColor: C.accent,
-            borderRadius: R.md,
-            padding: 18,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 14,
-          },
-          clay(),
-        ]}
-      >
-        <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: C.accentInk, alignItems: "center", justifyContent: "center" }}>
-          <Icon name="Timer" size={20} color={C.accent} />
-        </View>
-        <View style={{ gap: 2, flex: 1 }}>
-          <Txt size={16} weight="extrabold" color={C.accentInk}>Workout in progress</Txt>
-          <Txt size={12} color="rgba(26,27,26,0.7)">Jump back into your session</Txt>
-        </View>
-      </Squish>
+      <View>
+        <Eyebrow>Today's session</Eyebrow>
+        <Squish
+          onPress={() => setTab("workout")}
+          style={[
+            {
+              backgroundColor: C.accent,
+              borderRadius: R.md,
+              padding: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+            },
+            claySm(),
+          ]}
+        >
+          <Icon name="Timer" size={22} color={C.accentInk} />
+          <View style={{ gap: 1, flex: 1 }}>
+            <Txt size={15} weight="extrabold" color={C.accentInk}>Workout in progress</Txt>
+            <Txt size={12} color="rgba(26,27,26,0.7)">Jump back into your session</Txt>
+          </View>
+        </Squish>
+      </View>
     );
   }
 
   // No plan yet → the wizard is the action.
   if (!settings.plan) {
     return (
-      <Squish
-        onPress={openPlanWizard}
-        style={[
-          {
-            backgroundColor: C.primary,
-            borderRadius: R.md,
-            padding: 18,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 14,
-          },
-          clay(),
-        ]}
-      >
-        <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: C.accent, alignItems: "center", justifyContent: "center" }}>
-          <Icon name="Sparkles" size={20} color={C.accentInk} />
-        </View>
-        <View style={{ gap: 2, flex: 1 }}>
-          <Txt size={16} weight="extrabold" color="#fff">Build your training plan</Txt>
-          <Txt size={12} color="rgba(255,255,255,0.7)">
-            A few questions — Torq plans your whole week
-          </Txt>
-        </View>
-      </Squish>
+      <View>
+        <Eyebrow>Training plan</Eyebrow>
+        <Txt size={20} weight="extrabold">No plan yet</Txt>
+        <Txt size={13} color={C.inkSoft} style={{ marginTop: 2 }}>
+          A few questions — Torq plans your whole week.
+        </Txt>
+        {limePill("Build my plan →", openPlanWizard)}
+      </View>
     );
   }
 
   // Today's session already finished → checked off.
   if (routine && done) {
     return (
-      <Card style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-        <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: C.goodSurf, alignItems: "center", justifyContent: "center" }}>
-          <Icon name="Check" size={20} color={C.goodAcc} />
+      <View>
+        <Eyebrow>Today's session</Eyebrow>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          <Txt size={20} weight="extrabold">{routine.name} — done</Txt>
+          <Icon name="Check" size={19} color={C.accent} />
         </View>
-        <View style={{ gap: 2, flex: 1 }}>
-          <Txt size={16} weight="extrabold">{routine.name} — done</Txt>
-          <Txt size={12} color={C.inkFaint}>Nice work. Recovery starts now.</Txt>
-        </View>
-      </Card>
+        <Txt size={13} color={C.inkFaint} style={{ marginTop: 2 }}>
+          Nice work. Recovery starts now.
+        </Txt>
+      </View>
     );
   }
 
-  // Training day → the one-tap start card.
+  // Training day → headline + one-tap Start pill.
   if (routine) {
     const preview = routine.entries.slice(0, 3).map((e) => name(e.exerciseId));
     const more = routine.entries.length - preview.length;
     return (
-      <Squish
-        onPress={() => {
+      <View>
+        <Eyebrow>Today's session</Eyebrow>
+        <Txt size={20} weight="extrabold">{routine.name}</Txt>
+        <Txt size={13} color={C.inkSoft} style={{ marginTop: 2 }}>
+          {routine.entries.length} exercises · {routineSets(routine)} sets · ~
+          {routineMinutes(routine, settings.restSec)} min
+        </Txt>
+        <Txt size={12} color={C.inkFaint} numberOfLines={2} style={{ marginTop: 2 }}>
+          {preview.join(" · ")}
+          {more > 0 ? ` · +${more} more` : ""}
+        </Txt>
+        {limePill("Start →", () => {
           startWorkout(routine);
           setTab("workout");
-        }}
-        style={[
-          { backgroundColor: C.primary, borderRadius: R.md, padding: 18, gap: 12 },
-          clay(),
-        ]}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-          <View style={{ width: 44, height: 44, borderRadius: 15, backgroundColor: C.accent, alignItems: "center", justifyContent: "center" }}>
-            <Icon name="Play" size={22} color={C.accentInk} />
-          </View>
-          <View style={{ gap: 2, flex: 1 }}>
-            <Txt size={11} weight="bold" color={C.accent}>TODAY'S WORKOUT</Txt>
-            <Txt size={17} weight="extrabold" color="#fff">{routine.name}</Txt>
-            <Txt size={12} color="rgba(255,255,255,0.7)">
-              {routine.entries.length} exercises · {routineSets(routine)} sets · ~
-              {routineMinutes(routine, settings.restSec)} min
-            </Txt>
-          </View>
-        </View>
-        <Txt size={12} color="rgba(255,255,255,0.55)" numberOfLines={2}>
-          {preview.join("  ·  ")}
-          {more > 0 ? `  ·  +${more} more` : ""}
-        </Txt>
-      </Squish>
+        })}
+      </View>
     );
   }
 
   // Rest day.
   return (
-    <Card style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-      <View style={{ width: 40, height: 40, borderRadius: 14, backgroundColor: C.page2, alignItems: "center", justifyContent: "center" }}>
-        <Icon name="Moon" size={20} color={C.inkSoft} />
+    <View>
+      <Eyebrow>Today's session</Eyebrow>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+        <Txt size={20} weight="extrabold">Rest day</Txt>
+        <Icon name="Moon" size={17} color={C.inkSoft} />
       </View>
-      <View style={{ gap: 2, flex: 1 }}>
-        <Txt size={16} weight="extrabold">Rest day</Txt>
-        <Txt size={12} color={C.inkFaint}>
-          {nextUp && nextUp.weekday != null
-            ? `Recovery is training. Next up: ${DAYS[nextUp.weekday]} — ${nextUp.name}.`
-            : "Recovery is training."}
-        </Txt>
-      </View>
-    </Card>
+      <Txt size={13} color={C.inkFaint} style={{ marginTop: 2 }}>
+        {nextUp && nextUp.weekday != null
+          ? `Recovery is training. Next up: ${DAYS[nextUp.weekday]} — ${nextUp.name}.`
+          : "Recovery is training."}
+      </Txt>
+    </View>
   );
 }
 
@@ -349,8 +343,9 @@ export function Home() {
 
       <TodayHero routine={todaysRoutine} done={doneToday} nextUp={nextUp} />
 
-      {/* Daily goal card: calories for the selected day, plan-relative week gauges */}
-      <Card style={{ gap: 14 }}>
+      {/* Daily goal — bare block: calories for the selected day, plan-relative week gauges */}
+      <View>
+        <Eyebrow>{isToday ? "Daily goal" : "That day"}</Eyebrow>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ gap: 2 }}>
             <Txt size={10} weight="bold" color={C.inkFaint}>BURNT</Txt>
@@ -361,48 +356,53 @@ export function Home() {
             <Txt size={26} weight="extrabold" color={C.inkSoft}>{kcalGoal(settings)}</Txt>
           </View>
         </View>
-        <SegmentedBar value={kcal} goal={kcalGoal(settings)} />
+        <View style={{ marginTop: 10 }}>
+          <SegmentedBar value={kcal} goal={kcalGoal(settings)} />
+        </View>
         {!profile.complete ? (
-          <Txt size={11} color={C.inkFaint}>
+          <Txt size={11} color={C.inkFaint} style={{ marginTop: 8 }}>
             Set your body stats in Profile for accurate calories.
           </Txt>
         ) : null}
-        <Divider />
+        <View style={{ marginVertical: 14 }}><Divider /></View>
         <Txt size={10} weight="bold" color={C.inkFaint}>
           {isToday ? "THIS WEEK VS YOUR PLAN" : "THAT WEEK VS YOUR PLAN"}
         </Txt>
-        <View style={{ flexDirection: "row", justifyContent: "space-around" }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
           <ArcGauge value={weekDone.workouts} goal={target.workouts} label="WORKOUTS" color={C.goodAcc} />
           <ArcGauge value={weekDone.sets} goal={target.sets} label="SETS" color={C.prAcc} />
           <ArcGauge value={weekDone.minutes} goal={target.minutes} label="MINUTES" color={C.warnAcc} />
         </View>
-      </Card>
+      </View>
 
-      {/* Volume trend teaser (full Progress tab coming) */}
-      <Card style={{ gap: 8 }}>
+      {/* Volume trend teaser — frameless chart */}
+      <View>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Txt size={10} weight="bold" color={C.inkFaint}>
-            VOLUME · LAST 7 DAYS ({settings.unit.toUpperCase()})
-          </Txt>
+          <Eyebrow style={{ marginTop: 0, marginBottom: 0 }}>
+            Volume · last 7 days ({settings.unit})
+          </Eyebrow>
           <Txt size={13} weight="extrabold">{Math.round(trend.reduce((a, b) => a + b, 0))}</Txt>
         </View>
-        <Sparkline data={trend} />
-      </Card>
+        <View style={{ marginTop: 8 }}>
+          <Sparkline data={trend} />
+        </View>
+      </View>
 
-      <SectionTitle>
+      <Eyebrow>
         {isToday ? "Recent workouts" : `Workouts · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`}
-      </SectionTitle>
+      </Eyebrow>
       {listed.length === 0 ? (
-        <Card>
-          <Txt size={13} color={C.inkFaint}>
-            {isToday
-              ? "No workouts yet — your latest sessions will show up here."
-              : "No workouts on this day."}
-          </Txt>
-        </Card>
+        <Txt size={13} color={C.inkFaint}>
+          {isToday
+            ? "No workouts yet — your latest sessions will show up here."
+            : "No workouts on this day."}
+        </Txt>
       ) : (
-        listed.map((w) => (
-          <WorkoutCard key={w.id} workout={w} onPress={() => setSelected(w)} />
+        listed.map((w, i) => (
+          <View key={w.id}>
+            {i > 0 ? <Divider /> : null}
+            <WorkoutCard workout={w} onPress={() => setSelected(w)} />
+          </View>
         ))
       )}
     </ScrollView>

@@ -1,40 +1,49 @@
 /**
- * Torq design tokens — the clay/bento system ported from grit's mobile app.
- * Same palette, radii, and type scale. RN can't do a layered inset clay
- * shadow, so `clay()` and `claySm()` approximate it with one soft elevation.
+ * Torq design tokens — the CARDLESS rebrand system (2026-08-06): near-black
+ * page, lime accent, Space Grotesk. Content sits directly on the page —
+ * hierarchy from type scale/weight/color steps (ink → inkSoft → inkFaint)
+ * and whitespace, hairline dividers where separation is needed. Surfaces
+ * (C.surface + C.line border) are reserved for INTERACTIVE elements and
+ * true overlays. The old clay/bento palette is gone.
  */
 import { Platform, type ViewStyle } from "react-native";
 
 export const C = {
-  page: "#f1efe9",
-  page2: "#e9e7df",
-  surface: "#faf9f5",
-  ink: "#1b211f",
-  inkSoft: "#4b5650",
-  inkFaint: "#76817b",
+  page: "#0E0F0E",
+  /** Backing for inputs and pressed states. */
+  page2: "#1B1E1A",
+  /** Interactive surfaces + overlays only (dialogs, sheets, dock, top bar). */
+  surface: "#151714",
+  ink: "#F2F4EE",
+  inkSoft: "#9AA294",
+  inkFaint: "#5C6356",
+  /** Border on surfaces (dialogs, dock, inputs). */
+  line: "#262A24",
+  /** Hairline divider on the bare page. */
+  hair: "#22261F",
 
-  // Brand: the logo's dark square + lime pulse mark.
+  // Brand: the logo's dark square + lime vortex mark.
   primary: "#1A1B1A",
   primaryDeep: "#101110",
   accent: "#C8FE23",
   /** Text/icon color on top of the (light) lime accent. */
   accentInk: "#1A1B1A",
 
-  goodSurf: "#d4f3ec",
-  goodAcc: "#0b7d72",
-  warnSurf: "#fff0d6",
-  warnAcc: "#c2700a",
-  badSurf: "#ffe0dd",
-  badAcc: "#cf3b3f",
-  prSurf: "#e9e2ff",
-  prAcc: "#6d4fe0",
-  gold: "#e0a500",
+  goodSurf: "#152A22",
+  goodAcc: "#5AC8A0",
+  warnSurf: "#2A2113",
+  warnAcc: "#F0A742",
+  badSurf: "#2B1715",
+  badAcc: "#E06A5A",
+  prSurf: "#211B33",
+  prAcc: "#9C86E8",
+  gold: "#E9B920",
 
-  // Chart palette
-  chart1: "#1A1B1A",
-  chart2: "#0b7d72",
-  chart3: "#c2700a",
-  chart4: "#6d4fe0",
+  // Chart palette (light-on-dark)
+  chart1: "#F2F4EE",
+  chart2: "#5AC8A0",
+  chart3: "#F0A742",
+  chart4: "#9C86E8",
   chart5: "#C8FE23",
 } as const;
 
@@ -50,42 +59,43 @@ export const TOP_BAR_SPACE = 60;
 /** Letter + color for non-normal set types (Strong-style W/D/F badges). */
 export const SET_TYPE_META = {
   warmup: { letter: "W", color: C.warnAcc, label: "Warm up" },
-  drop: { letter: "D", color: "#7c5cd6", label: "Drop set" },
+  drop: { letter: "D", color: C.prAcc, label: "Drop set" },
   failure: { letter: "F", color: C.badAcc, label: "Failure" },
 } as const;
 
 export const FONT = {
-  regular: "Onest_400Regular",
-  medium: "Onest_500Medium",
-  semibold: "Onest_600SemiBold",
-  bold: "Onest_700Bold",
-  extrabold: "Onest_800ExtraBold",
+  regular: "SpaceGrotesk_400Regular",
+  medium: "SpaceGrotesk_500Medium",
+  semibold: "SpaceGrotesk_600SemiBold",
+  bold: "SpaceGrotesk_700Bold",
+  // Space Grotesk tops out at 700 — extrabold shares Bold.
+  extrabold: "SpaceGrotesk_700Bold",
 } as const;
 
-/** Soft raised clay shadow. */
+/** Soft raised shadow — only for floating interactive surfaces/overlays. */
 export function clay(): ViewStyle {
   return Platform.select<ViewStyle>({
     ios: {
-      shadowColor: "#141a18",
-      shadowOffset: { width: 4, height: 6 },
-      shadowOpacity: 0.16,
-      shadowRadius: 12,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.45,
+      shadowRadius: 18,
     },
-    android: { elevation: 4 },
+    android: { elevation: 6 },
     default: {},
   })!;
 }
 
-/** Smaller clay shadow for chips/buttons. */
+/** Smaller shadow for chips/buttons. */
 export function claySm(): ViewStyle {
   return Platform.select<ViewStyle>({
     ios: {
-      shadowColor: "#141a18",
-      shadowOffset: { width: 2, height: 3 },
-      shadowOpacity: 0.12,
-      shadowRadius: 7,
+      shadowColor: "#000000",
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.35,
+      shadowRadius: 8,
     },
-    android: { elevation: 2 },
+    android: { elevation: 3 },
     default: {},
   })!;
 }

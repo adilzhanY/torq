@@ -278,13 +278,13 @@ export function Stats() {
               key={k.kind}
               onPress={() => setKind(k)}
               style={{
-                backgroundColor: kind.kind === k.kind ? C.primary : C.page2,
+                backgroundColor: kind.kind === k.kind ? C.accent : C.page2,
                 borderRadius: R.pill,
                 paddingHorizontal: 12,
                 paddingVertical: 5,
               }}
             >
-              <Txt size={12} weight="bold" color={kind.kind === k.kind ? "#fff" : C.inkSoft}>
+              <Txt size={12} weight="bold" color={kind.kind === k.kind ? C.accentInk : C.inkSoft}>
                 {k.kind}
               </Txt>
             </Pressable>
@@ -307,7 +307,7 @@ export function Stats() {
         <Card style={{ gap: 0, paddingVertical: 6 }}>
           {sortedM.map((m, i) => (
             <View key={m.id}>
-              {i > 0 ? <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.06)" }} /> : null}
+              {i > 0 ? <View style={{ height: 1, backgroundColor: C.hair }} /> : null}
               <View
                 style={{
                   flexDirection: "row",

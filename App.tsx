@@ -5,12 +5,11 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
   useFonts,
-  Onest_400Regular,
-  Onest_500Medium,
-  Onest_600SemiBold,
-  Onest_700Bold,
-  Onest_800ExtraBold,
-} from "@expo-google-fonts/onest";
+  SpaceGrotesk_400Regular,
+  SpaceGrotesk_500Medium,
+  SpaceGrotesk_600SemiBold,
+  SpaceGrotesk_700Bold,
+} from "@expo-google-fonts/space-grotesk";
 import { AuthProvider } from "./src/lib/auth";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
@@ -37,7 +36,7 @@ function Root() {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 24, backgroundColor: C.page }}>
         <Logo size={96} />
-        <ActivityIndicator color={C.primary} />
+        <ActivityIndicator color={C.accent} />
       </View>
     );
   }
@@ -70,6 +69,8 @@ function Root() {
             height: 52,
             borderRadius: 999,
             backgroundColor: C.surface,
+            borderWidth: 1,
+            borderColor: C.line,
             flexDirection: "row",
             alignItems: "center",
             gap: 8,
@@ -109,11 +110,10 @@ function Root() {
 
 export default function App() {
   const [loaded] = useFonts({
-    Onest_400Regular,
-    Onest_500Medium,
-    Onest_600SemiBold,
-    Onest_700Bold,
-    Onest_800ExtraBold,
+    SpaceGrotesk_400Regular,
+    SpaceGrotesk_500Medium,
+    SpaceGrotesk_600SemiBold,
+    SpaceGrotesk_700Bold,
   });
 
   if (!loaded) {
@@ -132,7 +132,7 @@ export default function App() {
             <SafeAreaView style={{ flex: 1, backgroundColor: C.page }} edges={["top"]}>
               <Root />
             </SafeAreaView>
-            <StatusBar style="dark" />
+            <StatusBar style="light" />
           </UiProvider>
         </StoreProvider>
       </AuthProvider>

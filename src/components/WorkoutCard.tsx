@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
-import { Card, Divider, Txt } from "./ui";
+import { Divider, Txt } from "./ui";
 import { useStore } from "../lib/store";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
 import { computePRs, fmtDuration } from "../lib/stats";
@@ -63,7 +63,9 @@ export function WorkoutCard({
   const prCount = useMemo(() => computePRs(w, workouts).total, [w, workouts]);
   return (
     <Pressable onPress={onPress} disabled={!onPress}>
-      <Card style={{ gap: 10 }}>
+      {/* CARDLESS: bare block aligned to the page gutter; callers separate
+          entries with Divider. */}
+      <View style={{ paddingVertical: 12, gap: 10 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
           <Txt size={15} weight="bold">{w.name}</Txt>
           {onDelete ? (
@@ -116,7 +118,7 @@ export function WorkoutCard({
             <IconStat icon="Trophy" text={`${prCount} PR${prCount === 1 ? "" : "s"}`} color={C.gold} />
           ) : null}
         </View>
-      </Card>
+      </View>
     </Pressable>
   );
 }

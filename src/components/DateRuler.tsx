@@ -44,7 +44,7 @@ function Ticks() {
       {[8, 8, 14, 8, 8].map((h, i) => (
         <View
           key={i}
-          style={{ width: 2, height: h, borderRadius: 1, backgroundColor: "rgba(20,26,24,0.18)" }}
+          style={{ width: 2, height: h, borderRadius: 1, backgroundColor: "rgba(242,244,238,0.18)" }}
         />
       ))}
     </View>

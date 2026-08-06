@@ -21,20 +21,20 @@
   }
 }
 
-/* Torq clay/bento palette (mirrors src/theme.ts) as Tailwind colors, so both
-   className and style-object code speak the same design tokens. */
+/* Torq cardless rebrand palette (mirrors src/theme.ts) as Tailwind colors, so
+   both className and style-object code speak the same design tokens. */
 @layer theme {
   @theme {
-    --color-page: #f1efe9;
-    --color-page2: #e9e7df;
-    --color-surface: #faf9f5;
-    --color-ink: #1b211f;
-    --color-ink-soft: #4b5650;
-    --color-ink-faint: #76817b;
+    --color-page: #0e0f0e;
+    --color-page2: #1b1e1a;
+    --color-surface: #151714;
+    --color-ink: #f2f4ee;
+    --color-ink-soft: #9aa294;
+    --color-ink-faint: #5c6356;
     --color-primary: #1a1b1a;
     --color-primary-deep: #101110;
     --color-accent: #c8fe23;
-    --color-gold: #e0a500;
+    --color-gold: #e9b920;
 
     --radius-clay-lg: 28px;
     --radius-clay-md: 22px;

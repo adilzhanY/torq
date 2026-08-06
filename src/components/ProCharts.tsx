@@ -18,7 +18,7 @@ import { C, FONT, R } from "../theme";
 import { Txt } from "./ui";
 import { fmtShort } from "./charts";
 
-const GRID = "rgba(20,26,24,0.08)";
+const GRID = "rgba(242,244,238,0.08)";
 const AXIS_TEXT = { color: C.inkFaint, fontSize: 10, fontFamily: FONT.bold };
 
 const DAYS3 = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -216,7 +216,7 @@ export function TrendLine({
           pointerConfig={{
             activatePointersOnLongPress: true,
             activatePointersDelay: 120,
-            pointerStripColor: "rgba(20,26,24,0.25)",
+            pointerStripColor: "rgba(242,244,238,0.25)",
             pointerStripWidth: 1.5,
             pointerStripUptoDataPoint: true,
             pointerColor: C.accent,
@@ -401,7 +401,7 @@ export function MuscleBreakdown({
                 borderRadius: 5,
                 backgroundColor: RAMP[Math.min(i, RAMP.length - 1)],
                 borderWidth: i >= 3 ? 1 : 0,
-                borderColor: "rgba(20,26,24,0.2)",
+                borderColor: "rgba(242,244,238,0.2)",
               }}
             />
             <Txt size={11} weight="bold" color={C.inkSoft}>

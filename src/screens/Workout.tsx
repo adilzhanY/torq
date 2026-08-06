@@ -27,6 +27,8 @@ import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
 import {
   Card,
+  Divider,
+  Eyebrow,
   NumberField,
   Pill,
   PrimaryButton,
@@ -336,9 +338,9 @@ function RestDivider({
         height: 12,
       }}
     >
-      <View style={{ flex: 1, height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />
+      <View style={{ flex: 1, height: 1, backgroundColor: C.hair }} />
       <Txt size={10} weight="bold" color={C.inkFaint}>{fmtClock(seconds)}</Txt>
-      <View style={{ flex: 1, height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />
+      <View style={{ flex: 1, height: 1, backgroundColor: C.hair }} />
     </Pressable>
   );
 }
@@ -545,18 +547,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               onPress={() => setInfo(entry.exerciseId)}
               style={{ flex: 1, alignItems: "flex-start" }}
             >
-              <View
-                style={{
-                  backgroundColor: C.primary,
-                  borderRadius: R.pill,
-                  paddingHorizontal: 13,
-                  paddingVertical: 6,
-                }}
-              >
-                <Txt size={14} weight="bold" color="#fff" numberOfLines={1}>
-                  {name(entry.exerciseId)}
-                </Txt>
-              </View>
+              <Txt size={16} weight="bold" color={C.ink} numberOfLines={1}>
+                {name(entry.exerciseId)}
+              </Txt>
             </Pressable>
             {/* Focus metric pill: Waypoints until a metric is picked, then
                 its live value. Opens the Set a Focus Metric dialog. */}
@@ -641,7 +634,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   marginHorizontal: -16,
                   paddingHorizontal: 16,
                   paddingVertical: 1,
-                  backgroundColor: set.done ? "rgba(160,210,20,0.16)" : "transparent",
+                  backgroundColor: set.done ? "rgba(200,254,35,0.10)" : "transparent",
                 }}
               >
                 <Pressable
@@ -768,7 +761,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       <PrimaryButton
         label="Add exercise"
         background={C.surface}
-        color={C.primary}
+        color={C.ink}
         onPress={() => setPicker(true)}
       />
       <PrimaryButton
@@ -944,7 +937,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 ).map((item) => (
                   <View key={item.label}>
                     {item.divider ? (
-                      <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.08)", marginVertical: 4 }} />
+                      <View style={{ height: 1, backgroundColor: C.hair, marginVertical: 4 }} />
                     ) : null}
                     <Pressable
                       onPress={() => {
@@ -1117,79 +1110,47 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   );
 }
 
-/** Lines shown per routine card before the ⋯ overflow marker. */
-const ROUTINE_CARD_LINES = 4;
-const ROUTINE_CARD_H = 168;
-
 /**
- * Uniform grid cell for the Start-Workout routine grids (user + plan +
- * recommended): fixed height, name, "N × Exercise" lines, a ⋯ row when
- * there are more. Tapping the card starts the routine; the ⋯ button opens
- * the routine menu.
+ * CARDLESS routine row (replaced the old fixed-height grid card): bare
+ * text block — bold name with the ⋯ menu on the right, one faint preview
+ * line of the set scheme. Whole row starts the routine; rows are separated
+ * by Dividers in the list.
  */
-function RoutineGridCard({
+function RoutineRow({
   name,
   lines,
   onPress,
   onMenu,
+  faint,
 }: {
   name: string;
   lines: string[];
   onPress: () => void;
   onMenu: () => void;
+  faint?: boolean;
 }) {
-  const shown = lines.slice(0, ROUTINE_CARD_LINES);
+  const preview =
+    lines.slice(0, 3).join(" · ") + (lines.length > 3 ? " · ···" : "");
   return (
-    <Squish
-      onPress={onPress}
-      style={[
-        {
-          backgroundColor: C.surface,
-          borderRadius: R.md,
-          padding: 14,
-          height: ROUTINE_CARD_H,
-          overflow: "hidden",
-          gap: 8,
-        },
-        claySm(),
-      ]}
-    >
+    <Pressable onPress={onPress} style={{ paddingVertical: 12, gap: 3 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-        <Txt size={14} weight="extrabold" style={{ flex: 1 }} numberOfLines={1}>
+        <Txt
+          size={15}
+          weight="bold"
+          style={{ flex: 1 }}
+          color={faint ? C.inkFaint : C.ink}
+          numberOfLines={1}
+        >
           {name}
         </Txt>
         <Pressable hitSlop={10} onPress={onMenu}>
           <Icon name="Ellipsis" size={18} color={C.inkSoft} />
         </Pressable>
       </View>
-      <View style={{ gap: 4 }}>
-        {shown.map((line, i) => (
-          <Txt key={i} size={12} weight="semibold" color={C.inkSoft} numberOfLines={1}>
-            {line}
-          </Txt>
-        ))}
-        {lines.length > ROUTINE_CARD_LINES ? (
-          <Txt size={12} weight="extrabold" color={C.inkFaint}>· · ·</Txt>
-        ) : null}
-      </View>
-    </Squish>
-  );
-}
-
-/** Cells laid out two per row (odd counts get an invisible filler). */
-function TwoColumnGrid({ cells }: { cells: React.ReactNode[] }) {
-  const rows: React.ReactNode[][] = [];
-  for (let i = 0; i < cells.length; i += 2) rows.push(cells.slice(i, i + 2));
-  return (
-    <View style={{ gap: 10 }}>
-      {rows.map((row, i) => (
-        <View key={i} style={{ flexDirection: "row", gap: 10 }}>
-          {/* flex:1 wrappers — flex on a Squish itself collapses (gotcha) */}
-          <View style={{ flex: 1 }}>{row[0]}</View>
-          <View style={{ flex: 1 }}>{row[1] ?? null}</View>
-        </View>
-      ))}
-    </View>
+      <Txt size={12} color={C.inkFaint} numberOfLines={1}>
+        {preview}
+      </Txt>
+    </Pressable>
   );
 }
 
@@ -1286,93 +1247,87 @@ export function Workout() {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={22} weight="extrabold">Start Workout</Txt>
+      <Txt size={26} weight="extrabold">Workout</Txt>
 
-      <Squish
+      <Eyebrow>Quick start</Eyebrow>
+      <Pressable
         onPress={() => startWorkout()}
-        style={[
-          {
-            backgroundColor: C.primary,
-            borderRadius: R.md,
-            padding: 18,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 12,
-          },
-          clay(),
-        ]}
+        style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 }}
       >
         <View
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 14,
+            width: 36,
+            height: 36,
+            borderRadius: 12,
             backgroundColor: C.accent,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <Icon name="Play" size={20} color={C.accentInk} />
+          <Icon name="Play" size={18} color={C.accentInk} />
         </View>
-        <View style={{ gap: 2 }}>
-          <Txt size={16} weight="extrabold" color="#fff">Quick start</Txt>
-          <Txt size={12} color="rgba(255,255,255,0.7)">Begin an empty workout</Txt>
+        <View style={{ gap: 1 }}>
+          <Txt size={16} weight="bold">Empty workout</Txt>
+          <Txt size={12} color={C.inkSoft}>Begin from scratch</Txt>
         </View>
-      </Squish>
+      </Pressable>
 
-      <Txt size={18} weight="extrabold">Routines ({visible.length})</Txt>
+      <Eyebrow>Routines ({visible.length})</Eyebrow>
       {visible.length === 0 ? (
-        <Card>
-          <Txt size={13} color={C.inkFaint}>
-            No routines yet. Start with a recommended one below — finishing it
-            keeps its exercises in your library.
-          </Txt>
-        </Card>
+        <Txt size={13} color={C.inkFaint}>
+          No routines yet. Start with a recommended one below — finishing it
+          keeps its exercises in your library.
+        </Txt>
       ) : (
-        <TwoColumnGrid
-          cells={visible.map((r) => (
-            <RoutineGridCard
-              key={r.id}
-              name={r.name}
-              lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
-              onPress={() => startWorkout(r)}
-              onMenu={() => setMenu({ kind: "mine", routine: r })}
-            />
+        <View>
+          {visible.map((r, i) => (
+            <View key={r.id}>
+              {i > 0 ? <Divider /> : null}
+              <RoutineRow
+                name={r.name}
+                lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
+                onPress={() => startWorkout(r)}
+                onMenu={() => setMenu({ kind: "mine", routine: r })}
+              />
+            </View>
           ))}
-        />
+        </View>
       )}
 
-      <Txt size={18} weight="extrabold">Recommended</Txt>
-      <TwoColumnGrid
-        cells={RECOMMENDED.map((r) => (
-          <RoutineGridCard
-            key={r.name}
-            name={r.name}
-            lines={r.items
-              .filter((item) => DB_BY_ID[item.dbId])
-              .map((item) => `${item.sets} × ${titleCase(DB_BY_ID[item.dbId].name)}`)}
-            onPress={() => startRecommended(r)}
-            onMenu={() => setMenu({ kind: "rec", rec: r })}
-          />
+      <Eyebrow>Recommended</Eyebrow>
+      <View>
+        {RECOMMENDED.map((r, i) => (
+          <View key={r.name}>
+            {i > 0 ? <Divider /> : null}
+            <RoutineRow
+              name={r.name}
+              lines={r.items
+                .filter((item) => DB_BY_ID[item.dbId])
+                .map((item) => `${item.sets} × ${titleCase(DB_BY_ID[item.dbId].name)}`)}
+              onPress={() => startRecommended(r)}
+              onMenu={() => setMenu({ kind: "rec", rec: r })}
+            />
+          </View>
         ))}
-      />
+      </View>
 
       {archived.length > 0 ? (
         <>
-          <Txt size={18} weight="extrabold" color={C.inkFaint}>
-            Archived ({archived.length})
-          </Txt>
-          <TwoColumnGrid
-            cells={archived.map((r) => (
-              <RoutineGridCard
-                key={r.id}
-                name={r.name}
-                lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
-                onPress={() => setMenu({ kind: "mine", routine: r })}
-                onMenu={() => setMenu({ kind: "mine", routine: r })}
-              />
+          <Eyebrow>Archived ({archived.length})</Eyebrow>
+          <View>
+            {archived.map((r, i) => (
+              <View key={r.id}>
+                {i > 0 ? <Divider /> : null}
+                <RoutineRow
+                  faint
+                  name={r.name}
+                  lines={r.entries.map((e) => `${e.sets.length} × ${exName(e.exerciseId)}`)}
+                  onPress={() => setMenu({ kind: "mine", routine: r })}
+                  onMenu={() => setMenu({ kind: "mine", routine: r })}
+                />
+              </View>
             ))}
-          />
+          </View>
         </>
       ) : null}
     </ScrollView>

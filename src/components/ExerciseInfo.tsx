@@ -201,13 +201,13 @@ export function ExerciseInfo({
             key={t.key}
             onPress={() => setTab(t.key)}
             style={{
-              backgroundColor: tab === t.key ? C.primary : C.page2,
+              backgroundColor: tab === t.key ? C.accent : C.page2,
               borderRadius: R.pill,
               paddingHorizontal: 16,
               paddingVertical: 7,
             }}
           >
-            <Txt size={12} weight="bold" color={tab === t.key ? "#fff" : C.inkSoft}>
+            <Txt size={12} weight="bold" color={tab === t.key ? C.accentInk : C.inkSoft}>
               {t.label}
             </Txt>
           </Pressable>

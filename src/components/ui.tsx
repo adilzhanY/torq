@@ -36,7 +36,45 @@ export function Txt({
   );
 }
 
+/**
+ * CARDLESS: a content block, not a box. Transparent by default — content
+ * sits directly on the page; only the old padding survives so layouts keep
+ * their gutters. Passing an explicit `background` (dialog bodies, the odd
+ * deliberate dark panel) restores a bordered surface. For interactive
+ * floating surfaces use `Surface`.
+ */
 export function Card({
+  children,
+  style,
+  background = "transparent",
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
+  background?: string;
+}) {
+  const surfaced = background !== "transparent";
+  return (
+    <View
+      style={[
+        surfaced
+          ? {
+              backgroundColor: background,
+              borderRadius: R.md,
+              padding: 16,
+              borderWidth: 1,
+              borderColor: C.line,
+            }
+          : { padding: 16 },
+        style,
+      ]}
+    >
+      {children}
+    </View>
+  );
+}
+
+/** The old card look — reserved for overlays and floating interactive UI. */
+export function Surface({
   children,
   style,
   background = C.surface,
@@ -48,7 +86,13 @@ export function Card({
   return (
     <View
       style={[
-        { backgroundColor: background, borderRadius: R.md, padding: 16 },
+        {
+          backgroundColor: background,
+          borderRadius: R.md,
+          padding: 16,
+          borderWidth: 1,
+          borderColor: C.line,
+        },
         clay(),
         style,
       ]}
@@ -58,10 +102,33 @@ export function Card({
   );
 }
 
+/** Tiny uppercase section label — the cardless replacement for boxes. */
+export function Eyebrow({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<TextStyle>;
+}) {
+  return (
+    <Txt
+      size={10}
+      weight="semibold"
+      color={C.inkFaint}
+      style={[
+        { textTransform: "uppercase", letterSpacing: 1.4, marginTop: 18, marginBottom: 6 },
+        style,
+      ]}
+    >
+      {children}
+    </Txt>
+  );
+}
+
 export function Pill({
   text,
-  color = C.primary,
-  bg = C.surface,
+  color = C.ink,
+  bg = C.page2,
 }: {
   text: string;
   color?: string;
@@ -100,8 +167,8 @@ export function PrimaryButton({
   label,
   onPress,
   disabled,
-  background = C.primary,
-  color = "#fff",
+  background = C.accent,
+  color = C.accentInk,
 }: {
   label: string;
   onPress: () => void;
@@ -248,5 +315,5 @@ export function TextField({
 }
 
 export function Divider() {
-  return <View style={{ height: 1, backgroundColor: "rgba(20,26,24,0.08)" }} />;
+  return <View style={{ height: 1, backgroundColor: C.hair }} />;
 }

@@ -108,10 +108,10 @@ export function CalendarDialog({
                     paddingHorizontal: 12,
                     paddingVertical: 5,
                     borderRadius: 999,
-                    backgroundColor: active ? C.primary : "transparent",
+                    backgroundColor: active ? C.accent : "transparent",
                   }}
                 >
-                  <Txt size={13} weight="bold" color={active ? "#fff" : C.ink}>{m}</Txt>
+                  <Txt size={13} weight="bold" color={active ? C.accentInk : C.ink}>{m}</Txt>
                 </View>
               </Pressable>
             );
@@ -153,7 +153,7 @@ export function CalendarDialog({
                           borderRadius: 17,
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: isSelected ? C.primary : "transparent",
+                          backgroundColor: isSelected ? C.accent : "transparent",
                           borderWidth: isToday && !isSelected ? 1.5 : 0,
                           borderColor: C.ink,
                           opacity: future ? 0.25 : 1,
@@ -162,7 +162,7 @@ export function CalendarDialog({
                         <Txt
                           size={13}
                           weight={isSelected || isToday ? "extrabold" : "semibold"}
-                          color={isSelected ? "#fff" : inMonth ? C.ink : C.inkFaint}
+                          color={isSelected ? C.accentInk : inMonth ? C.ink : C.inkFaint}
                         >
                           {d.getDate()}
                         </Txt>
