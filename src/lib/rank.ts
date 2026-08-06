@@ -115,6 +115,22 @@ export function tierFor(points: number, scale: number): TierState {
   };
 }
 
+/**
+ * Stage within a tier (the badge's orbit progression, I–IV): quarters of
+ * the progress through the current tier band. World Class (progress 1)
+ * caps at IV.
+ */
+export function stageOf(progress: number): 1 | 2 | 3 | 4 {
+  return (Math.min(3, Math.floor(progress * 4)) + 1) as 1 | 2 | 3 | 4;
+}
+
+const ROMAN = ["I", "II", "III", "IV"] as const;
+
+/** "Gold IV" / "Platinum II" style label. */
+export function tierLabel(s: TierState): string {
+  return `${s.tier} ${ROMAN[stageOf(s.progress) - 1]}`;
+}
+
 export type BestLift = {
   exerciseId: string;
   /** Best rank-eligible e1RM in the DISPLAY unit (for the card). */
@@ -151,6 +167,39 @@ export function rankLifts(
     lifts.push({ exerciseId, e1RM, points, tier: tierFor(points, 1) });
   }
   return lifts.sort((a, b) => b.points - a.points);
+}
+
+/** Inverse of dotsPoints: the lift (kg) that scores `points`. */
+export function kgForPoints(points: number, bodyweightKg: number, sex: "male" | "female"): number {
+  const c = sex === "female" ? DOTS_F : DOTS_M;
+  const bw = Math.min(Math.max(bodyweightKg, 40), sex === "female" ? 150 : 210);
+  const denom = c[0] + c[1] * bw + c[2] * bw ** 2 + c[3] * bw ** 3 + c[4] * bw ** 4;
+  return (points * denom) / 500;
+}
+
+export type TierUp = { exerciseId: string; toGo: number; next: TierName };
+
+/**
+ * The nearest per-lift tier-up: the smallest extra e1RM (in the display
+ * unit) any ranked lift needs to reach its next tier. The Home rank block's
+ * "Bench Press — 2.5 kg from Silver" line.
+ */
+export function closestTierUp(
+  lifts: BestLift[],
+  bodyweightKg: number,
+  sex: "male" | "female",
+  unit: string,
+): TierUp | null {
+  const toKg = unit === "lb" ? LB_TO_KG : 1;
+  let best: TierUp | null = null;
+  for (const l of lifts) {
+    if (!l.tier.next) continue;
+    const neededPts = l.tier.points + l.tier.toNext;
+    const toGo = (kgForPoints(neededPts, bodyweightKg, sex) - l.e1RM * toKg) / toKg;
+    if (toGo <= 0) continue;
+    if (!best || toGo < best.toGo) best = { exerciseId: l.exerciseId, toGo, next: l.tier.next };
+  }
+  return best;
 }
 
 export type OverallRank = {

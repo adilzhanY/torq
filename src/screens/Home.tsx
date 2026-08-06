@@ -16,21 +16,20 @@ import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { PopIn, Squish } from "../components/anim";
 import { Divider, Eyebrow, Txt } from "../components/ui";
-import { ArcGauge, SegmentedBar, Sparkline } from "../components/charts";
+import { Sparkline } from "../components/charts";
 import { CalendarDialog } from "../components/CalendarDialog";
 import { StreakDialog } from "../components/StreakDialog";
 import { computeStreak, type Streak } from "../lib/streak";
 import { DateRuler, addDays, dayStart } from "../components/DateRuler";
+import { RankBadge } from "../components/RankBadge";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
-import { bodyProfileAt, workoutCalories } from "../lib/calories";
+import { bodyProfileAt } from "../lib/calories";
+import { closestTierUp, overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
 import { routineMinutes, routineSets } from "../lib/plan";
-import { kcalGoal } from "../lib/stats";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
-import { workoutSets, workoutVolume, type Routine, type Workout } from "../types";
-
-const DAY_MS = 86400000;
+import { workoutVolume, type Routine, type Workout } from "../types";
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -262,32 +261,38 @@ export function Home() {
 
   // ----- Selected-day data --------------------------------------------------
   const dayFinished = workouts.filter((w) => dayStart(w.startedAt) === day);
-  const dayAll = [...dayFinished, ...(isToday && activeWorkout ? [activeWorkout] : [])];
-  const profile = bodyProfileAt(settings, measurements, day + DAY_MS - 1);
-  const kcal = dayAll.reduce(
-    (s, w) => s + workoutCalories(w, exercises, profile, settings),
-    0,
-  );
 
-  // ----- Week-of-selected-day vs what the plan prescribes -------------------
+  // ----- Week strip (week of the selected day, Monday-first) ---------------
   const weekStart = weekStartOf(day);
   const weekEnd = addDays(weekStart, 7);
-  const week = workouts.filter((w) => w.startedAt >= weekStart && w.startedAt < weekEnd);
-  const weekLive = isToday && activeWorkout ? [...week, activeWorkout] : week;
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const trainedDays = new Set(
+    workouts
+      .filter((w) => w.endedAt && w.startedAt >= weekStart && w.startedAt < weekEnd)
+      .map((w) => dayStart(w.startedAt)),
+  );
   const planRoutines = routines.filter((r) => r.plan);
-  const target = {
-    // Fallbacks for the plan-less: modest, invisible once a plan exists.
-    workouts: planRoutines.length || 3,
-    sets: planRoutines.reduce((s, r) => s + routineSets(r), 0) || 60,
-    minutes: planRoutines.reduce((s, r) => s + routineMinutes(r, settings.restSec), 0) || 180,
-  };
-  const weekDone = {
-    workouts: week.length,
-    sets: weekLive.reduce((s, w) => s + workoutSets(w), 0),
-    minutes: Math.round(
-      weekLive.reduce((s, w) => s + ((w.endedAt ?? now) - w.startedAt), 0) / 60000,
+  const plannedWeekdays = new Set(planRoutines.map((r) => r.weekday));
+  const weekDoneCount = weekDays.filter((d) => trainedDays.has(d)).length;
+  const weekTarget = planRoutines.length || 3;
+
+  // ----- Rank momentum (global, not day-scoped) ----------------------------
+  const profile = bodyProfileAt(settings, measurements, now);
+  const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
+  const overall = overallRank(lifts);
+  const prevOverall = overallRank(
+    rankLifts(
+      workouts.filter((w) => w.endedAt && w.endedAt < weekStartOf(today)),
+      settings.unit,
+      profile.weightKg,
+      profile.sex,
     ),
-  };
+  );
+  const weekDelta = Math.round(overall.state.points - prevOverall.state.points);
+  const tierUp = closestTierUp(lifts, profile.weightKg, profile.sex, settings.unit);
+  const tierUpName = tierUp
+    ? exercises.find((e) => e.id === tierUp.exerciseId)?.name ?? "a lift"
+    : null;
 
   // 7-day volume trend ending on the selected day.
   const trend = Array.from({ length: 7 }, (_, i) => {
@@ -343,36 +348,113 @@ export function Home() {
 
       <TodayHero routine={todaysRoutine} done={doneToday} nextUp={nextUp} />
 
-      {/* Daily goal — bare block: calories for the selected day, plan-relative week gauges */}
+      {/* Week at a glance: the plan week as a Monday-first day strip */}
       <View>
-        <Eyebrow>{isToday ? "Daily goal" : "That day"}</Eyebrow>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <View style={{ gap: 2 }}>
-            <Txt size={10} weight="bold" color={C.inkFaint}>BURNT</Txt>
-            <Txt size={26} weight="extrabold">{kcal}</Txt>
-          </View>
-          <View style={{ gap: 2, alignItems: "flex-end" }}>
-            <Txt size={10} weight="bold" color={C.inkFaint}>GOAL</Txt>
-            <Txt size={26} weight="extrabold" color={C.inkSoft}>{kcalGoal(settings)}</Txt>
-          </View>
+        <Eyebrow>
+          {(isToday ? "This week" : "That week") + ` · ${weekDoneCount} of ${weekTarget} done`}
+        </Eyebrow>
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          {weekDays.map((d) => {
+            const wd = new Date(d).getDay();
+            const trained = trainedDays.has(d);
+            const isTodayCell = d === today;
+            const planned = plannedWeekdays.has(wd);
+            return (
+              <View key={d} style={{ flex: 1, alignItems: "center", gap: 4 }}>
+                <Txt size={9} weight="semibold" color={C.inkFaint}>
+                  {"MTWTFSS"[(wd + 6) % 7]}
+                </Txt>
+                <View
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    backgroundColor: trained ? C.accent : "transparent",
+                    borderWidth: trained ? 0 : isTodayCell ? 1.6 : planned ? 1.4 : 0,
+                    borderColor: isTodayCell ? C.accent : "#3A4034",
+                  }}
+                >
+                  {trained ? (
+                    <Icon name="Check" size={15} color={C.accentInk} strokeWidth={3} />
+                  ) : (
+                    <Txt
+                      size={12}
+                      weight="bold"
+                      color={isTodayCell ? C.accent : planned ? C.inkFaint : "#3A4034"}
+                    >
+                      {planned || isTodayCell ? String(new Date(d).getDate()) : "·"}
+                    </Txt>
+                  )}
+                </View>
+              </View>
+            );
+          })}
         </View>
-        <View style={{ marginTop: 10 }}>
-          <SegmentedBar value={kcal} goal={kcalGoal(settings)} />
-        </View>
-        {!profile.complete ? (
-          <Txt size={11} color={C.inkFaint} style={{ marginTop: 8 }}>
-            Set your body stats in Profile for accurate calories.
+      </View>
+
+      {/* Rank momentum: points, weekly delta, closest tier-up */}
+      <View>
+        <Eyebrow>Rank</Eyebrow>
+        {lifts.length === 0 ? (
+          <Txt size={13} color={C.inkFaint}>
+            Finish a workout with weighted sets and your rank appears here.
           </Txt>
-        ) : null}
-        <View style={{ marginVertical: 14 }}><Divider /></View>
-        <Txt size={10} weight="bold" color={C.inkFaint}>
-          {isToday ? "THIS WEEK VS YOUR PLAN" : "THAT WEEK VS YOUR PLAN"}
-        </Txt>
-        <View style={{ flexDirection: "row", justifyContent: "space-around", marginTop: 10 }}>
-          <ArcGauge value={weekDone.workouts} goal={target.workouts} label="WORKOUTS" color={C.goodAcc} />
-          <ArcGauge value={weekDone.sets} goal={target.sets} label="SETS" color={C.prAcc} />
-          <ArcGauge value={weekDone.minutes} goal={target.minutes} label="MINUTES" color={C.warnAcc} />
-        </View>
+        ) : (
+          <>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+              <RankBadge
+                tier={overall.state.tier}
+                stage={stageOf(overall.state.progress)}
+                size={54}
+              />
+              <View style={{ flex: 1, gap: 1 }}>
+                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                  <Txt size={22} weight="extrabold">{Math.round(overall.state.points)}</Txt>
+                  <Txt size={12} weight="extrabold" color={C.accent}>pts</Txt>
+                  {weekDelta > 0 ? (
+                    <Txt size={12} weight="extrabold" color={C.accent}>
+                      ▲ +{weekDelta} this week
+                    </Txt>
+                  ) : null}
+                </View>
+                <Txt size={12} color={C.inkSoft}>
+                  {tierLabel(overall.state)}
+                  {overall.state.next
+                    ? ` · ${Math.ceil(overall.state.toNext)} pts to ${overall.state.next}`
+                    : ""}
+                </Txt>
+              </View>
+            </View>
+            <View
+              style={{
+                height: 4,
+                borderRadius: 99,
+                backgroundColor: C.page2,
+                marginTop: 8,
+                overflow: "hidden",
+              }}
+            >
+              <View
+                style={{
+                  width: `${Math.round(overall.state.progress * 100)}%`,
+                  height: "100%",
+                  borderRadius: 99,
+                  backgroundColor: C.accent,
+                }}
+              />
+            </View>
+            {tierUp && tierUpName ? (
+              <Txt size={12} color={C.inkFaint} style={{ marginTop: 6 }}>
+                Closest tier-up:{" "}
+                <Txt size={12} weight="bold" color={C.inkSoft}>{tierUpName}</Txt> —{" "}
+                {tierUp.toGo < 10 ? tierUp.toGo.toFixed(1) : Math.ceil(tierUp.toGo)}{" "}
+                {settings.unit} from {tierUp.next}
+              </Txt>
+            ) : null}
+          </>
+        )}
       </View>
 
       {/* Volume trend teaser — frameless chart */}
