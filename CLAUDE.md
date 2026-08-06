@@ -112,12 +112,13 @@ old Measure logging (kind chips + history) at the bottom. Home is the coach's "T
 CalendarDialog), a scrubbable DateRuler, then the TodayHero — today's
 planned session with one-tap Start (states: live session lime / plan day
 dark card with exercise preview / done-checked / rest day with next-up /
-no-plan → opens the wizard via `useUi().openPlanWizard`) — a daily-goal
-card (burnt kcal vs `kcalGoal` on a SegmentedBar for the selected day +
-three week-scope ArcGauges: workouts / sets / minutes vs what the PLAN
-routines prescribe — `routineSets`/`routineMinutes`, no typed targets), a
-7-day volume Sparkline card, and a day-aware workout list (Today → 3 most
-recent; other days → that day's workouts). The Workout tab is
+no-plan → opens the wizard via `useUi().openPlanWizard`) — then the WEEK
+STRIP (Monday-first plan-week dots: trained/today/planned/rest) and the
+RANK MOMENTUM block (overall RankBadge, points + weekly delta,
+pts-to-next-tier bar, closest per-lift tier-up line), a
+7-day volume Sparkline, and a day-aware workout list (Today → 3 most
+recent; other days → that day's workouts). Calories are NOT shown on
+Home (removed 2026-08-06; still on WorkoutCard/summary/Stats). The Workout tab is
 quick-start + the user's routines + a
 "Recommended" section (3-card push/pull/legs split from
 `src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
@@ -704,6 +705,38 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-08-04: PATH.md created (business idea, rank-system design, locked
   decisions, 4-phase roadmap) so torq-local sessions carry the full product
   context; pointer added at the top of this file.
+- 2026-08-06 (later): Home goal card replaced (Adilzhan: "showing calories
+  is bad"; picked "A+C combined, kcal off Home only" from the lavish
+  options page .lavish/torq-home-upgrade.html). The BURNT/GOAL kcal block
+  + SegmentedBar + week ArcGauges are GONE from Home (kcal survives in
+  WorkoutCard/summary/Stats; calories.ts untouched). In their place:
+  (1) WEEK STRIP — Monday-first 7 dots for the selected day's week:
+  trained day = lime check, today = lime ring, planned weekday = faint
+  ring with date number, rest = dot; eyebrow "This week · X of Y done"
+  (Y = plan sessions, fallback 3). (2) RANK MOMENTUM — RankBadge +
+  points + "▲ +N this week" (overall pts now vs before this Monday —
+  rankLifts on workouts ended before weekStart) + tier label + pts-to-
+  next + progress bar + "Closest tier-up: <lift> — N kg from <tier>"
+  via new rank.ts helpers `kgForPoints` (inverse DOTS) and
+  `closestTierUp`. Verified on the emulator (strip checks, +2 delta,
+  bench 5.3 kg from Silver).
+- 2026-08-06 (later): Ranks TAB + shield badges in RN (from the approved
+  brand-v2 mockup). `src/components/RankBadge.tsx`: react-native-svg port
+  of the lavish badge generator — rounded-hex shield (Polygon + thick
+  round-join stroke), tier metal LinearGradient frame (World Class =
+  holo multi-stop), vortex emblem (VORTEX_PATH now exported from
+  Logo.tsx) scaled into the shield, orbit ring as sampled half-ellipse
+  Paths with a userSpaceOnUse Mask cutting the gap around each static
+  jewel ball (RadialGradient + specular dot; no SMIL/filters in RN so
+  no comet trails/blur — those stay web/share-card). Stage I–IV = ring →
+  ball → two balls, derived from tier progress quarters (`stageOf` +
+  `tierLabel` "Gold IV" in rank.ts). `src/screens/Ranks.tsx`: cardless —
+  logo + "Ranks" + "NN kg · M/F" header, OVERALL row (badge + lime pts +
+  tier label + pts-to-next + progress bar), LIFTS list (badge · name ·
+  e1RM · tier label · pts). New "ranks" Tab (ui.tsx) second in the dock
+  (Medal icon added to Icon.tsx). GOTCHA: module-level edits to
+  BottomNav ITEMS didn't Fast-Refresh — force-stop Expo Go + reopen for
+  a fresh bundle. Verified on the emulator with seeded data.
 - 2026-08-06 (later): Rank engine v1 + Rank Card (PATH.md Phase 1 start,
   from the approved concept mockup). `src/lib/rank.ts`: pure functions —
   `dotsPoints` (official DOTS polynomial, sex+bodyweight normalized,

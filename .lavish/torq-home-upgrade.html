@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · Home upgrade — 3 directions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24; --hair:#22261F;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+    --teal:#5AC8B0; --gold:#E9B920; --silver:#C9D2DA; --bad:#E06A5A;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  .wrap{max-width:1180px;margin:0 auto}
+  header.page{margin-bottom:24px}
+  h1{font-size:28px;font-weight:700;margin:0;letter-spacing:-.5px}
+  h2{font-size:19px;font-weight:700;margin:0 0 4px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:15px;line-height:1.6;max-width:78ch;margin-top:10px}
+  .sub b{color:var(--ink)}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;margin-bottom:24px;overflow:hidden}
+  .desc{color:var(--dim);font-size:14.5px;line-height:1.65;max-width:82ch;margin:6px 0 18px}
+  .desc b{color:var(--ink)}
+  .tiny{color:var(--faint);font-size:12px}
+
+  /* option columns */
+  .options{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .option{flex:1 1 300px;max-width:360px;display:flex;flex-direction:column;gap:12px}
+  .ohead{display:flex;align-items:center;gap:10px}
+  .obadge{width:30px;height:30px;border-radius:10px;background:var(--lime);color:var(--lime-ink);
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex:none}
+  .ohead h3{font-size:16px;font-weight:700;margin:0}
+  .ohead .osub{font-size:11.5px;color:var(--faint)}
+  .pros{font-size:12.5px;line-height:1.6;color:var(--dim);padding:0 2px}
+  .pros b{color:var(--ink)}
+  .pros .plus{color:var(--teal)} .pros .minus{color:var(--bad)}
+
+  /* phone */
+  .phone{border-radius:30px;padding:16px 14px;border:1px solid var(--line);background:#0B0C0B;
+    box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .eyebrow{font-size:9.5px;font-weight:600;color:var(--faint);letter-spacing:.13em;text-transform:uppercase;margin:14px 0 5px}
+  .eyebrow:first-child{margin-top:0}
+  .h-big{font-size:23px;font-weight:700;letter-spacing:-.7px;line-height:1.05}
+  .h-mid{font-size:16px;font-weight:700;letter-spacing:-.3px}
+  .dim{color:var(--dim)} .faint{color:var(--faint)} .limec{color:var(--lime)}
+  .meta{font-size:11.5px;color:var(--dim);line-height:1.5}
+  .hair{height:1px;background:var(--hair);margin:10px 0}
+  .row{display:flex;align-items:baseline;gap:8px}
+  .rowc{display:flex;align-items:center;gap:8px}
+  .sp{flex:1}
+  .num{font-weight:700;font-variant-numeric:tabular-nums}
+  .pillbtn{display:inline-block;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:12px;border-radius:999px;padding:7px 16px}
+  .thinbar{height:4px;border-radius:99px;background:#20241D;margin:8px 0 4px;overflow:hidden}
+  .thinbar i{display:block;height:100%;background:var(--lime);border-radius:99px}
+  .minilogo{width:26px;height:26px;border-radius:8px;background:#0E0F0E;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .minilogo svg{width:84%;height:84%}
+
+  /* A: week strip */
+  .week{display:flex;gap:6px;margin-top:6px}
+  .day{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .day .dl{font-size:9px;color:var(--faint);font-weight:600}
+  .dot{width:30px;height:30px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .dot.done{background:var(--lime);color:var(--lime-ink)}
+  .dot.today{border:1.6px solid var(--lime);color:var(--lime)}
+  .dot.plan{border:1.4px solid #3A4034;color:var(--faint)}
+  .dot.rest{color:#3A4034;font-size:14px}
+
+  /* B: load bars */
+  .loadbars{display:flex;align-items:flex-end;gap:5px;height:46px;margin-top:8px}
+  .loadbars i{flex:1;background:#23271F;border-radius:3px 3px 0 0}
+  .loadbars i.hot{background:var(--lime)}
+  .delta{display:inline-block;background:rgba(90,200,176,.14);color:var(--teal);font-size:10.5px;font-weight:700;border-radius:99px;padding:3px 9px}
+
+  /* C: rank */
+  .badge svg{width:100%;height:100%;display:block;overflow:visible}
+  .rankb{width:52px;height:44px;flex:none}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:14px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:60px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+  .q{margin-bottom:20px}
+  .q h4{font-size:14px;font-weight:700;margin:0 0 8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>Home upgrade — what replaces calories?</h1>
+  <div class="sub">
+    Agreed: <b>"burnt kcal vs a kcal goal" is a diet-app metric in a strength app</b> — it's estimated,
+    it's noisy, and it doesn't tell you whether you're getting stronger. Three replacements below, each
+    mocked as the real Home (hero and recents stay; only the goal block changes). All three use data
+    the app already computes — nothing fake.
+  </div>
+</header>
+
+<!-- ===== OPTIONS ===== -->
+<section>
+  <h2>The three directions</h2>
+  <div class="desc">Same slot, three different answers to "how am I doing?" — consistency, effort, or rank.</div>
+  <div class="options">
+
+    <!-- A: WEEK AT A GLANCE -->
+    <div class="option">
+      <div class="ohead"><div class="obadge">A</div><div><h3>Week at a glance</h3><div class="osub">consistency — did you show up?</div></div></div>
+      <div class="phone">
+        <div class="rowc"><div class="minilogo" data-mini></div><div class="sp"></div><span class="meta">🔥 12</span></div>
+        <div class="h-big" style="margin-top:10px">Today</div>
+        <div class="meta">Thursday, August 6</div>
+        <div class="eyebrow">Today's session</div>
+        <div class="h-mid">Pull Day</div>
+        <div class="meta">6 exercises · ~52 min</div>
+        <div style="margin-top:8px"><span class="pillbtn">Start →</span></div>
+        <div class="hair"></div>
+        <div class="eyebrow" style="margin-top:4px">This week · 3 of 4 done</div>
+        <div class="week">
+          <div class="day"><div class="dl">M</div><div class="dot done">✓</div></div>
+          <div class="day"><div class="dl">T</div><div class="dot done">✓</div></div>
+          <div class="day"><div class="dl">W</div><div class="dot rest">·</div></div>
+          <div class="day"><div class="dl">T</div><div class="dot today">4</div></div>
+          <div class="day"><div class="dl">F</div><div class="dot plan">5</div></div>
+          <div class="day"><div class="dl">S</div><div class="dot rest">·</div></div>
+          <div class="day"><div class="dl">S</div><div class="dot rest">·</div></div>
+        </div>
+        <div class="meta" style="margin-top:8px">Pull today · Push Friday · then the week is yours</div>
+        <div class="eyebrow">Recent</div>
+        <div class="row"><span class="h-mid" style="font-size:13px">Push Day</span><span class="sp"></span><span class="tiny">Tue · 49 min</span></div>
+        <div class="meta faint">16 sets · 7 385 kg · 🏆 15</div>
+      </div>
+      <div class="pros">
+        <span class="plus">+</span> The coach answer: torq's pitch is the plan, and this shows the plan's week directly.<br>
+        <span class="plus">+</span> Absorbs the streak story (the ✓ days ARE the streak) and the week gauges — less duplication.<br>
+        <span class="minus">−</span> Says nothing about intensity: a 20-minute token session looks equal to a real one.
+      </div>
+    </div>
+
+    <!-- B: TRAINING LOAD -->
+    <div class="option">
+      <div class="ohead"><div class="obadge">B</div><div><h3>Training load</h3><div class="osub">effort — how hard are you working?</div></div></div>
+      <div class="phone">
+        <div class="rowc"><div class="minilogo" data-mini></div><div class="sp"></div><span class="meta">🔥 12</span></div>
+        <div class="h-big" style="margin-top:10px">Today</div>
+        <div class="meta">Thursday, August 6</div>
+        <div class="eyebrow">Today's session</div>
+        <div class="h-mid">Pull Day</div>
+        <div class="meta">6 exercises · ~52 min</div>
+        <div style="margin-top:8px"><span class="pillbtn">Start →</span></div>
+        <div class="hair"></div>
+        <div class="eyebrow" style="margin-top:4px">Training load · this week</div>
+        <div class="row"><span class="num" style="font-size:26px">21 460 <span style="font-size:11px;color:var(--faint)">kg</span></span><span class="sp"></span><span class="delta">▲ 12% vs 4-week avg</span></div>
+        <div class="loadbars">
+          <i style="height:52%"></i><i style="height:64%"></i><i style="height:47%"></i><i style="height:58%"></i>
+          <i style="height:61%"></i><i style="height:44%"></i><i style="height:70%"></i><i class="hot" style="height:78%"></i>
+        </div>
+        <div class="meta" style="margin-top:6px">8 weeks · sets 44 · time 3h 10m this week</div>
+        <div class="eyebrow">Recent</div>
+        <div class="row"><span class="h-mid" style="font-size:13px">Push Day</span><span class="sp"></span><span class="tiny">Tue · 49 min</span></div>
+        <div class="meta faint">16 sets · 7 385 kg · 🏆 15</div>
+      </div>
+      <div class="pros">
+        <span class="plus">+</span> Real, objective effort: volume is measured, not estimated like kcal ever was.<br>
+        <span class="plus">+</span> The trend vs your own 4-week average is honest coaching ("building" / "coasting").<br>
+        <span class="minus">−</span> Volume comparisons mislead across program changes (a deload week reads as "worse").
+      </div>
+    </div>
+
+    <!-- C: RANK MOMENTUM -->
+    <div class="option">
+      <div class="ohead"><div class="obadge">C</div><div><h3>Rank momentum</h3><div class="osub">status — how close is the next tier?</div></div></div>
+      <div class="phone">
+        <div class="rowc"><div class="minilogo" data-mini></div><div class="sp"></div><span class="meta">🔥 12</span></div>
+        <div class="h-big" style="margin-top:10px">Today</div>
+        <div class="meta">Thursday, August 6</div>
+        <div class="eyebrow">Today's session</div>
+        <div class="h-mid">Pull Day</div>
+        <div class="meta">6 exercises · ~52 min</div>
+        <div style="margin-top:8px"><span class="pillbtn">Start →</span></div>
+        <div class="hair"></div>
+        <div class="eyebrow" style="margin-top:4px">Rank</div>
+        <div class="rowc">
+          <div class="rankb" data-badge></div>
+          <div style="flex:1">
+            <div class="row"><span class="num" style="font-size:19px">213</span><span class="tiny limec" style="font-weight:700">pts</span><span class="tiny limec" style="font-weight:700">▲ +6 this week</span></div>
+            <div class="meta">Silver III · 13 pts to Gold</div>
+          </div>
+        </div>
+        <div class="thinbar"><i style="width:72%"></i></div>
+        <div class="meta" style="margin-top:6px">Closest tier-up: <b style="color:var(--ink)">Bench Press</b> — 2.5 kg from Silver</div>
+        <div class="eyebrow">Recent</div>
+        <div class="row"><span class="h-mid" style="font-size:13px">Push Day</span><span class="sp"></span><span class="tiny">Tue · 49 min</span></div>
+        <div class="meta faint">16 sets · 7 385 kg · 🏆 15</div>
+      </div>
+      <div class="pros">
+        <span class="plus">+</span> The differentiator on the front door: no other tracker can put THIS here.<br>
+        <span class="plus">+</span> "2.5 kg from Silver" is a concrete reason to start today's session — best motivation loop of the three.<br>
+        <span class="minus">−</span> Points move slowly between PRs; on flat weeks the block barely changes (needs the weekly-delta line to feel alive).
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== RECOMMENDATION ===== -->
+<section>
+  <h2>My take</h2>
+  <div class="desc">
+    <b>C (Rank momentum)</b> is the one that makes torq feel like torq — the rank system is the product's
+    whole bet, and Home is where it should live. Pair it with <b>A's week strip</b> in the same block
+    (strip on top, rank below — both are thin) and you replace calories with consistency + status in one
+    move. B's load number is honest but is already half-covered by the volume sparkline lower on the page.
+  </div>
+</section>
+
+<!-- ===== FORM ===== -->
+<form class="pick" data-lavish-question="home-upgrade" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const dir=fd.get('direction'); const scope=fd.get('scope'); const n=(fd.get('notes')||'').toString().trim();
+  if(!dir||!scope)return;
+  window.lavish.queuePrompt('Home upgrade: direction='+dir+'; kcal removal scope='+scope+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Home: '+dir+' · kcal: '+scope,element:event.currentTarget,data:{question:'home-upgrade',direction:dir,scope:scope,notes:n}});
+">
+  <div class="q">
+    <h4>1 · Which direction replaces the calorie block?</h4>
+    <div class="optgrid">
+      <label class="opt"><input type="radio" name="direction" value="A - week at a glance"><span><span class="on">A · Week at a glance</span><span class="od">plan-week strip with done/today/upcoming days</span></span></label>
+      <label class="opt"><input type="radio" name="direction" value="B - training load"><span><span class="on">B · Training load</span><span class="od">weekly volume + trend vs your own average</span></span></label>
+      <label class="opt"><input type="radio" name="direction" value="C - rank momentum"><span><span class="on">C · Rank momentum</span><span class="od">points, weekly delta, closest tier-up</span></span></label>
+      <label class="opt"><input type="radio" name="direction" value="A+C combined (recommended)"><span><span class="on">A + C combined</span><span class="od">week strip on top, rank momentum under it — my recommendation</span></span></label>
+    </div>
+  </div>
+  <div class="q">
+    <h4>2 · How far does the calorie removal go?</h4>
+    <div class="optgrid">
+      <label class="opt"><input type="radio" name="scope" value="home only - keep kcal in WorkoutCard/summary/stats"><span><span class="on">Home only</span><span class="od">kcal pills stay on workout cards, summary and Stats</span></span></label>
+      <label class="opt"><input type="radio" name="scope" value="everywhere - remove kcal from the whole app"><span><span class="on">Everywhere</span><span class="od">retire the calorie feature app-wide (engine stays in code)</span></span></label>
+    </div>
+  </div>
+  <textarea name="notes" placeholder="Optional notes — tweaks to the chosen direction…"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+<p class="tiny" style="text-align:center;margin-top:30px">torq · Home upgrade options · all three feed on data the app already computes</p>
+</div>
+
+<script>
+const VORTEX_D="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z";
+document.querySelectorAll('[data-mini]').forEach(el=>{
+  el.innerHTML=`<svg viewBox="0 0 1024 1024"><g transform="translate(0,1024) scale(0.1,-0.1)"><path fill="#C8FE23" d="${VORTEX_D}"/></g></svg>`;
+});
+/* small silver stage-III badge for option C (static, matches the RN port) */
+(function(){
+  const m={base:'#C9D2DA',light:'#EDF2F7',dark:'#97A2AD',deep:'#616B75'};
+  const CX=85,CY=62,R=37,SW=12,TILT=-13,ORX=R+21,ORY=16,GAP=3.6,D2R=Math.PI/180;
+  const hex=(cx,cy,r)=>{const p=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3;p.push((cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1));}return p.join(' ');};
+  const arc=(a0,a1,cy)=>{const rot=TILT*D2R,pts=[];for(let i=0;i<=26;i++){const t=a0+(a1-a0)*i/26;
+    const x=ORX*Math.cos(t),y=ORY*Math.sin(t);
+    pts.push((CX+x*Math.cos(rot)-y*Math.sin(rot)).toFixed(1)+' '+(cy+x*Math.sin(rot)+y*Math.cos(rot)).toFixed(1));}
+    return 'M'+pts.join(' L');};
+  const cy=CY+1,a=TILT*D2R,fx=CX+ORX*Math.cos(a),fy=cy+ORX*Math.sin(a);
+  document.querySelectorAll('[data-badge]').forEach(el=>{
+    el.innerHTML=`<svg viewBox="0 0 170 136">
+      <defs>
+        <linearGradient id="fr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${m.light}"/><stop offset="1" stop-color="${m.base}"/></linearGradient>
+        <radialGradient id="bl" cx=".36" cy=".28" r=".95"><stop offset="0" stop-color="${m.light}"/><stop offset=".45" stop-color="${m.base}"/><stop offset=".82" stop-color="${m.dark}"/><stop offset="1" stop-color="${m.deep}"/></radialGradient>
+        <mask id="mk" maskUnits="userSpaceOnUse" x="-20" y="-20" width="210" height="176">
+          <rect x="-20" y="-20" width="210" height="176" fill="#fff"/><circle cx="${fx}" cy="${fy}" r="${6+GAP}" fill="#000"/>
+        </mask>
+      </defs>
+      <g mask="url(#mk)"><path d="${arc(Math.PI,2*Math.PI,cy)}" fill="none" stroke="${m.dark}" stroke-width="4" stroke-linecap="round" opacity=".9"/></g>
+      <polygon points="${hex(CX,cy+4,R-SW/2)}" fill="${m.deep}" stroke="${m.deep}" stroke-width="${SW}" stroke-linejoin="round"/>
+      <polygon points="${hex(CX,CY,R-SW/2)}" fill="#131510" stroke="#131510" stroke-width="${SW}" stroke-linejoin="round"/>
+      <polygon points="${hex(CX,CY,R-5)}" fill="none" stroke="url(#fr)" stroke-width="8" stroke-linejoin="round"/>
+      <g transform="translate(${CX} ${cy}) scale(.5) translate(-50 -51) scale(0.09765625) translate(0 1024) scale(0.1 -0.1)"><path fill="${m.light}" d="${VORTEX_D}"/></g>
+      <g mask="url(#mk)"><path d="${arc(0,Math.PI,cy)}" fill="none" stroke="${m.base}" stroke-width="4" stroke-linecap="round"/></g>
+      <circle cx="${fx}" cy="${fy}" r="6" fill="url(#bl)"/><circle cx="${(fx-6*.04).toFixed(1)}" cy="${(fy-6*.44).toFixed(1)}" r="${(6*.28).toFixed(1)}" fill="#FAFDF3" opacity=".92"/>
+    </svg>`;
+  });
+})();
+</script>
+</body>
+</html>
