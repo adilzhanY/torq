@@ -8,6 +8,10 @@ Adilzhan. Android-first Expo React Native app. Repo: github.com/adilzhanY/torq.
 **Living context file:** update this file after every user-requested change so
 the next session knows where the project stands.
 
+**Roadmap:** `PATH.md` holds the business idea, locked redesign decisions,
+rank-system design, and the 4-phase plan. Read it before planning any
+feature work.
+
 ## Stack
 
 - Expo SDK 57, React Native 0.86, React 19.2, TypeScript (strict)
@@ -16,11 +20,24 @@ the next session knows where the project stands.
   `overrides` (1.32 breaks CSS deserialization in the nativewind metro
   transformer).
 - Supabase for auth + cloud sync (optional; app is fully offline-capable)
-- lucide-react-native icons, Onest font (@expo-google-fonts/onest)
+- lucide-react-native icons, Space Grotesk font
+  (@expo-google-fonts/space-grotesk; weights 400/500/600/700 — the family has
+  no 800, so `FONT.extrabold` maps to 700 Bold)
 - No router: single-screen shell with a tab switcher (`src/lib/ui.tsx`),
   same as grit mobile.
 
 ## Design
+
+**CARDLESS PRINCIPLE (2026-08-06, Adilzhan — overrides the bento habit):**
+stop wrapping content in Card/surface containers. Content is text directly
+on the page background; hierarchy comes from type scale, weight, color
+(ink/dim/faint + lime accents) and whitespace; where separation is needed,
+use thin hairline dividers, not boxes. Surfaces are reserved for
+INTERACTIVE elements only (buttons, inputs, the dock, the top bar) and
+true overlays (dialogs, sheets, pickers). Charts keep their plots but lose
+their card frames. Applies to every new screen and the Phase-2 rebrand;
+existing screens migrate as they're touched. Mockups of all pages in this
+style: `.lavish/torq-cardless-pages.html`.
 
 The design is ported from `~/dev/grit/apps/mobile` — a warm clay/bento system:
 
@@ -673,6 +690,75 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   sets (goodAcc) · Scale volume (prAcc) · Flame kcal (warnAcc, hidden at
   0) · Trophy PRs (C.gold, hidden at 0, via computePRs against all
   workouts, memoized). Local IconStat helper. Verified on the emulator.
+- 2026-08-04: Rank-redesign kickoff decisions locked by Adilzhan (via lavish
+  plan review): hybrid rank engine (real percentiles + calibrated formula),
+  friends-first social scope, FULL visual rebrand (new logo direction: sharp
+  Greek tau τ, lime on near-black; app name stays torq), Phase 1 (rank engine
+  + standards dataset + Ranks tab) approved to start.
+- 2026-08-04: App font swapped Onest → Space Grotesk (first rebrand change,
+  Adilzhan picked it from a 4-font lavish tryout of the Rank Card). Only
+  App.tsx (useFonts) and theme.ts FONT tokens changed — every component
+  reads FONT, so the swap is global. extrabold now aliases 700 Bold (family
+  max). tsc clean.
+- 2026-08-04: PATH.md created (business idea, rank-system design, locked
+  decisions, 4-phase roadmap) so torq-local sessions carry the full product
+  context; pointer added at the top of this file.
+- 2026-08-06 (later): Splash/icon config modernized: legacy app.json
+  `splash` key replaced by the `expo-splash-screen` config plugin (SDK 57
+  deprecates the old key; package installed — without it Metro dies with
+  PluginError). GOTCHAS: (1) Expo Go shows the app ICON (not the splash)
+  while loading a project, and it CACHES project icons — after changing
+  icon.png, `adb shell pm clear host.exp.exponent` is the only reliable
+  flush, BUT pm clear also wipes AsyncStorage = the app's whole local DB
+  on that device. (2) After pm clear, bare `am start -a VIEW -d exp://…`
+  may not resolve to Expo Go — append the package: `am start -a
+  android.intent.action.VIEW -d "exp://10.0.2.2:8081" host.exp.exponent`.
+- 2026-08-06 (later): CARDLESS + DARK migration shipped (Adilzhan approved
+  via the lavish mockups, "start migrating screens"). theme.ts rewritten:
+  clay palette → near-black rebrand (page #0E0F0E, surface #151714 for
+  interactive/overlays only, page2 #1B1E1A inputs, ink #F2F4EE→inkSoft
+  #9AA294→inkFaint #5C6356 steps, NEW C.line #262A24 borders + C.hair
+  #22261F hairlines, dark good/warn/bad/pr surfaces, light chart palette,
+  black shadows); global.css mirrored. ui.tsx: `Card` is now a TRANSPARENT
+  padded block (explicit background restores a bordered box) — every old
+  Card usage renders bare automatically; new `Surface` (old card look:
+  surface bg + line border + clay) for dialogs/sheets; new `Eyebrow`
+  (10px uppercase letterspaced label); Divider → C.hair; Pill defaults
+  ink-on-page2; PrimaryButton defaults lime. Dialog.tsx uses Surface +
+  black backdrop. App.tsx: top bar bordered, StatusBar light. Home.tsx
+  rebuilt to the mockup (TodayHero = eyebrow + headline + lime Start
+  pill per state; goal + sparkline sections bare; recents hairlined).
+  Workout start screen: routine GRID replaced by cardless RoutineRow list
+  (RoutineGridCard/TwoColumnGrid deleted); quick start is a bare row with
+  a lime play chip; live-session exercise names are plain bold text (dark
+  pill gone), done-tint now lime-on-dark. WorkoutCard → bare block
+  (callers add Dividers). Selected chips (Stats measure kinds, Profile
+  sex/unit, ExerciseInfo tabs) primary→lime. BottomNav: active capsule
+  now a dark #2A2F27 chip with ink text (was white), dock bordered.
+  CalendarDialog selection lime. DateRuler ticks + ProCharts grid/
+  pointer/tooltip lines flipped to light rgba. Remaining screens go
+  cardless automatically via the transparent Card; deeper per-screen
+  typography passes can follow as they're touched. tsc clean + android
+  export verified. NOT yet eyeballed on the emulator.
+- 2026-08-06: New brand logo — the lime "vortex" mark (8 sharp blades
+  spinning around a center; AI concept by Adilzhan, source
+  `assets/torq_logo_v2.png`), replacing both the old pulse mark AND the
+  planned sharp-tau direction (Adilzhan dropped the tau; PATH.md updated).
+  Traced with potrace to one vector path: `Logo.tsx` rewritten (path in a
+  1024 box under `<G transform="translate(0,1024) scale(0.1,-0.1)">` —
+  potrace emits math-axis coords), `LOGO_BG` now `#0E0F0E`;
+  `assets/logo.svg` redrawn; icon.png / splash-icon.png / favicon /
+  android adaptive+monochrome icons regenerated via ImageMagick from the
+  trace; app.json splash+adaptiveIcon backgrounds `#f1efe9` → `#0E0F0E`.
+  Rank-badge design (lavish sessions, `.lavish/torq-rank-system.html` +
+  `torq-brand-v2.html`): badge emblem is now the vortex; jewel-style orbit
+  balls upgraded to comets (glow halo + tapered energy trail streaming
+  behind the travel direction via animateMotion rotate="auto"; jewel core
+  with radial gradient + specular dot + drop shadow; masked moving gap in
+  the ring), laurel leaves redrawn as pointed blades (per Adilzhan's
+  reference images). A silver crown above World Class was built then
+  removed at Adilzhan's request — laurel only. tsc clean; badges not yet
+  ported to RN.
 - 2026-07-11: Implemented a month switcher on the Stats page ([Stats.tsx](file:///home/wopler/dev/torq/src/screens/Stats.tsx)). Users can click left/right arrows to switch months, with the right arrow disabled for the future (relative to the current real month). Overview cards (workouts, volume, sets, hours), weekly charts (custom Monday-start weeks that fall in the month), body weight trendline, and logged measurements list are all scoped/filtered to the selected month.
 
 

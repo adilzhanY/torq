@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · cardless — every page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24; --hair:#22261F;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+    --teal:#5AC8B0; --orange:#F0A742; --purple:#9C86E8; --gold:#E9B920;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  .wrap{max-width:1150px;margin:0 auto}
+  header.page{margin-bottom:26px}
+  h1{font-size:30px;font-weight:700;margin:0;letter-spacing:-.5px}
+  h2{font-size:19px;font-weight:700;margin:0 0 4px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:15px;line-height:1.6;max-width:78ch;margin-top:10px}
+  .sub b,.desc b{color:var(--ink);font-weight:600}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;margin-bottom:24px;overflow:hidden}
+  .desc{color:var(--dim);font-size:14.5px;line-height:1.65;max-width:82ch;margin:6px 0 18px}
+  .tiny{color:var(--faint);font-size:12px}
+  .grid{display:grid;gap:14px}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .cell{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .cell p{color:var(--dim);font-size:13.5px;line-height:1.55;margin:6px 0 0}
+  .cell p b{color:var(--ink)}
+  h3{font-size:15px;font-weight:600;margin:0}
+
+  /* ===== phones ===== */
+  .phones{display:flex;flex-wrap:wrap;gap:22px;justify-content:center}
+  .phone{width:270px;flex:0 0 270px;border-radius:34px;padding:18px 16px 16px;border:1px solid var(--line);
+    background:#0B0C0B;box-shadow:0 12px 34px rgba(0,0,0,.55);display:flex;flex-direction:column;min-height:520px}
+  .phone .cap{text-align:center;font-size:12px;color:var(--faint);margin:-4px 0 12px;font-weight:600}
+  .phone .body{flex:1}
+
+  /* cardless building blocks */
+  .tb{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .tb .sp{flex:1}
+  .minilogo{width:30px;height:30px;border-radius:9px;background:#0E0F0E;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+  .minilogo svg{width:84%;height:84%}
+  .avatar{width:26px;height:26px;border-radius:999px;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--dim)}
+  .eyebrow{font-size:10px;font-weight:600;color:var(--faint);letter-spacing:.14em;text-transform:uppercase;margin:16px 0 6px}
+  .h-big{font-size:26px;font-weight:700;letter-spacing:-.8px;line-height:1.08}
+  .h-mid{font-size:17px;font-weight:700;letter-spacing:-.3px}
+  .dim{color:var(--dim)} .faint{color:var(--faint)} .limec{color:var(--lime)}
+  .meta{font-size:12.5px;color:var(--dim);line-height:1.5}
+  .hair{height:1px;background:var(--hair);margin:12px 0}
+  .row{display:flex;align-items:baseline;gap:8px}
+  .row .sp{flex:1}
+  .num{font-weight:700;font-variant-numeric:tabular-nums}
+  .statrow{display:flex;gap:18px;margin:10px 0 2px}
+  .stat .v{font-size:20px;font-weight:700;letter-spacing:-.5px}
+  .stat .v i{font-style:normal;font-size:11px;color:var(--faint);font-weight:500}
+  .stat .l{font-size:10px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-top:1px}
+  .thinbar{height:3px;border-radius:99px;background:#20241D;margin:10px 0 4px;overflow:hidden}
+  .thinbar i{display:block;height:100%;background:var(--lime);border-radius:99px}
+  .pillbtn{display:inline-block;background:var(--lime);color:var(--lime-ink);font-weight:700;font-size:13px;border-radius:999px;padding:8px 18px}
+  .ghostbtn{display:inline-block;color:var(--lime);font-weight:600;font-size:13px}
+  .setgrid{display:grid;grid-template-columns:26px 1fr 40px 40px 22px;gap:4px;font-size:12.5px;align-items:center}
+  .setgrid .hd{font-size:9.5px;color:var(--faint);letter-spacing:.1em;text-transform:uppercase}
+  .setgrid div{padding:3px 0}
+  .done{color:var(--lime)}
+  .check{width:15px;height:15px;border-radius:5px;border:1.4px solid var(--faint);display:inline-block}
+  .check.on{background:var(--lime);border-color:var(--lime)}
+  .restline{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--faint)}
+  .restline .ln{flex:1;height:2px;background:#20241D;border-radius:99px;overflow:hidden}
+  .restline .ln i{display:block;height:100%;width:58%;background:var(--lime)}
+  .dock{margin-top:14px;background:#151714;border:1px solid var(--line);border-radius:999px;height:44px;display:flex;align-items:center;justify-content:space-around;padding:0 10px}
+  .dock span{font-size:10px;color:var(--faint)}
+  .dock .on{background:#23271F;color:var(--ink);border-radius:99px;padding:6px 12px;font-weight:600}
+  .badge24{width:30px;height:26px;flex:0 0 30px}
+  .badge24 svg{width:100%;height:100%;display:block;overflow:visible}
+  .minichart{display:flex;align-items:flex-end;gap:5px;height:56px;margin:8px 0 2px}
+  .minichart i{flex:1;background:#23271F;border-radius:3px 3px 0 0}
+  .minichart i.hot{background:var(--lime)}
+  .sparkline{stroke:var(--teal);fill:none;stroke-width:2}
+
+  /* before/after */
+  .ba{display:flex;gap:22px;flex-wrap:wrap;justify-content:center}
+  .ba .side{flex:1 1 280px;max-width:340px}
+  .ba .lbl{font-size:12px;color:var(--faint);font-weight:600;text-align:center;margin-bottom:10px}
+  .claybox{background:#f1efe9;border-radius:22px;padding:14px;color:#1b211f}
+  .claycard{background:#faf9f5;border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:2px 4px 10px rgba(20,26,24,.12)}
+  .claycard .t{font-weight:700;font-size:14px}
+  .claycard .s{font-size:11px;color:#76817b}
+  .darkbox{background:#0B0C0B;border:1px solid var(--line);border-radius:22px;padding:18px 16px}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:14px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:60px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="page">
+  <h1>Cardless — every page, type does the work</h1>
+  <div class="sub">
+    New design principle, now in CLAUDE.md: <b>no more card containers for content</b>. Text sits
+    directly on the page background; hierarchy comes from type scale, weight, color and whitespace;
+    hairlines separate where needed. Surfaces survive only where you <b>touch</b> them — buttons,
+    inputs, the dock — and in true overlays. Below: all seven pages rebuilt on that rule, in the
+    rebrand skin (near-black · lime · Space Grotesk).
+  </div>
+</header>
+
+<!-- ===== 1. PRINCIPLE ===== -->
+<section>
+  <h2>1 · The rule</h2>
+  <div class="grid g3">
+    <div class="cell"><h3 style="color:#E06A5A">What dies</h3><p>Card backgrounds, box shadows, rounded containers around plain content, "bento" grids of boxes, chart frames. Every pixel of chrome that isn't information.</p></div>
+    <div class="cell"><h3 style="color:var(--lime)">What replaces it</h3><p><b>Type scale</b> (26/17/13/10), <b>weight</b> (700 vs 400), <b>color steps</b> (ink → dim → faint), eyebrow labels, hairline dividers, and generous whitespace. Numbers get big; labels get small.</p></div>
+    <div class="cell"><h3>What survives</h3><p>Interactive surfaces only: the lime CTA pill, inputs, the dock, the top bar — plus real overlays (dialogs, sheets). Charts keep their plots, lose their frames.</p></div>
+  </div>
+</section>
+
+<!-- ===== 2. BEFORE / AFTER ===== -->
+<section>
+  <h2>2 · Same content, boxes vs type</h2>
+  <div class="desc">The Home hero as it ships today (clay cards) against the cardless rebuild. Nothing was removed — only the chrome.</div>
+  <div class="ba">
+    <div class="side">
+      <div class="lbl">TODAY · cards</div>
+      <div class="claybox">
+        <div class="claycard"><div class="t">Today · Pull Day</div><div class="s">6 exercises · ~52 min · starts with Deadlift</div></div>
+        <div class="claycard"><div class="t">Daily goal</div><div class="s">412 / 650 kcal · 64%</div></div>
+        <div class="claycard"><div class="t">🔥 12-day streak</div><div class="s">longest: 21</div></div>
+      </div>
+    </div>
+    <div class="side">
+      <div class="lbl">CARDLESS · type</div>
+      <div class="darkbox">
+        <div class="eyebrow" style="margin-top:0">Today's session</div>
+        <div class="h-big">Pull Day</div>
+        <div class="meta">6 exercises · ~52 min · starts with Deadlift</div>
+        <div style="margin-top:10px"><span class="pillbtn">Start →</span></div>
+        <div class="hair"></div>
+        <div class="row"><span class="meta">Daily goal</span><span class="sp"></span><span class="num" style="font-size:15px">412 <span class="faint">/ 650 kcal</span></span></div>
+        <div class="thinbar"><i style="width:64%"></i></div>
+        <div class="hair"></div>
+        <div class="row"><span class="meta">🔥 Streak</span><span class="sp"></span><span class="num" style="font-size:15px">12 <span class="faint">· longest 21</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. ALL PAGES ===== -->
+<section>
+  <h2>3 · The seven pages</h2>
+  <div class="desc">Home · Live session · Workout · History · Exercises · Stats · Profile — every screen on the same rule. Annotate any element.</div>
+  <div class="phones">
+
+    <!-- HOME -->
+    <div class="phone"><div class="cap">Home · Today</div><div class="body">
+      <div class="tb"><div class="minilogo" data-mini></div><div class="sp"></div><div class="avatar">A</div></div>
+      <div class="h-big">Today</div>
+      <div class="meta">Thursday, August 6</div>
+      <div class="eyebrow">Today's session</div>
+      <div class="h-mid">Pull Day</div>
+      <div class="meta">6 exercises · ~52 min · starts with Deadlift</div>
+      <div style="margin-top:8px"><span class="pillbtn">Start →</span></div>
+      <div class="hair"></div>
+      <div class="statrow">
+        <div class="stat"><div class="v">412<i> /650</i></div><div class="l">kcal</div></div>
+        <div class="stat"><div class="v">3<i> /4</i></div><div class="l">workouts</div></div>
+        <div class="stat"><div class="v">58<i> /74</i></div><div class="l">sets</div></div>
+      </div>
+      <div class="thinbar"><i style="width:64%"></i></div>
+      <div class="row" style="margin-top:8px"><span class="meta">🔥 Streak <b class="limec num">12</b></span><span class="sp"></span><span class="tiny">longest 21</span></div>
+      <div class="eyebrow">Recent</div>
+      <div class="row"><span class="h-mid" style="font-size:14px">Push Day</span><span class="sp"></span><span class="tiny">Tue · 49 min</span></div>
+      <div class="meta faint">18 sets · 6 240 kg · 289 kcal</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:14px">Leg Day</span><span class="sp"></span><span class="tiny">Sun · 55 min</span></div>
+      <div class="meta faint">21 sets · 8 105 kg · 342 kcal · 🏆 2</div>
+    </div>
+    <div class="dock"><span class="on">Home</span><span>History</span><span>Workout</span><span>Exercises</span><span>Stats</span></div>
+    </div>
+
+    <!-- LIVE SESSION -->
+    <div class="phone"><div class="cap">Workout · live session</div><div class="body">
+      <div class="row"><span class="h-big" style="font-size:22px">Pull Day</span><span class="sp"></span><span class="limec num" style="font-size:15px">24:31</span></div>
+      <div class="eyebrow">Deadlift</div>
+      <div class="setgrid">
+        <div class="hd">Set</div><div class="hd">Previous</div><div class="hd">KG</div><div class="hd">Reps</div><div></div>
+        <div class="done num">1</div><div class="faint">120 × 5</div><div class="done num">125</div><div class="done num">5</div><div><span class="check on"></span></div>
+        <div class="done num">2</div><div class="faint">120 × 5</div><div class="done num">125</div><div class="done num">5</div><div><span class="check on"></span></div>
+        <div class="restline"><span>1:24</span><div class="ln"><i></i></div><span>2:00</span></div>
+        <div class="num">3</div><div class="faint">120 × 4</div><div class="num dim">125</div><div class="num dim">5</div><div><span class="check"></span></div>
+      </div>
+      <div class="ghostbtn" style="margin-top:6px">+ Add set</div>
+      <div class="eyebrow">Barbell Row</div>
+      <div class="setgrid">
+        <div class="hd">Set</div><div class="hd">Previous</div><div class="hd">KG</div><div class="hd">Reps</div><div></div>
+        <div class="num">1</div><div class="faint">70 × 10</div><div class="num dim">72.5</div><div class="num dim">10</div><div><span class="check"></span></div>
+        <div class="num">2</div><div class="faint">70 × 10</div><div class="num dim">72.5</div><div class="num dim">10</div><div><span class="check"></span></div>
+      </div>
+      <div class="ghostbtn" style="margin-top:6px">+ Add exercises</div>
+    </div>
+    <div style="text-align:center;margin-top:12px"><span class="pillbtn" style="display:block;text-align:center;padding:12px">Finish workout</span></div>
+    </div>
+
+    <!-- WORKOUT START -->
+    <div class="phone"><div class="cap">Workout · start</div><div class="body">
+      <div class="h-big" style="font-size:22px">Workout</div>
+      <div class="eyebrow">Quick start</div>
+      <div class="row"><span class="h-mid">Empty workout</span><span class="sp"></span><span class="ghostbtn">Start ▶</span></div>
+      <div class="eyebrow">Routines (4)</div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Pull Day</span><span class="sp"></span><span class="tiny">Mon · Thu</span></div>
+      <div class="meta faint">5 × Deadlift · 3 × Row · 3 × Pulldown · ···</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Push Day</span><span class="sp"></span><span class="tiny">Tue · Fri</span></div>
+      <div class="meta faint">4 × Bench Press · 3 × OHP · 3 × Dips · ···</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Leg Day</span><span class="sp"></span><span class="tiny">Wed</span></div>
+      <div class="meta faint">4 × Squat · 3 × Leg Press · 3 × Curl · ···</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px;color:var(--faint)">Archived (2)</span><span class="sp"></span><span class="tiny">›</span></div>
+      <div class="eyebrow">Recommended</div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Push / Pull / Legs</span><span class="sp"></span><span class="tiny">3-day split</span></div>
+      <div class="meta faint">classic hypertrophy base, gifs included</div>
+    </div>
+    <div class="dock"><span>Home</span><span>History</span><span class="on">Workout</span><span>Exercises</span><span>Stats</span></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="phone"><div class="cap">History</div><div class="body">
+      <div class="h-big" style="font-size:22px">History</div>
+      <div class="eyebrow">August <span style="float:right;letter-spacing:0">4 workouts</span></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Pull Day</span><span class="sp"></span><span class="tiny">Thu, Aug 6 · 18:57</span></div>
+      <div class="meta faint">✓ 18 sets · ⚖ 7 105 kg · 🔥 312 · 🏆 1</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Push Day</span><span class="sp"></span><span class="tiny">Tue, Aug 4 · 19:12</span></div>
+      <div class="meta faint">✓ 18 sets · ⚖ 6 240 kg · 🔥 289</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Leg Day</span><span class="sp"></span><span class="tiny">Sun, Aug 2 · 10:04</span></div>
+      <div class="meta faint">✓ 21 sets · ⚖ 8 105 kg · 🔥 342 · 🏆 2</div>
+      <div class="eyebrow">July <span style="float:right;letter-spacing:0">13 workouts</span></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Evening Workout</span><span class="sp"></span><span class="tiny">Fri, Jul 31 · 20:40</span></div>
+      <div class="meta faint">✓ 12 sets · ⚖ 3 980 kg · 🔥 201</div>
+      <div class="hair"></div>
+      <div class="row"><span class="h-mid" style="font-size:15px">Pull Day</span><span class="sp"></span><span class="tiny">Thu, Jul 30 · 18:44</span></div>
+      <div class="meta faint">✓ 17 sets · ⚖ 6 890 kg · 🔥 298 · 🏆 1</div>
+    </div>
+    <div class="dock"><span>Home</span><span class="on">History</span><span>Workout</span><span>Exercises</span><span>Stats</span></div>
+    </div>
+
+    <!-- EXERCISES -->
+    <div class="phone"><div class="cap">Exercises</div><div class="body">
+      <div class="h-big" style="font-size:22px">Exercises</div>
+      <div class="row" style="border-bottom:1px solid var(--hair);padding-bottom:6px;margin-top:8px"><span class="faint" style="font-size:13px">Search 1 512 exercises…</span></div>
+      <div class="eyebrow">B</div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Barbell Row</span><span class="sp"></span><span class="tiny">26+ ×</span></div>
+      <div class="meta faint">back · barbell</div>
+      <div class="hair"></div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Bench Press</span><span class="sp"></span><span class="tiny">26+ ×</span></div>
+      <div class="meta faint">chest · barbell · in your library</div>
+      <div class="hair"></div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Bicep Curl</span><span class="sp"></span><span class="tiny">11–25 ×</span></div>
+      <div class="meta faint">upper arms · dumbbell</div>
+      <div class="eyebrow">C</div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Cable Fly</span><span class="sp"></span><span class="tiny">6–10 ×</span></div>
+      <div class="meta faint">chest · cable</div>
+      <div class="hair"></div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Chin-up</span><span class="sp"></span><span class="tiny">1–5 ×</span></div>
+      <div class="meta faint">back · body weight</div>
+      <div class="hair"></div>
+      <div class="row"><span style="font-weight:600;font-size:14px">Crunch</span><span class="sp"></span><span class="tiny">not performed</span></div>
+      <div class="meta faint">waist · body weight</div>
+    </div>
+    <div class="dock"><span>Home</span><span>History</span><span>Workout</span><span class="on">Exercises</span><span>Stats</span></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="phone"><div class="cap">Stats</div><div class="body">
+      <div class="row"><span class="h-big" style="font-size:22px">Stats</span><span class="sp"></span><span class="meta">‹ August ›</span></div>
+      <div class="statrow" style="margin-top:12px">
+        <div class="stat"><div class="v">17</div><div class="l">workouts</div></div>
+        <div class="stat"><div class="v">96<i>k kg</i></div><div class="l">volume</div></div>
+        <div class="stat"><div class="v">312</div><div class="l">sets</div></div>
+        <div class="stat"><div class="v">14<i>h</i></div><div class="l">time</div></div>
+      </div>
+      <div class="eyebrow">Weekly volume</div>
+      <div class="minichart"><i style="height:38%"></i><i style="height:52%"></i><i style="height:44%"></i><i class="hot" style="height:72%"></i></div>
+      <div class="row"><span class="tiny">W1</span><span class="sp"></span><span class="tiny">W2</span><span class="sp"></span><span class="tiny">W3</span><span class="sp"></span><span class="tiny limec">W4</span></div>
+      <div class="eyebrow">Body weight</div>
+      <div class="row"><span class="h-mid">74.2 <span class="tiny">kg</span></span><span class="sp"></span><span class="tiny" style="color:var(--teal)">▼ 0.8 this month</span></div>
+      <svg viewBox="0 0 220 40" style="width:100%;height:40px;margin-top:4px"><polyline class="sparkline" points="0,26 30,24 60,27 90,22 120,20 150,21 180,16 220,14"/></svg>
+      <div class="eyebrow">Streak</div>
+      <div class="row"><span class="meta">current <b class="limec num" style="font-size:16px">12</b></span><span class="sp"></span><span class="meta">longest <b class="num" style="font-size:16px;color:var(--gold)">21</b></span></div>
+      <div class="eyebrow">Measurements</div>
+      <div class="row"><span class="meta">Body weight</span><span class="sp"></span><span class="num" style="font-size:13px">74.2 kg <span class="tiny">· Aug 5</span></span></div>
+      <div class="hair"></div>
+      <div class="row"><span class="meta">Waist</span><span class="sp"></span><span class="num" style="font-size:13px">81 cm <span class="tiny">· Aug 1</span></span></div>
+    </div>
+    <div class="dock"><span>Home</span><span>History</span><span>Workout</span><span>Exercises</span><span class="on">Stats</span></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="phone"><div class="cap">Profile · overlay</div><div class="body">
+      <div class="tb"><span class="dim">‹</span><div class="sp"></div></div>
+      <div class="h-big">Adilzhan</div>
+      <div class="meta">74 kg · 178 cm · 25 · training since July</div>
+      <div class="eyebrow">Body profile</div>
+      <div class="row"><span class="meta">Weight</span><span class="sp"></span><span class="num" style="font-size:14px">74 kg</span></div>
+      <div class="hair"></div>
+      <div class="row"><span class="meta">Height</span><span class="sp"></span><span class="num" style="font-size:14px">178 cm</span></div>
+      <div class="hair"></div>
+      <div class="row"><span class="meta">Sex · Age</span><span class="sp"></span><span class="num" style="font-size:14px">M · 25</span></div>
+      <div class="eyebrow">Training plan</div>
+      <div class="row"><span class="meta">Muscle · 4 days · Mon Tue Thu Fri</span><span class="sp"></span><span class="ghostbtn" style="font-size:12px">Rebuild</span></div>
+      <div class="eyebrow">Daily goals</div>
+      <div class="row"><span class="meta">Calories</span><span class="sp"></span><span class="num" style="font-size:14px">650 kcal</span></div>
+      <div class="eyebrow">Units</div>
+      <div class="row"><span class="meta">Weight in</span><span class="sp"></span><span class="num" style="font-size:14px">kg</span></div>
+      <div class="eyebrow">Account</div>
+      <div class="row"><span class="meta">Cloud sync</span><span class="sp"></span><span class="ghostbtn" style="font-size:12px">Sign in</span></div>
+    </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== 4. VERDICT ===== -->
+<form class="pick" data-lavish-question="cardless-verdict" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const v=fd.get('verdict'); const n=(fd.get('notes')||'').toString().trim();
+  if(!v)return;
+  window.lavish.queuePrompt('Cardless design verdict: '+v+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Cardless: '+v,element:event.currentTarget,data:{question:'cardless-verdict',answer:v,notes:n}});
+">
+  <h2>Build it?</h2>
+  <div class="desc">The principle is recorded in CLAUDE.md. Pick where the code work starts — or annotate any page above first.</div>
+  <div class="optgrid">
+    <label class="opt"><input type="radio" name="verdict" value="approved - start migrating screens to cardless (say which first)"><span><span class="on">Approved — start coding</span><span class="od">migrate the app screen by screen; tell me which page goes first in notes</span></span></label>
+    <label class="opt"><input type="radio" name="verdict" value="approved for Home only as a pilot"><span><span class="on">Pilot on Home</span><span class="od">rebuild just the Home tab cardless, judge it on the emulator, then decide</span></span></label>
+    <label class="opt"><input type="radio" name="verdict" value="iterate on the mockups (see notes/annotations)"><span><span class="on">Iterate first</span><span class="od">something above needs changing</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Optional notes — e.g. which page to start with…"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+<p class="tiny" style="text-align:center;margin-top:30px">torq cardless design · principle recorded in CLAUDE.md · rebrand skin</p>
+</div>
+
+<script>
+const VORTEX_D="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z";
+document.querySelectorAll('[data-mini]').forEach(el=>{
+  el.innerHTML=`<svg viewBox="0 0 1024 1024"><g transform="translate(0,1024) scale(0.1,-0.1)"><path fill="#C8FE23" d="${VORTEX_D}"/></g></svg>`;
+});
+</script>
+</body>
+</html>

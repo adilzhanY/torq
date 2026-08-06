@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · stage ornament alternatives</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{margin-bottom:30px}
+  h1{font-size:28px;font-weight:700;margin:0;letter-spacing:-.5px}
+  h2{font-size:19px;font-weight:700;margin:0;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:15px;line-height:1.6;max-width:74ch;margin-top:10px}
+  .sub b{color:var(--ink)}
+
+  section.concept{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px 26px;margin-bottom:20px;overflow:hidden}
+  .chead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .ctag{font-size:12px;font-weight:700;color:var(--lime-ink);background:var(--lime);border-radius:7px;padding:2px 8px;letter-spacing:.4px}
+  .desc{color:var(--dim);font-size:14px;line-height:1.55;max-width:80ch;margin:8px 0 16px}
+  .desc b{color:var(--ink);font-weight:600}
+  .stagerow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .bcell{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .bcell .badge{width:118px;height:104px}
+  .slabel{font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.8px}
+  .heroholder{margin-left:auto;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .heroholder .badge{width:170px;height:150px;animation:floaty 4.6s ease-in-out infinite}
+  .microtag{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .microtag .mlabel{font-size:11.5px;color:var(--faint)}
+  .microtag .badge{width:26px;height:23px}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:64px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+
+  .badge svg{width:100%;height:100%;display:block;overflow:visible}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  @keyframes starpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+  @keyframes slowspin{to{transform:rotate(360deg)}}
+  @keyframes orbdot{to{transform:rotate(-360deg)}}
+  .anim .starp{animation:starpulse 2.8s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+  .anim .spin{animation:slowspin 20s linear infinite;transform-origin:center;transform-box:fill-box}
+  .anim .orb{animation:orbdot 7s linear infinite;transform-origin:center;transform-box:fill-box}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Stage ornaments — 5 alternatives to the twin-hex burst</h1>
+  <div class="sub">
+    Same flat 2.5D hex + placeholder star; only the <b>stage language</b> (I → IV inside a tier) changes.
+    Each concept is shown on <b>Gold</b> so silhouettes compare fairly, with an animated stage-IV hero at the
+    right and a 24 px stage-IV micro test below. All parametric SVG, ready to swap into the 9×4 matrix.
+  </div>
+</header>
+
+<div id="concepts"></div>
+
+<form class="pick" data-lavish-question="ornament-pick" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const e=fd.get('concept'); const n=(fd.get('notes')||'').toString().trim();
+  if(!e)return;
+  window.lavish.queuePrompt('Ornament direction chosen: '+e+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Ornament: '+e,element:event.currentTarget,data:{question:'ornament-pick',answer:e,notes:n}});
+">
+  <h2>Pick the stage language</h2>
+  <div class="desc">One of these replaces the twin-hex burst in the full 9×4 matrix. Mixes are fair game — say so in the notes.</div>
+  <div class="optgrid">
+    <label class="opt"><input type="radio" name="concept" value="A — Laurel"><span><span class="on">A · Laurel</span><span class="od">wreath grows around the hex</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="B — Shards"><span><span class="on">B · Shards</span><span class="od">crystal spikes erupt from behind</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="C — Orbit"><span><span class="on">C · Orbit</span><span class="od">rings + satellite around the badge</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="D — Chevrons"><span><span class="on">D · Chevrons</span><span class="od">military stack under the hex</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="E — Crown"><span><span class="on">E · Crown</span><span class="od">crest points grow on top</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Optional: mixes and tweaks, e.g. 'C rings but with D chevrons as the stage counter'…"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+</div>
+
+<script>
+/* ============ shared base (same as the v3 matrix) ============ */
+const GOLD={n:5,name:'Gold',base:'#E9B920',light:'#FFDF5E',dark:'#B08812',deep:'#6E550A'};
+let uid=0; const id=p=>p+'_'+(++uid);
+const CX=85, CY=62, R=36, SW=12;
+function hexPts(cx,cy,r,rot){const p=[];for(let i=0;i<6;i++){const a=-Math.PI/2+(rot||0)+i*Math.PI/3;p.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return p;}
+const fmt=pts=>pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+function rhex(cx,cy,r,fill,rot){
+  return `<polygon points="${fmt(hexPts(cx,cy,r-SW/2,rot))}" fill="${fill}" stroke="${fill}" stroke-width="${SW}" stroke-linejoin="round"/>`;
+}
+function starPts(cx,cy,Ro,Ri){
+  const p=[];for(let i=0;i<5;i++){const a=-Math.PI/2+i*2*Math.PI/5,b=a+Math.PI/5;
+    p.push([cx+Ro*Math.cos(a),cy+Ro*Math.sin(a)],[cx+Ri*Math.cos(b),cy+Ri*Math.sin(b)]);}return p;}
+function core(t,animate){
+  const topHalfClip=id('tc');
+  const s=starPts(CX,CY,16.5,6.6);
+  return `<defs><clipPath id="${topHalfClip}"><rect x="0" y="0" width="170" height="${CY-6}"/></clipPath></defs>
+    ${rhex(CX,CY+6,R,t.deep)}
+    ${rhex(CX,CY,R,t.base)}
+    <g clip-path="url(#${topHalfClip})">${rhex(CX,CY,R,'rgba(255,255,255,.22)')}</g>
+    ${rhex(CX,CY,R*0.74,t.dark)}
+    <g ${animate?'class="starp"':''}>
+      <polygon points="${fmt(s)}" transform="translate(0 3)" fill="${t.deep}"/>
+      <polygon points="${fmt(s)}" fill="${t.light}"/></g>`;
+}
+const soft=(pts,fill,w)=>`<polygon points="${pts}" fill="${fill}" stroke="${fill}" stroke-width="${w||4}" stroke-linejoin="round"/>`;
+
+/* ============ A · Laurel ============ */
+function laurel(t,stage){
+  const specs={2:{n:3,a0:62,a1:22},3:{n:5,a0:68,a1:-12},4:{n:7,a0:72,a1:-52}}[stage];
+  const Rr=R+9, out=[];
+  const leaf=(m,deg,i,total)=>{
+    const a=deg*Math.PI/180;
+    const px=CX+m*Rr*Math.cos(a), py=CY+4+Rr*Math.sin(a);
+    const rx=m*Math.cos(a), ry=Math.sin(a);
+    const tx=-m*Math.sin(a), ty=Math.cos(a);
+    const L=13+2*Math.sin(i/Math.max(total-1,1)*Math.PI);
+    const pts=fmt([[px+rx*L,py+ry*L],[px+tx*4.6,py+ty*4.6],[px-tx*4.6,py-ty*4.6]]);
+    return soft(pts,t.deep,5).replace(/points="([^"]*)"/,(s,p)=>`points="${p}" transform="translate(0 4)"`)
+         + soft(pts,t.base,5);
+  };
+  for(const m of [1,-1]) for(let i=0;i<specs.n;i++){
+    const deg=specs.a0+(specs.a1-specs.a0)*(specs.n===1?0:i/(specs.n-1));
+    out.push(leaf(m,deg,i,specs.n));
+  }
+  if(stage>=4){
+    const y=CY+R+4;
+    out.push(soft(fmt([[CX-4,y],[CX-16,y+13],[CX-9,y+16],[CX,y+6]]),t.dark,4));
+    out.push(soft(fmt([[CX+4,y],[CX+16,y+13],[CX+9,y+16],[CX,y+6]]),t.base,4));
+  }
+  return out.join('');
+}
+
+/* ============ B · Shards ============ */
+function shardKite(aDeg,L,w,d,dy){
+  const a=aDeg*Math.PI/180, dx=Math.cos(a), dyy=Math.sin(a), px=-dyy, py=dx;
+  const c=[CX,CY+(dy||0)];
+  return fmt([
+    [c[0]+dx*(d+L), c[1]+dyy*(d+L)],
+    [c[0]+dx*d+px*w, c[1]+dyy*d+py*w],
+    [c[0]+dx*(d-8), c[1]+dyy*(d-8)],
+    [c[0]+dx*d-px*w, c[1]+dyy*d-py*w],
+  ]);
+}
+function shards(t,stage){
+  const sets={
+    2:[[-64,22,7],[124,16,6]],
+    3:[[-64,26,7],[-116,18,6],[64,16,6],[124,20,6]],
+    4:[[-90,30,8],[-58,24,7],[-122,22,7],[58,18,6],[122,18,6],[90,22,7]],
+  }[stage];
+  return sets.map(([a,L,w],i)=>
+    soft(shardKite(a,L,w,R-6,4),t.deep,4)+
+    soft(shardKite(a,L,w,R-6),i%2?t.dark:t.base,4)
+  ).join('');
+}
+
+/* ============ C · Orbit ============ */
+function ellArc(rx,ry,a0,a1,rotDeg,cy){
+  const rot=rotDeg*Math.PI/180, pts=[];
+  for(let i=0;i<=26;i++){
+    const tt=a0+(a1-a0)*i/26;
+    let x=rx*Math.cos(tt), y=ry*Math.sin(tt);
+    const xr=x*Math.cos(rot)-y*Math.sin(rot), yr=x*Math.sin(rot)+y*Math.cos(rot);
+    pts.push((CX+xr).toFixed(1)+','+(cy+yr).toFixed(1));
+  }
+  return `M${pts.join(' L')}`;
+}
+function orbitRing(t,rotDeg,animate){
+  const rx=R+17, ry=15, cy=CY+2;
+  const back=`<path d="${ellArc(rx,ry,Math.PI,2*Math.PI,rotDeg,cy)}" fill="none" stroke="${t.dark}" stroke-width="6.5" stroke-linecap="round"/>`;
+  const front=`<path d="${ellArc(rx,ry,0,Math.PI,rotDeg,cy)}" fill="none" stroke="${t.base}" stroke-width="6.5" stroke-linecap="round"/>`;
+  return {back,front};
+}
+function orbit(t,stage,animate){
+  const rings=stage===2?[orbitRing(t,-14)]:
+    stage===3?[orbitRing(t,-14),orbitRing(t,14)]:
+    [orbitRing(t,-16),orbitRing(t,16),orbitRing(t,0)];
+  const backs=rings.map(r=>r.back).join('');
+  let fronts=rings.map(r=>r.front).join('');
+  if(stage>=3){
+    const sat=`<g ${animate?'class="orb"':''} style="transform-origin:${CX}px ${CY+2}px">
+      <circle cx="${CX+R+17}" cy="${CY+2}" r="4.6" fill="${t.light}"/></g>`;
+    fronts+=sat;
+  }
+  return {backs,fronts};
+}
+
+/* ============ D · Chevrons ============ */
+function chevrons(t,stage){
+  const n=stage-1, out=[];
+  const y0=CY+R+3;
+  for(let i=0;i<n;i++){
+    const y=y0+i*12, w=21-i*2;
+    const d=fmt([[CX-w,y],[CX,y+11],[CX+w,y],[CX+w,y+7],[CX,y+18],[CX-w,y+7]]);
+    out.push(soft(d,t.deep,4).replace(/points="([^"]*)"/,(s,p)=>`points="${p}" transform="translate(0 4)"`));
+    out.push(soft(d,i===0?t.base:i===1?t.dark:t.base,4));
+  }
+  return out.join('');
+}
+
+/* ============ E · Crown ============ */
+function crown(t,stage){
+  const specs={2:[[0,14]],3:[[-13,9],[0,15],[13,9]],4:[[-22,7],[-11,12],[0,18],[11,12],[22,7]]}[stage];
+  const baseY=CY-R+6, out=[];
+  for(const [dx,h] of specs){
+    const d=fmt([[CX+dx,baseY-8-h],[CX+dx-6.5,baseY],[CX+dx+6.5,baseY]]);
+    out.push(soft(d,t.deep,4).replace(/points="([^"]*)"/,(s,p)=>`points="${p}" transform="translate(0 4)"`));
+    out.push(soft(d,t.base,4));
+    out.push(`<circle cx="${CX+dx}" cy="${(baseY-9-h).toFixed(1)}" r="2.6" fill="${t.light}"/>`);
+  }
+  if(stage>=4){
+    out.push(soft(fmt([[CX-30,baseY-4],[CX-38,baseY-14],[CX-26,baseY-8]]),t.dark,4));
+    out.push(soft(fmt([[CX+30,baseY-4],[CX+38,baseY-14],[CX+26,baseY-8]]),t.dark,4));
+  }
+  return out.join('');
+}
+
+/* ============ compose ============ */
+function badge(t,concept,stage,animate){
+  let behind='', front='';
+  if(stage>=2){
+    if(concept==='A') behind=laurel(t,stage);
+    if(concept==='B') behind=shards(t,stage);
+    if(concept==='C'){const o=orbit(t,stage,animate); behind=o.backs; front=o.fronts;}
+    if(concept==='D') behind=chevrons(t,stage);
+    if(concept==='E') behind=crown(t,stage);
+  }
+  return `<svg viewBox="0 0 170 138"><g>
+    ${behind}${core(t,animate)}${front}
+  </g></svg>`;
+}
+
+const CONCEPTS=[
+  {k:'A',name:'Laurel',blurb:'A wreath of flat leaves climbs the hex: a few sprigs at II, half-wreath at III, full wreath with crossed stems at IV. The classic "champion" read, and the only organic option — warm next to the geometric hex.'},
+  {k:'B',name:'Shards',blurb:'Crystal shards erupt from behind at deliberate, asymmetric angles — 2 at II, 4 at III, a full eruption at IV. Aggressive and modern; the alternating base/dark fills give real depth while staying flat.'},
+  {k:'C',name:'Orbit',blurb:'A flat ring orbits the badge (front arc passes over the hex): one ring at II, crossed rings + a light satellite at III, three rings at IV. The satellite actually revolves in hero contexts. The most "torque/physics" option — motion is the theme.'},
+  {k:'D',name:'Chevrons',blurb:'A military stack under the hex: one chevron per stage above I. The most literal progress counter — you can count your stage — and the quietest silhouette in dense lists.'},
+  {k:'E',name:'Crown',blurb:'Crest points grow along the top edge with light-dot jewels: one point at II, three at III, five plus side flares at IV. Reads as "royalty climbing" and keeps the bottom edge clean for lists.'},
+];
+document.getElementById('concepts').innerHTML=CONCEPTS.map(c=>`
+  <section class="concept">
+    <div class="chead"><span class="ctag">${c.k}</span><h2>${c.name}</h2></div>
+    <div class="desc">${c.blurb}</div>
+    <div class="stagerow">
+      ${[1,2,3,4].map(s=>`<div class="bcell"><div class="badge">${badge(GOLD,c.k,s,false)}</div><div class="slabel">${['I','II','III','IV'][s-1]}</div></div>`).join('')}
+      <div class="heroholder"><div class="badge anim">${badge(GOLD,c.k,4,true)}</div><div class="slabel">hero · IV</div></div>
+    </div>
+    <div class="microtag"><span class="mlabel">24 px:</span><div class="badge">${badge(GOLD,c.k,4,false)}</div></div>
+  </section>`).join('');
+</script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · rank badges v2 — game medallion style</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:28px 20px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  header{margin-bottom:34px}
+  .brandrow{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .brandmark{width:40px;height:40px;border-radius:11px;background:#1A1B1A;display:flex;align-items:center;justify-content:center;flex:none}
+  .brandmark svg{width:22px;height:22px}
+  h1{font-size:29px;font-weight:700;margin:0;letter-spacing:-.5px}
+  h2{font-size:20px;font-weight:700;margin:0 0 4px;letter-spacing:-.3px}
+  .sub{color:var(--dim);font-size:15px;line-height:1.6;max-width:74ch;margin-top:10px}
+  .sub b{color:var(--ink)}
+  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--dim);margin:2px 6px 0 0}
+
+  section{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;margin-bottom:24px;overflow:hidden}
+  .desc{color:var(--dim);font-size:14px;line-height:1.6;max-width:80ch;margin:6px 0 20px}
+  .desc b{color:var(--ink);font-weight:600}
+
+  .ladder{display:flex;flex-wrap:wrap;gap:18px 8px;justify-content:center}
+  .cell{width:150px;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .cell .badge{width:150px;height:124px}
+  .tname{font-size:12.5px;font-weight:600;letter-spacing:.3px;color:var(--dim)}
+  .tsub{font-size:11px;color:var(--faint)}
+  .cell.elite .tname{color:var(--lime)}
+
+  .heroes{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+  .herocard{flex:1 1 300px;max-width:460px;background:var(--panel2);border:1px solid var(--line);border-radius:18px;
+    padding:26px 18px 18px;display:flex;flex-direction:column;align-items:center;gap:8px}
+  .herocard .badge{width:280px;height:240px}
+  .herolabel{font-size:14px;color:var(--dim)}
+  .herolabel b{color:var(--ink)}
+
+  .microrow{display:flex;align-items:center;gap:14px;margin-top:22px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .mlabel{font-size:12px;color:var(--faint)}
+  .micro{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .micro .badge{width:26px;height:22px}
+
+  table.anat{width:100%;border-collapse:collapse;font-size:13.5px}
+  table.anat th{color:var(--faint);font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;text-align:left;padding:6px 10px;border-bottom:1px solid var(--line)}
+  table.anat td{padding:7px 10px;border-bottom:1px solid var(--line);color:var(--dim);vertical-align:middle}
+  table.anat td:first-child{color:var(--ink);font-weight:600;white-space:nowrap}
+  table.anat tr:last-child td{border-bottom:0}
+  .sw{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:7px;border:1px solid rgba(255,255,255,.15)}
+
+  .variants{display:flex;gap:26px;flex-wrap:wrap}
+  .vcol{flex:1 1 320px}
+  .vcol h3{font-size:14px;font-weight:600;margin:0 0 10px;color:var(--ink)}
+  .vrow{display:flex;gap:6px;flex-wrap:wrap}
+  .vrow .badge{width:86px;height:72px}
+  .subtiers{display:flex;gap:10px}
+  .subtiers .sitem{display:flex;flex-direction:column;align-items:center;gap:4px}
+  .subtiers .badge{width:86px;height:72px}
+  .subtiers .tsub{font-size:11px}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:16px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:64px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+
+  .badge svg{width:100%;height:100%;display:block;overflow:visible}
+  @keyframes sweep{0%{transform:translateX(-150%) skewX(-18deg)}55%,100%{transform:translateX(170%) skewX(-18deg)}}
+  @keyframes glowpulse{0%,100%{opacity:.45}50%{opacity:.95}}
+  @keyframes twinkle{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}}
+  @keyframes hue{to{filter:hue-rotate(360deg)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .anim .sweepbar{animation:sweep 3.4s ease-in-out infinite}
+  .anim .glow{animation:glowpulse 2.6s ease-in-out infinite}
+  .anim .twk{animation:twinkle 1.9s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+  .anim .holozone{animation:hue 7s linear infinite}
+  .herocard .badge{animation:floaty 4.6s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brandrow">
+    <div class="brandmark"><svg viewBox="0 0 100 100"><path d="M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z" fill="#C8FE23"/></svg></div>
+    <h1>Rank badges v2 — forged hex medallions</h1>
+  </div>
+  <div class="sub">
+    Rebuilt from your references. The grammar I extracted and re-drew in pure SVG:
+    a <b>beveled hex frame</b> (6 light-shaded facets, 3D bottom extrusion), a <b>near-black inner field</b>
+    (your app's background — like the black-field row in reference 2), a <b>chiseled center emblem</b>,
+    and <b>ornaments that escalate with tier</b>: corner studs → vertex prongs → wings that grow →
+    crest → banner pedestal → sparkles. Elite is the brand-lime tier; World Class is the only
+    holographic, color-cycling badge. Everything is one parametric generator — 9 tiers from one function.
+  </div>
+  <div style="margin-top:12px">
+    <span class="pill">all SVG, no images — ships as a RN component</span>
+    <span class="pill">heroes animate: shimmer, glow, sparkle twinkle, holo cycle</span>
+  </div>
+</header>
+
+<section>
+  <h2>The ladder</h2>
+  <div class="desc">
+    Two things escalate at once, exactly like the reference sheets: the <b>metal</b> (rust → iron → bronze →
+    silver → gold → platinum → diamond-blue → lime → holo) and the <b>silhouette</b> (bare hex → studs →
+    prongs → wings → banner). You can read someone's tier from the outline alone, before color loads in.
+  </div>
+  <div class="ladder" id="ladder"></div>
+  <div class="microrow"><span class="mlabel">at 24 px (exercise rows / friend lists):</span><div class="micro" id="micro"></div></div>
+</section>
+
+<section>
+  <h2>Hero moments</h2>
+  <div class="desc">Rank-up modal / share-card scale. Shimmer sweep across the frame, breathing glow, twinkling sparks; World Class additionally cycles its iridescence.</div>
+  <div class="heroes">
+    <div class="herocard"><div class="badge anim" id="heroElite"></div><div class="herolabel"><b>Elite</b> · the brand-color tier</div></div>
+    <div class="herocard"><div class="badge anim" id="heroWC"></div><div class="herolabel"><b>World Class</b> · holographic, top 0.1%</div></div>
+  </div>
+</section>
+
+<section>
+  <h2>Anatomy — what each tier adds</h2>
+  <table class="anat">
+    <tr><th>Tier</th><th>Metal</th><th>Silhouette / ornament added</th></tr>
+    <tr><td>1 · Rust</td><td><span class="sw" style="background:linear-gradient(#B06A3A,#5F3A20)"></span>rust bronze, dull</td><td>bare beveled hex</td></tr>
+    <tr><td>2 · Iron</td><td><span class="sw" style="background:linear-gradient(#A8B0BC,#4A5058)"></span>cold gray</td><td>+ corner studs on the frame</td></tr>
+    <tr><td>3 · Bronze</td><td><span class="sw" style="background:linear-gradient(#E09A46,#6E4218)"></span>warm bronze</td><td>+ inner ring line</td></tr>
+    <tr><td>4 · Silver</td><td><span class="sw" style="background:linear-gradient(#EEF3F8,#7E8894)"></span>bright silver</td><td>+ prong spikes at the six vertices</td></tr>
+    <tr><td>5 · Gold</td><td><span class="sw" style="background:linear-gradient(#FFD84D,#8F6414)"></span>gold</td><td>+ small wings</td></tr>
+    <tr><td>6 · Platinum</td><td><span class="sw" style="background:linear-gradient(#E6FBFD,#6F8F94)"></span>ice platinum</td><td>+ larger wings, top crest</td></tr>
+    <tr><td>7 · Diamond</td><td><span class="sw" style="background:linear-gradient(#B8E6FF,#2F6FAE)"></span>diamond blue</td><td>+ full wings, sparkles</td></tr>
+    <tr><td>8 · Elite</td><td><span class="sw" style="background:linear-gradient(#C8FE23,#5F7F0E)"></span><b style="color:var(--lime)">brand lime</b></td><td>+ banner pedestal — reaching the brand color</td></tr>
+    <tr><td>9 · World Class</td><td><span class="sw" style="background:linear-gradient(120deg,#7CF9D4,#7FB2FF,#C08CFF,#FF7FB8,#FFD97F)"></span>holographic</td><td>+ double-layer wings, everything, color-cycling</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Two open choices</h2>
+  <div class="variants">
+    <div class="vcol">
+      <h3>Center emblem: tau (brand) vs faceted star (reference-faithful)</h3>
+      <div class="desc" style="margin-bottom:12px">Every reference uses a chiseled star. The tau makes the badge unmistakably torq; the star reads "rank" more universally. Shown here on Gold:</div>
+      <div class="vrow" id="emblemRow"></div>
+    </div>
+    <div class="vcol">
+      <h3>Sub-tiers via chevrons (Iron I–III)</h3>
+      <div class="desc" style="margin-bottom:12px">The reference sheets use stacked chevrons for sub-ranks. If tiers ever need I/II/III sub-steps, chevrons slot under the emblem without touching the silhouette:</div>
+      <div class="subtiers" id="chevRow"></div>
+    </div>
+  </div>
+</section>
+
+<form class="pick" data-lavish-question="badge-v2" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const e=fd.get('emblem'); const n=(fd.get('notes')||'').toString().trim();
+  if(!e)return;
+  window.lavish.queuePrompt('Badge v2 feedback. Emblem: '+e+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Emblem: '+e,element:event.currentTarget,data:{question:'badge-v2',answer:e,notes:n}});
+">
+  <h2>Your call</h2>
+  <div class="desc">Pick the emblem, drop notes on anything (metal hues, wing shape, ornament schedule, banner…), or annotate a specific badge above.</div>
+  <div class="optgrid">
+    <label class="opt"><input type="radio" name="emblem" value="tau"><span><span class="on">Tau emblem</span><span class="od">brand-first, unmistakably torq</span></span></label>
+    <label class="opt"><input type="radio" name="emblem" value="star"><span><span class="on">Faceted star</span><span class="od">reference-faithful, universal "rank" read</span></span></label>
+    <label class="opt"><input type="radio" name="emblem" value="star per-exercise, tau overall"><span><span class="on">Both</span><span class="od">star on per-exercise ranks, tau on the overall Rank Card</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Optional notes: e.g. 'wings feel too big on Gold', 'make Diamond icier', 'banner should carry the tier name'…"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+</div>
+
+<script>
+/* ================= tiers ================= */
+const TIERS=[
+  {n:1,name:'Rust',      hi:'#B06A3A',lo:'#5F3A20',dk:'#3A2312',glow:'#B06A3A'},
+  {n:2,name:'Iron',      hi:'#A8B0BC',lo:'#4A5058',dk:'#2C3036',glow:'#A8B0BC'},
+  {n:3,name:'Bronze',    hi:'#E09A46',lo:'#6E4218',dk:'#42280E',glow:'#E09A46'},
+  {n:4,name:'Silver',    hi:'#EEF3F8',lo:'#7E8894',dk:'#4A525C',glow:'#EEF3F8'},
+  {n:5,name:'Gold',      hi:'#FFD84D',lo:'#8F6414',dk:'#54390A',glow:'#FFD84D'},
+  {n:6,name:'Platinum',  hi:'#E6FBFD',lo:'#6F8F94',dk:'#3E5559',glow:'#E6FBFD'},
+  {n:7,name:'Diamond',   hi:'#B8E6FF',lo:'#2F6FAE',dk:'#1B4269',glow:'#7FC9FF'},
+  {n:8,name:'Elite',     hi:'#C8FE23',lo:'#5F7F0E',dk:'#374A08',glow:'#C8FE23'},
+  {n:9,name:'World Class',hi:'#C08CFF',lo:'#7F5CC9',dk:'#4A3578',glow:'#FF7FB8',holo:true},
+];
+const TAU='M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z';
+let uid=0; const id=p=>p+'_'+(++uid);
+const CX=95, CY=64, R=40, R2=30;
+
+/* geometry helpers (pointy-top hex) */
+function hexPts(cx,cy,r){const p=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3;p.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return p;}
+const fmt=pts=>pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+
+/* faceted frame: quads between outer & inner hex, lit from top-left */
+function frameFacets(cx,cy){
+  const o=hexPts(cx,cy,R), n=hexPts(cx,cy,R2), L=[-0.45,-0.89], out=[];
+  for(let i=0;i<6;i++){
+    const j=(i+1)%6;
+    const mx=(o[i][0]+o[j][0])/2-cx, my=(o[i][1]+o[j][1])/2-cy;
+    const len=Math.hypot(mx,my), b=(mx/len)*L[0]+(my/len)*L[1];
+    const fill=b>0?`rgba(255,255,255,${(b*0.42).toFixed(2)})`:`rgba(0,0,0,${(-b*0.5).toFixed(2)})`;
+    out.push(`<polygon points="${fmt([o[i],o[j],n[j],n[i]])}" fill="${fill}"/>`);
+  }
+  return out.join('');
+}
+function metalGrad(t){
+  const g=id('m');
+  if(t.holo) return [`<linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#7CF9D4"/><stop offset=".28" stop-color="#7FB2FF"/>
+    <stop offset=".55" stop-color="#C08CFF"/><stop offset=".78" stop-color="#FF7FB8"/>
+    <stop offset="1" stop-color="#FFD97F"/></linearGradient>`,`url(#${g})`];
+  return [`<linearGradient id="${g}" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="${t.hi}"/><stop offset="1" stop-color="${t.lo}"/></linearGradient>`,`url(#${g})`];
+}
+
+/* chiseled tau emblem (drawn in a local 100-box) */
+function tauEmblem(t,mf){
+  const c=id('tc');
+  return `<defs><clipPath id="${c}"><path d="${TAU}"/></clipPath></defs>
+    <path d="${TAU}" transform="translate(0 4)" fill="#000" opacity=".5"/>
+    <path d="${TAU}" fill="${mf}"/>
+    <g clip-path="url(#${c})">
+      <rect x="14" y="18" width="72" height="7" fill="#fff" opacity=".32"/>
+      <rect x="14" y="27" width="72" height="7" fill="#000" opacity=".2"/>
+      <rect x="42" y="34" width="8" height="50" fill="#fff" opacity=".18"/>
+      <rect x="50" y="34" width="24" height="50" fill="#000" opacity=".18"/>
+    </g>
+    <path d="${TAU}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="2.5"/>`;
+}
+/* faceted 5-point star emblem (local 100-box, center 50,50) */
+function starEmblem(t,mf){
+  const Ro=44, Ri=18, pts=[];
+  for(let i=0;i<5;i++){
+    const a=-Math.PI/2+i*2*Math.PI/5, b=a+Math.PI/5;
+    pts.push([50+Ro*Math.cos(a),50+Ro*Math.sin(a)],[50+Ri*Math.cos(b),50+Ri*Math.sin(b)]);
+  }
+  const facets=[];
+  for(let i=0;i<5;i++){
+    const tip=pts[i*2], prev=pts[(i*2+9)%10], next=pts[i*2+1];
+    facets.push(`<path d="M50 50 L${prev[0].toFixed(1)} ${prev[1].toFixed(1)} L${tip[0].toFixed(1)} ${tip[1].toFixed(1)} Z" fill="rgba(255,255,255,.30)"/>`);
+    facets.push(`<path d="M50 50 L${tip[0].toFixed(1)} ${tip[1].toFixed(1)} L${next[0].toFixed(1)} ${next[1].toFixed(1)} Z" fill="rgba(0,0,0,.28)"/>`);
+  }
+  return `<polygon points="${fmt(pts)}" transform="translate(0 4)" fill="#000" opacity=".5"/>
+    <polygon points="${fmt(pts)}" fill="${mf}"/>${facets.join('')}
+    <polygon points="${fmt(pts)}" fill="none" stroke="rgba(0,0,0,.45)" stroke-width="2"/>`;
+}
+/* chevrons for sub-tiers */
+function chevrons(count,mf){
+  let out='';
+  for(let i=0;i<count;i++){
+    const y=50-(count-1)*9+i*18;
+    out+=`<path d="M26 ${y+10} L50 ${y-8} L74 ${y+10} L74 ${y+22} L50 ${y+4} L26 ${y+22} Z"
+      fill="${mf}" stroke="rgba(0,0,0,.45)" stroke-width="2.5"/>`;
+  }
+  return out;
+}
+
+/* wing (right side, local coords; mirrored for left).
+   Sharp layered metal slats, military-insignia style — not rounded feathers. */
+const WING_BACK='M0 -28 L58 -40 L62 -20 L54 -2 L46 14 L32 26 L0 30 Z';
+const WING_SLATS=[
+  'M0 -20 L48 -34 L56 -18 L8 -8 Z',
+  'M0 -6 L44 -16 L50 -2 L6 6 Z',
+  'M0 8 L38 2 L42 12 L4 18 Z',
+  'M0 20 L28 16 L30 24 L2 28 Z',
+];
+function wingSide(t,mf,scale,double,mirror){
+  const sx=mirror?-scale:scale;
+  const tx=CX+(mirror?-26:26), ty=CY-4;
+  const sw=(1.3/scale).toFixed(2);
+  const back=double?`<path d="${WING_BACK}" transform="translate(${tx+(mirror?2:-2)} ${ty+2}) scale(${sx*1.1} ${scale*1.1})" fill="${t.dk}"/>`:'';
+  const shadow=`<path d="${WING_BACK}" transform="translate(${tx} ${ty}) scale(${sx} ${scale})" fill="rgba(0,0,0,.4)"/>`;
+  const slats=WING_SLATS.map((d,i)=>
+    `<path d="${d}" transform="translate(${tx} ${ty}) scale(${sx} ${scale})" fill="${mf}" stroke="rgba(0,0,0,.45)" stroke-width="${sw}"/>
+     <path d="${d}" transform="translate(${tx} ${ty}) scale(${sx} ${scale})" fill="rgba(${i===0?'255,255,255,.18':`0,0,0,${(i*0.08).toFixed(2)}`})"/>`
+  ).join('');
+  return back+shadow+slats;
+}
+function wings(t,mf,scale,double){
+  return wingSide(t,mf,scale,double,false)+wingSide(t,mf,scale,double,true);
+}
+function banner(t){
+  return `
+    <path d="M${CX-45} 96 L${CX-67} 102 L${CX-59} 110 L${CX-67} 118 L${CX-47} 116 Z" fill="${t.dk}" stroke="rgba(0,0,0,.4)"/>
+    <path d="M${CX+45} 96 L${CX+67} 102 L${CX+59} 110 L${CX+67} 118 L${CX+47} 116 Z" fill="${t.dk}" stroke="rgba(0,0,0,.4)"/>
+    <path d="M${CX-49} 92 L${CX+49} 92 L${CX+45} 120 L${CX-45} 120 Z" fill="${t.lo}" stroke="rgba(0,0,0,.45)" stroke-width="1.4"/>
+    <path d="M${CX-49} 92 L${CX+49} 92 L${CX+47.5} 101 L${CX-47.5} 101 Z" fill="rgba(255,255,255,.14)"/>`;
+}
+function crest(mf){
+  return `<path d="M${CX} 4 L${CX+8} 24 L${CX-8} 24 Z" fill="${mf}" stroke="rgba(0,0,0,.4)" stroke-width="1.2"/>
+    <path d="M${CX-14} 12 L${CX-6} 26 L${CX-20} 26 Z" fill="${mf}" stroke="rgba(0,0,0,.4)" stroke-width="1.2"/>
+    <path d="M${CX+14} 12 L${CX+20} 26 L${CX+6} 26 Z" fill="${mf}" stroke="rgba(0,0,0,.4)" stroke-width="1.2"/>`;
+}
+const SPARK='M0 -7 L1.8 -1.8 L7 0 L1.8 1.8 L0 7 L-1.8 1.8 L-7 0 L-1.8 -1.8 Z';
+function sparkles(count,animate){
+  const pos=[[26,24],[164,20],[18,92],[172,86],[95,2]];
+  return pos.slice(0,count).map((p,i)=>`<path d="${SPARK}" transform="translate(${p[0]} ${p[1]})"
+    fill="#fff" ${animate?`class="twk" style="animation-delay:${i*400}ms"`:'opacity=".85" transform-origin="center"'}/>`).join('');
+}
+
+/* ================= the generator ================= */
+function badge(t,{emblem='tau',animate=false,chevron=0}={}){
+  const [gdef,mf]=metalGrad(t);
+  const o=hexPts(CX,CY,R), n=hexPts(CX,CY,R2);
+  const oEx=hexPts(CX,CY+5,R);
+  const cid=id('hx'), sid=id('sw');
+  const prongs=t.n>=4?hexPts(CX,CY,R).map((v,i)=>{
+    const a=-Math.PI/2+i*Math.PI/3;
+    const tip=[CX+(R+8)*Math.cos(a),CY+(R+8)*Math.sin(a)];
+    const b1=[CX+(R-2)*Math.cos(a-0.18),CY+(R-2)*Math.sin(a-0.18)];
+    const b2=[CX+(R-2)*Math.cos(a+0.18),CY+(R-2)*Math.sin(a+0.18)];
+    return `<polygon points="${fmt([tip,b1,b2])}" fill="${mf}" stroke="rgba(0,0,0,.4)" stroke-width="1"/>`;
+  }).join(''):'';
+  const studs=t.n>=2?hexPts(CX,CY,(R+R2)/2+1).map(v=>
+    `<circle cx="${v[0].toFixed(1)}" cy="${v[1].toFixed(1)}" r="2.6" fill="${t.hi}" stroke="rgba(0,0,0,.5)" stroke-width="1"/>`).join(''):'';
+  const ringLine=t.n>=3?`<polygon points="${fmt(hexPts(CX,CY,R2+3))}" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="1.6"/>`:'';
+  const wingLayer=t.n>=5?wings(t,mf,t.n===5?0.62:t.n===6?0.8:t.n===7?0.95:t.n===8?1.0:1.08,t.n===9):'';
+  const crestLayer=t.n>=6?crest(mf):'';
+  const bannerLayer=t.n>=8?banner(t):'';
+  const sparkLayer=t.n>=7?sparkles(t.n===7?2:t.n===8?3:5,animate):'';
+  const em=emblem==='star'?starEmblem(t,mf):chevron>0?chevrons(chevron,mf):tauEmblem(t,mf);
+  const holoCls=t.holo?' class="holozone"':'';
+  const shimmer=animate?`
+    <defs><clipPath id="${cid}"><polygon points="${fmt(o)}"/></clipPath>
+    <linearGradient id="${sid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g clip-path="url(#${cid})"><rect class="sweepbar" x="60" y="10" width="34" height="120" fill="url(#${sid})"/></g>`:'';
+  const glow=animate?`<polygon class="glow" points="${fmt(hexPts(CX,CY,R+3))}" fill="none" stroke="${t.glow}" stroke-width="7" style="filter:blur(9px)"/>`:'';
+  return `<svg viewBox="0 0 190 138"><defs>${gdef}</defs>
+    ${glow}
+    <g${holoCls}>
+      ${bannerLayer}
+      ${wingLayer}
+      ${crestLayer}
+      <polygon points="${fmt(oEx)}" fill="${t.dk}"/>
+      <polygon points="${fmt(o)}" fill="${mf}"/>
+      ${frameFacets(CX,CY)}
+      ${prongs}
+      <polygon points="${fmt(o)}" fill="none" stroke="rgba(0,0,0,.5)" stroke-width="1.6"/>
+      <polygon points="${fmt(n)}" fill="#131510" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+      ${ringLine}${studs}
+      <g transform="translate(${CX} ${CY}) scale(.44) translate(-50 -50)">${em}</g>
+      ${sparkLayer}
+      ${shimmer}
+    </g></svg>`;
+}
+
+/* ================= render ================= */
+const $=s=>document.querySelector(s);
+$('#ladder').innerHTML=TIERS.map(t=>`
+  <div class="cell ${t.name==='Elite'?'elite':''}">
+    <div class="badge ${t.holo?'anim':''}">${badge(t,{animate:!!t.holo})}</div>
+    <div class="tname">${t.name}</div><div class="tsub">tier ${t.n} / 9</div>
+  </div>`).join('');
+$('#micro').innerHTML=TIERS.map(t=>`<div class="badge">${badge(t)}</div>`).join('');
+$('#heroElite').innerHTML=badge(TIERS[7],{animate:true});
+$('#heroWC').innerHTML=badge(TIERS[8],{animate:true});
+$('#emblemRow').innerHTML=`
+  <div class="badge">${badge(TIERS[4],{emblem:'tau'})}</div>
+  <div class="badge">${badge(TIERS[4],{emblem:'star'})}</div>`;
+$('#chevRow').innerHTML=[1,2,3].map(c=>`
+  <div class="sitem"><div class="badge">${badge(TIERS[1],{chevron:c})}</div><div class="tsub">Iron ${'I'.repeat(c)}</div></div>`).join('');
+</script>
+</body>
+</html>

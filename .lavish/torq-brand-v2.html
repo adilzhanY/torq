@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · the new mark</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:0 20px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  h2{font-size:20px;font-weight:700;margin:0 0 4px;letter-spacing:-.3px}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;margin-bottom:24px;overflow:hidden}
+  .desc{color:var(--dim);font-size:14.5px;line-height:1.65;max-width:82ch;margin:6px 0 18px}
+  .desc b,.sub b{color:var(--ink);font-weight:600}
+  .tiny{color:var(--faint);font-size:12px}
+
+  /* hero */
+  .hero{text-align:center;padding:72px 20px 56px}
+  .hero .mark{width:190px;height:190px;margin:0 auto 26px;animation:heropulse 4.5s ease-in-out infinite}
+  .hero .mark svg{width:100%;height:100%;display:block;overflow:visible;filter:drop-shadow(0 0 34px rgba(200,254,35,.30))}
+  .hero h1{font-size:64px;font-weight:700;letter-spacing:-2px;margin:0;line-height:1}
+  .hero h1 i{font-style:normal;color:var(--lime)}
+  .hero .tag{font-size:19px;color:var(--dim);margin-top:14px}
+  .hero .tag b{color:var(--ink)}
+  @keyframes heropulse{0%,100%{transform:scale(1)}50%{transform:scale(1.045)}}
+
+  .grid{display:grid;gap:14px}
+  .g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+  .cell{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .cell p{color:var(--dim);font-size:13.5px;line-height:1.55;margin:6px 0 0}
+  .cell p b{color:var(--ink)}
+  h3{font-size:15px;font-weight:600;margin:0}
+
+  /* icon sizes row */
+  .sizerow{display:flex;gap:26px;align-items:flex-end;justify-content:center;flex-wrap:wrap;padding:8px 0 4px}
+  .sizecell{text-align:center}
+  .appicon{border-radius:24%;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;margin:0 auto}
+  .appicon svg{width:86%;height:86%;display:block}
+  .sizecell .sl{font-size:11px;color:var(--faint);margin-top:8px}
+
+  /* palette + type */
+  .chips{display:flex;gap:12px;flex-wrap:wrap}
+  .chip{flex:1 1 150px;border-radius:14px;padding:14px;border:1px solid var(--line)}
+  .chip .cn{font-weight:600;font-size:13px}
+  .chip .cx{font-size:12px;opacity:.75}
+  .spec{font-size:26px;line-height:1.35;margin:4px 0 0}
+  .spec .w4{font-weight:400}.spec .w5{font-weight:500}.spec .w6{font-weight:600}.spec .w7{font-weight:700}
+
+  /* phones */
+  .phones{display:flex;flex-wrap:wrap;gap:22px;justify-content:center}
+  .phone{width:264px;flex:0 0 264px;border-radius:34px;padding:16px 12px 18px;border:1px solid var(--line);box-shadow:0 12px 34px rgba(0,0,0,.55)}
+  .phone.darkp{background:#0A0B0A}
+  .phone.clayp{background:#f1efe9;color:#1b211f}
+  .phone .cap{text-align:center;font-size:12px;color:var(--faint);margin-bottom:10px;font-weight:600}
+  .phone.clayp .cap{color:#76817b}
+  .topbar{display:flex;align-items:center;gap:10px;background:#faf9f5;border-radius:999px;height:46px;padding:0 8px;box-shadow:2px 4px 10px rgba(20,26,24,.14)}
+  .topbar .greet{font-size:13px;font-weight:600;color:#1b211f;flex:1;text-align:center}
+  .topbar .avatar{width:30px;height:30px;border-radius:999px;background:#e9e7df;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#4b5650}
+  .minilogo{width:32px;height:32px;border-radius:9px;background:#0E0F0E;display:flex;align-items:center;justify-content:center}
+  .minilogo svg{width:86%;height:86%}
+  .claycard{background:#faf9f5;border-radius:18px;padding:13px;margin-top:10px;box-shadow:2px 4px 10px rgba(20,26,24,.12)}
+  .claycard .t{font-weight:700;font-size:14px}
+  .claycard .s{font-size:11px;color:#76817b}
+  .limebar{height:8px;border-radius:99px;background:#e9e7df;margin-top:8px;overflow:hidden}
+  .limebar i{display:block;height:100%;width:64%;background:var(--lime);border-radius:99px}
+  .splashwrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;gap:18px}
+  .splashwrap .mark{width:110px;height:110px;animation:heropulse 4.5s ease-in-out infinite}
+  .splashwrap .mark svg{width:100%;height:100%;filter:drop-shadow(0 0 22px rgba(200,254,35,.25))}
+  .splashwrap .word{font-size:30px;font-weight:700;letter-spacing:-1px}
+  .darkcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:13px;margin-top:10px}
+  .darkcard .t{font-weight:700;font-size:14px}
+  .darkcard .s{font-size:11px;color:var(--faint)}
+
+  /* tier × stage matrix */
+  .gridwrap{overflow-x:auto}
+  .stagehead{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-width:560px}
+  .stagehead .tlabel{width:96px;flex:none}
+  .stagehead .shcell{flex:1;text-align:center;font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.8px}
+  .trow{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-width:560px}
+  .tlabel{width:96px;flex:none;text-align:right;padding-right:8px}
+  .tlabel .tname{font-size:13px;font-weight:600;color:var(--dim)}
+  .tlabel .tsub{font-size:10.5px;color:var(--faint)}
+  .trow.elite .tname{color:var(--lime)}
+  .bcell{flex:1;display:flex;justify-content:center}
+  .bcell .badge{width:110px;height:96px}
+  .badge svg{width:100%;height:100%;display:block;overflow:visible}
+  .showcase{display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+  .showbadge{width:440px;max-width:100%;aspect-ratio:170/136;animation:floaty 5s ease-in-out infinite}
+  .showbadge svg{width:100%;height:100%;display:block;overflow:visible}
+  .showlabel{font-size:14px;color:var(--dim)}
+  .showlabel b{color:var(--ink)}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-bottom:14px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:60px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+
+  @keyframes sweep{0%{transform:translateX(-150%) skewX(-16deg)}55%,100%{transform:translateX(170%) skewX(-16deg)}}
+  @keyframes starpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes hue{to{filter:hue-rotate(360deg)}}
+  @keyframes spincw{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  .anim .sweepbar{animation:sweep 3.6s ease-in-out infinite}
+  .anim .starp{animation:starpulse 2.8s ease-in-out infinite;transform-origin:center;transform-box:fill-box}
+  .anim .holozone{animation:hue 8s linear infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="mark" id="heroMark"></div>
+  <h1>t<i>o</i>rq</h1>
+  <div class="tag">Every rep earns a rank. <b>This is what it looks like now.</b></div>
+</div>
+
+<!-- ===== 1. THE MARK ===== -->
+<section>
+  <h2>1 · The mark — torque, drawn</h2>
+  <div class="desc">
+    Eight blades tearing around a center of force. It's the word made visible: <b>torq is rotational
+    power</b> — the pull of a heavy rep, the spin of a loaded bar, momentum you build and never let stop.
+    No letters, no dumbbells, no clichés. It reads at a glance across a room, and it's unmistakably yours.
+    Traced from your approved concept into a <b>single clean vector path</b> — infinitely scalable, one color, one shape.
+  </div>
+  <div class="grid g3">
+    <div class="cell"><h3>One path, every surface</h3><p>The same vector drives the top bar, the loading screens, the app icon, the splash, and the badge emblem. <b>One source of truth</b> — nothing drifts.</p></div>
+    <div class="cell"><h3>Built for dark</h3><p>Lime <b>#C8FE23</b> on near-black <b>#0E0F0E</b> — the rebrand base. On OLED it glows like a gym sign at night.</p></div>
+    <div class="cell"><h3>Aggressive, not messy</h3><p>The blades keep their razor tips at 1024px and stay legible as a silhouette at launcher size. Monochrome Android variant included.</p></div>
+  </div>
+  <div class="sizerow" style="margin-top:18px">
+    <div class="sizecell"><div class="appicon" style="width:120px;height:120px" data-icon></div><div class="sl">app icon · 120</div></div>
+    <div class="sizecell"><div class="appicon" style="width:72px;height:72px" data-icon></div><div class="sl">72</div></div>
+    <div class="sizecell"><div class="appicon" style="width:48px;height:48px" data-icon></div><div class="sl">48</div></div>
+    <div class="sizecell"><div class="appicon" style="width:28px;height:28px" data-icon></div><div class="sl">28 · top bar</div></div>
+  </div>
+</section>
+
+<!-- ===== 2. COLOR + TYPE ===== -->
+<section>
+  <h2>2 · The system — one lime, one night, one voice</h2>
+  <div class="desc">Locked brand palette and the primary typeface. <b>Space Grotesk</b> carries every word in the product — headlines, numbers, buttons — chosen in the font tryouts and already shipped app-wide.</div>
+  <div class="chips">
+    <div class="chip" style="background:#C8FE23;color:#1A1B1A"><div class="cn">Brand lime</div><div class="cx">#C8FE23</div></div>
+    <div class="chip" style="background:#0E0F0E"><div class="cn">Near-black</div><div class="cx">#0E0F0E</div></div>
+    <div class="chip" style="background:#1A1B1A"><div class="cn">Dark ink</div><div class="cx">#1A1B1A · on-lime</div></div>
+    <div class="chip" style="background:#151714"><div class="cn">Panel</div><div class="cx">#151714</div></div>
+    <div class="chip" style="background:#1B1E1A"><div class="cn">Panel 2</div><div class="cx">#1B1E1A · #262A24 line</div></div>
+  </div>
+  <div class="cell" style="margin-top:14px">
+    <h3 style="color:var(--faint);font-size:11px;letter-spacing:.08em;text-transform:uppercase">Space Grotesk · the primary font</h3>
+    <div class="spec">
+      <div class="w7">Bench Press · 92.5 kg — Gold IV</div>
+      <div class="w6">412 pts · top 21% of competitive lifters</div>
+      <div class="w5">38 pts to Platinum. Keep pushing.</div>
+      <div class="w4" style="color:var(--dim)">Every set logged. Every rank earned.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 3. IN THE APP ===== -->
+<section>
+  <h2>3 · In the app — from cold start to first set</h2>
+  <div class="desc">
+    The mark is live in the code today: <b>Logo.tsx</b> re-drawn (top bar + both loading screens +
+    onboarding), all six icon assets regenerated, splash background switched to near-black. The clay
+    screens keep working untouched — the dark splash is the first taste of the Phase-2 rebrand.
+  </div>
+  <div class="phones">
+    <div class="phone darkp">
+      <div class="cap">Cold start · splash</div>
+      <div class="splashwrap">
+        <div class="mark" id="splashMark"></div>
+        <div class="word">t<span style="color:var(--lime)">o</span>rq</div>
+        <div class="tiny">loading your ranks…</div>
+      </div>
+    </div>
+    <div class="phone clayp">
+      <div class="cap">Today · floating top bar</div>
+      <div class="topbar"><div class="minilogo" data-mini></div><div class="greet">Good evening, Adilzhan</div><div class="avatar">A</div></div>
+      <div class="claycard"><div class="t">Today · Pull Day</div><div class="s">6 exercises · ~52 min · starts with Deadlift</div><div class="limebar"><i></i></div><div class="s" style="margin-top:5px">Daily goal 64%</div></div>
+      <div class="claycard"><div class="t">🔥 12-day streak</div><div class="s">longest: 21 · next session keeps it alive</div></div>
+    </div>
+    <div class="phone darkp">
+      <div class="cap">Phase 2 · Ranks (rebrand skin)</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:6px 2px">
+        <div class="minilogo" data-mini></div>
+        <div style="font-weight:700;font-size:15px">Ranks</div>
+        <div style="margin-left:auto" class="tiny">74 kg · M</div>
+      </div>
+      <div class="darkcard"><div class="t" style="display:flex;align-items:center;gap:8px">Overall <span style="margin-left:auto;color:var(--lime);font-size:20px">412 pts</span></div><div class="s">Gold IV · top 21% · 38 pts to Platinum</div></div>
+      <div class="darkcard" style="display:flex;align-items:center;gap:10px"><div class="fb" style="width:44px;height:38px" data-badge="4"></div><div><div class="t">Bench Press</div><div class="s">92.5 kg e1RM · Gold IV</div></div></div>
+      <div class="darkcard" style="display:flex;align-items:center;gap:10px"><div class="fb" style="width:44px;height:38px" data-badge="5"></div><div><div class="t">Deadlift</div><div class="s">180 kg e1RM · Platinum II</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== 4. BADGES ===== -->
+<section>
+  <h2>4 · In the rank badges — the vortex at the heart of every tier</h2>
+  <div class="desc">
+    The emblem inside the hex shield is now the brand mark itself. Nine tiers × four stages — the orbit
+    ring appears at stage II, a comet at III, a second comet at IV — and in the center of all of it,
+    <b>your logo spinning up</b>. App icon, rank card, share card: one identity from the launcher to the leaderboard.
+  </div>
+  <div class="gridwrap">
+    <div class="stagehead"><div class="tlabel"></div><div class="shcell">I · bare</div><div class="shcell">II · ring</div><div class="shcell">III · comet</div><div class="shcell">IV · two comets</div></div>
+    <div id="matrix"></div>
+  </div>
+  <div class="showcase">
+    <div class="showbadge anim" id="showWC"></div>
+    <div class="showlabel"><b>World Class IV</b> · the share card that sells the app for you</div>
+  </div>
+</section>
+
+<!-- ===== 5. VERDICT ===== -->
+<form class="pick" data-lavish-question="brand-v2-verdict" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const v=fd.get('verdict'); const n=(fd.get('notes')||'').toString().trim();
+  if(!v)return;
+  window.lavish.queuePrompt('Brand v2 verdict: '+v+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Brand v2: '+v,element:event.currentTarget,data:{question:'brand-v2-verdict',answer:v,notes:n}});
+">
+  <h2>Ship it?</h2>
+  <div class="desc">The code changes are already in your working tree (Logo.tsx, icons, splash). Annotate anything — mark size in the top bar, badge emblem scale, splash glow…</div>
+  <div class="optgrid">
+    <label class="opt"><input type="radio" name="verdict" value="ship - commit the new logo everywhere"><span><span class="on">Ship it</span><span class="od">commit logo + icons + splash as is</span></span></label>
+    <label class="opt"><input type="radio" name="verdict" value="tweak first (see notes/annotations)"><span><span class="on">Tweak first</span><span class="od">details in notes or annotations</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Optional notes…"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+<p class="tiny" style="text-align:center;margin-top:30px">torq brand v2 · vortex mark · Space Grotesk · #C8FE23 on #0E0F0E</p>
+</div>
+
+<script>
+/* ===== the vortex mark (potrace trace of assets/torq_logo_v2.png) ===== */
+const VORTEX_D="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z";
+/* potrace emits math-axis coords: wrap in translate(0,1024) scale(0.1,-0.1) */
+function vortexSvg(fill,spin){
+  return `<svg viewBox="0 0 1024 1024" ${spin?'style="animation:spincw 16s linear infinite"':''}>
+    <g transform="translate(0,1024) scale(0.1,-0.1)"><path fill="${fill}" d="${VORTEX_D}"/></g></svg>`;
+}
+
+/* ===== badge generator (shield + orbit + comet jewels) ===== */
+const TIERS=[
+  {n:1,name:'Rust',      base:'#A05A32',light:'#C77E4F',dark:'#7A4020',deep:'#4E2A14'},
+  {n:2,name:'Iron',      base:'#9AA3AE',light:'#C3CBD4',dark:'#6E7681',deep:'#454B53'},
+  {n:3,name:'Bronze',    base:'#C97E35',light:'#E8A55B',dark:'#96591F',deep:'#5E3812'},
+  {n:4,name:'Silver',    base:'#C9D2DA',light:'#EDF2F7',dark:'#97A2AD',deep:'#616B75'},
+  {n:5,name:'Gold',      base:'#E9B920',light:'#FFDF5E',dark:'#B08812',deep:'#6E550A'},
+  {n:6,name:'Platinum',  base:'#A8D8DC',light:'#DFF6F8',dark:'#74A6AB',deep:'#486D71'},
+  {n:7,name:'Diamond',   base:'#6FA9E8',light:'#A9D4FF',dark:'#4678B8',deep:'#2B4C78'},
+  {n:8,name:'Elite',     base:'#A8D51C',light:'#C8FE23',dark:'#79A010',deep:'#4C6608'},
+  {n:9,name:'World Class',base:'#9C86E8',light:'#F4EFFF',dark:'#6E58B8',deep:'#443578',holo:true},
+];
+let uid=0; const id=p=>p+'_'+(++uid);
+const CX=85, CY=62, R=37, SW=12, D2R=Math.PI/180;
+function hexPts(cx,cy,r){const p=[];for(let i=0;i<6;i++){const a=-Math.PI/2+i*Math.PI/3;p.push([cx+r*Math.cos(a),cy+r*Math.sin(a)]);}return p;}
+const fmt=pts=>pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+const rhexLine=(cx,cy,r,stroke,w)=>`<polygon points="${fmt(hexPts(cx,cy,r))}" fill="none" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round"/>`;
+const rhexFill=(cx,cy,r,fill)=>`<polygon points="${fmt(hexPts(cx,cy,r-SW/2))}" fill="${fill}" stroke="${fill}" stroke-width="${SW}" stroke-linejoin="round"/>`;
+const TILT=-13, ORX=R+21, ORY=16, GAP=3.6;
+function orbitPath(cy){const t=TILT*D2R;const p0=[CX+ORX*Math.cos(t),cy+ORX*Math.sin(t)],p1=[CX-ORX*Math.cos(t),cy-ORX*Math.sin(t)];const f=v=>v.toFixed(1);
+  return `M${f(p0[0])} ${f(p0[1])} A${ORX} ${ORY} ${TILT} 1 1 ${f(p1[0])} ${f(p1[1])} A${ORX} ${ORY} ${TILT} 1 1 ${f(p0[0])} ${f(p0[1])}`;}
+function ellArc(a0,a1,cy){const rot=TILT*D2R,pts=[];
+  for(let i=0;i<=26;i++){const tt=a0+(a1-a0)*i/26;let x=ORX*Math.cos(tt),y=ORY*Math.sin(tt);
+    const xr=x*Math.cos(rot)-y*Math.sin(rot),yr=x*Math.sin(rot)+y*Math.cos(rot);
+    pts.push((CX+xr).toFixed(1)+','+(cy+yr).toFixed(1));}
+  return `M${pts.join(' L')}`;}
+function ballDefs(t){
+  const gid=id('bg'), bid=id('bl'), tid=id('tl'), hid=id('hl');
+  const defs=`<radialGradient id="${gid}" cx=".36" cy=".28" r=".95">
+      <stop offset="0" stop-color="${t.light}"/><stop offset=".45" stop-color="${t.base}"/>
+      <stop offset=".82" stop-color="${t.dark}"/><stop offset="1" stop-color="${t.deep}"/>
+    </radialGradient>
+    <linearGradient id="${tid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="${t.light}" stop-opacity="0"/>
+      <stop offset=".55" stop-color="${t.light}" stop-opacity=".30"/>
+      <stop offset="1" stop-color="${t.light}" stop-opacity=".85"/>
+    </linearGradient>
+    <radialGradient id="${hid}">
+      <stop offset="0" stop-color="${t.light}" stop-opacity=".5"/>
+      <stop offset="1" stop-color="${t.light}" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="${bid}" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="1.5"/></filter>`;
+  return {gid,bid,tid,hid,defs};}
+/* comet ball: glow halo + jewel core + sputtering embers riding just behind
+   (the group is oriented along the travel direction by rotate="auto", so
+   local -x is always "behind"). The tapered trail itself is NOT part of the
+   ball — it's an animated dash segment on the orbit ellipse (trailStack), so
+   it bends with the curve at every point of the revolution. */
+function ballVisual(t,r,bd){
+  const f=n=>n.toFixed(1);
+  return `<circle r="${f(r*2.1)}" fill="url(#${bd.hid})"/>
+    <circle cx="1.4" cy="2.6" r="${f(r*1.02)}" fill="#000" opacity=".38" filter="url(#${bd.bid})"/>
+    <circle r="${r}" fill="url(#${bd.gid})"/>
+    <circle cx="${f(-r*0.04)}" cy="${f(-r*0.44)}" r="${f(r*0.28)}" fill="#FAFDF3" opacity=".92"/>`;}
+/* ===== circle-space orbit rig ============================================
+   The orbit ellipse is a CIRCLE of radius ORX seen through
+   rotate(TILT)·scale(1, ORY/ORX) — a tilted ring in fake 3D. So everything
+   that travels the ring (ball, trail, embers, the gap in the ring mask)
+   lives inside that squashed frame and simply ROTATES at constant angular
+   speed: one animateTransform, the way a ring animation is rigged in After
+   Effects. Consequences that make it look hand-made, not web-made:
+   - the trail is ONE filled path whose half-width tapers continuously to
+     zero → a genuinely sharp tip, no repeated elements;
+   - the squash foreshortens the trail's width as it turns the far side,
+     exactly like perspective would;
+   - constant angular speed reads as a real orbit (faster across the flat
+     ends, slower on the near/far faces).
+   The ball counter-rotates and un-squashes itself so the jewel stays round. */
+const KSQ=ORY/ORX;
+const rotA=(dur,off,dir)=>`<animateTransform attributeName="transform" type="rotate" from="0" to="${dir*360}" dur="${dur}s" begin="${(-off).toFixed(2)}s" repeatCount="indefinite"/>`;
+function rig(cy,dur,off,content){
+  return `<g transform="translate(${CX} ${cy}) rotate(${TILT}) scale(1 ${KSQ.toFixed(4)})"><g>${rotA(dur,off,1)}${content}</g></g>`;}
+function counterUnsquash(dur,off,content){
+  return `<g>${rotA(dur,off,-1)}<g transform="scale(1 ${(1/KSQ).toFixed(4)}) rotate(${-TILT})">${content}</g></g>`;}
+const tog=(front,dur,off)=>`<animate attributeName="opacity" values="${front?'1;0':'0;1'}" keyTimes="0;0.5" calcMode="discrete" dur="${dur}s" begin="${(-off).toFixed(2)}s" repeatCount="indefinite"/>`;
+/* one continuous tapered blade behind the ball: centerline on the circle,
+   half-width w(f)=w0·f^1.5 (full at the ball, zero at the tip) applied
+   radially — outer edge out, inner edge back, closed at the naturally
+   sharp tip where both edges meet */
+function taperPath(R,Adeg,w0){
+  const N=40, A=Adeg*D2R, outer=[], inner=[];
+  for(let i=0;i<=N;i++){
+    const f=i/N, a=-A+A*f;
+    const w=w0*Math.pow(f,1.5)/2;
+    const c=Math.cos(a), s=Math.sin(a);
+    outer.push([(R+w)*c,(R+w)*s]);
+    inner.push([(R-w)*c,(R-w)*s]);
+  }
+  const P=p=>p[0].toFixed(2)+' '+p[1].toFixed(2);
+  inner.reverse();
+  return `M${P(outer[0])} L${outer.slice(1).map(P).join(' L')} L${inner.map(P).join(' L')} Z`;}
+/* brightness fades along the blade via a gradient pinned in the rotating
+   frame, from the ball point to the tip point */
+function trailDefs(color,Adeg){
+  const tid=id('tp'), A=Adeg*D2R;
+  return {tid,defs:`<linearGradient id="${tid}" gradientUnits="userSpaceOnUse" x1="${ORX}" y1="0" x2="${(ORX*Math.cos(A)).toFixed(1)}" y2="${(-ORX*Math.sin(A)).toFixed(1)}">
+    <stop offset="0" stop-color="${color}" stop-opacity=".92"/>
+    <stop offset=".5" stop-color="${color}" stop-opacity=".38"/>
+    <stop offset="1" stop-color="${color}" stop-opacity="0"/></linearGradient>`};}
+/* half-plane clips along the orbit's major axis: trails render in both the
+   behind-the-shield and in-front layers, each clipped to its half, so the
+   trail correctly dives behind the hex and re-emerges like the balls do */
+function halfClips(cy){
+  const a=TILT*D2R, dx=Math.cos(a),dy=Math.sin(a), nx=-Math.sin(a),ny=Math.cos(a), K=500;
+  const poly=s=>[[CX-dx*K,cy-dy*K],[CX+dx*K,cy+dy*K],[CX+dx*K+nx*K*s,cy+dy*K+ny*K*s],[CX-dx*K+nx*K*s,cy-dy*K+ny*K*s]]
+    .map(p=>p[0].toFixed(0)+','+p[1].toFixed(0)).join(' ');
+  const front=id('cf'), back=id('cb');
+  return {front,back,defs:`<clipPath id="${front}"><polygon points="${poly(1)}"/></clipPath>
+    <clipPath id="${back}"><polygon points="${poly(-1)}"/></clipPath>`};}
+function orbit(t,stage,animate,dur){
+  const cy=CY+1;
+  let ballsBack='',ballsFront='',gaps='',defs='',trailsBack='',trailsFront='';
+  if(stage>=3){
+    const bd=ballDefs(t); defs+=bd.defs;
+    if(animate){
+      const TRAIL_A=112;
+      const mkComet=(off,r)=>{
+        const ballContent=`<g transform="translate(${ORX} 0)">${counterUnsquash(dur,off,ballVisual(t,r,bd))}</g>`;
+        ballsBack+=`<g opacity="0">${tog(false,dur,off)}${rig(cy,dur,off,ballContent)}</g>`;
+        ballsFront+=`<g opacity="0">${tog(true,dur,off)}${rig(cy,dur,off,ballContent)}</g>`;
+        gaps+=rig(cy,dur,off,`<g transform="translate(${ORX} 0)">${counterUnsquash(dur,off,`<circle r="${(r+GAP).toFixed(1)}" fill="#000"/>`)}</g>`);
+        const gl=trailDefs(t.light,TRAIL_A), gb=trailDefs(t.base,TRAIL_A);
+        defs+=gl.defs+gb.defs;
+        const tp=taperPath(ORX,TRAIL_A,r*1.7);
+        trailsFront+=rig(cy,dur,off,`<path d="${tp}" fill="url(#${gl.tid})"/>`);
+        trailsBack+=rig(cy,dur,off,`<path d="${tp}" fill="url(#${gb.tid})"/>`);
+        /* embers: same rig, lagging the ball by a fixed arc angle */
+        [[2.6,.22,t.light,1.15,-0.2],[3.8,.17,t.light,1.6,-0.9],[5.0,.13,'#FAFDF3',1.35,-0.55]]
+          .forEach(([lagU,erF,c,td,tb])=>{
+            const lagT=(lagU*r/ORX)/(2*Math.PI)*dur;
+            const m=(((off-lagT)%dur)+dur)%dur;
+            const spark=`<circle cx="${ORX}" cy="0" r="${(erF*r).toFixed(2)}" fill="${c}" opacity="0">
+              <animate attributeName="opacity" values="0;.9;0" keyTimes="0;.35;1" dur="${td}s" begin="${tb}s" repeatCount="indefinite"/></circle>`;
+            ballsBack+=`<g opacity="0">${tog(false,dur,m)}${rig(cy,dur,m,spark)}</g>`;
+            ballsFront+=`<g opacity="0">${tog(true,dur,m)}${rig(cy,dur,m,spark)}</g>`;
+          });
+      };
+      mkComet(0,6);
+      if(stage>=4) mkComet(dur*0.5,4.8);
+      const hc=halfClips(cy); defs+=hc.defs;
+      trailsFront=`<g clip-path="url(#${hc.front})">${trailsFront}</g>`;
+      trailsBack=`<g clip-path="url(#${hc.back})" opacity=".55">${trailsBack}</g>`;
+    }else{
+      const a=TILT*D2R;
+      const x1=(CX+ORX*Math.cos(a)).toFixed(1), y1=(cy+ORX*Math.sin(a)).toFixed(1);
+      ballsFront+=`<g transform="translate(${x1} ${y1})">${ballVisual(t,6,bd)}</g>`;
+      gaps+=`<circle cx="${x1}" cy="${y1}" r="${(6+GAP).toFixed(1)}" fill="#000"/>`;
+      if(stage>=4){
+        const x2=(CX-ORX*Math.cos(a)).toFixed(1), y2=(cy-ORX*Math.sin(a)).toFixed(1);
+        ballsBack+=`<g transform="translate(${x2} ${y2})">${ballVisual(t,4.8,bd)}</g>`;
+        gaps+=`<circle cx="${x2}" cy="${y2}" r="${(4.8+GAP).toFixed(1)}" fill="#000"/>`;
+      }
+    }
+  }
+  let backArc=`<path d="${ellArc(Math.PI,2*Math.PI,cy)}" fill="none" stroke="${t.dark}" stroke-width="4" stroke-linecap="round" opacity=".9"/>`;
+  let frontArc=`<path d="${ellArc(0,Math.PI,cy)}" fill="none" stroke="${t.base}" stroke-width="4" stroke-linecap="round"/>`;
+  if(gaps){
+    const mid=id('mk');
+    defs+=`<mask id="${mid}" maskUnits="userSpaceOnUse" x="-20" y="-20" width="210" height="176">
+      <rect x="-20" y="-20" width="210" height="176" fill="#fff"/>${gaps}</mask>`;
+    backArc=`<g mask="url(#${mid})">${backArc}</g>`;
+    frontArc=`<g mask="url(#${mid})">${frontArc}</g>`;
+  }
+  return {backs:backArc+trailsBack+ballsBack, fronts:frontArc+trailsFront+ballsFront, defs};}
+/* the vortex as the badge emblem: 1024-box mapped into the 100-box slot.
+   Animated badges spin it slowly clockwise — same 16s idle as the hero mark
+   (SMIL rotate about the emblem center, which sits at the group origin) */
+function emblemVortex(t,animate){
+  const spin=animate?`<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="16s" repeatCount="indefinite"/>`:'';
+  return `<g transform="translate(${CX} ${CY+1})"><g>${spin}<g transform="scale(.5) translate(-50 -51)">
+      <g transform="scale(0.09765625) translate(0 1024) scale(0.1 -0.1)">
+        <path fill="${t.light}" d="${VORTEX_D}"/>
+      </g>
+    </g></g></g>`;}
+function badge(t,{stage=1,animate=false,dur=6}={}){
+  let defs='',holoCls='';
+  const fid=id('fg');
+  if(t.holo){
+    defs=`<linearGradient id="${fid}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7CF9D4"/><stop offset=".28" stop-color="#7FB2FF"/>
+      <stop offset=".55" stop-color="#C08CFF"/><stop offset=".78" stop-color="#FF7FB8"/>
+      <stop offset="1" stop-color="#FFD97F"/></linearGradient>`;
+    holoCls=' class="holozone"';
+  }else{
+    defs=`<linearGradient id="${fid}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${t.light}"/><stop offset="1" stop-color="${t.base}"/></linearGradient>`;
+  }
+  const frameStroke=`url(#${fid})`;
+  const sid=id('sg'),scid=id('scl');
+  const shine=animate?`
+    <defs><clipPath id="${scid}"><polygon points="${fmt(hexPts(CX,CY,R))}"/></clipPath>
+    <linearGradient id="${sid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".30"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+    <g clip-path="url(#${scid})"><rect class="sweepbar" x="55" y="10" width="30" height="104" fill="url(#${sid})"/></g>`:'';
+  const o=stage>=2?orbit(t,stage,animate,dur):{backs:'',fronts:'',defs:''};
+  return `<svg viewBox="0 0 170 136"><defs>${defs}${o.defs||''}</defs>
+    <g${holoCls}>
+      ${o.backs}
+      ${rhexFill(CX,CY+5,R,t.deep)}
+      ${rhexFill(CX,CY,R,'#131510')}
+      ${rhexLine(CX,CY,R-5,frameStroke,8)}
+      ${emblemVortex(t,animate)}
+      ${o.fronts}
+      ${shine}
+    </g></svg>`;}
+
+/* ===== render ===== */
+document.getElementById('heroMark').innerHTML=vortexSvg('#C8FE23',true);
+document.getElementById('splashMark').innerHTML=vortexSvg('#C8FE23',true);
+document.querySelectorAll('[data-icon]').forEach(el=>{el.innerHTML=vortexSvg('#C8FE23',false);});
+document.querySelectorAll('[data-mini]').forEach(el=>{el.innerHTML=vortexSvg('#C8FE23',false);});
+document.querySelectorAll('[data-badge]').forEach(el=>{
+  el.style.flex='0 0 44px';
+  el.innerHTML=badge(TIERS[Number(el.dataset.badge)],{stage:4,animate:false});
+});
+document.getElementById('matrix').innerHTML=TIERS.map(t=>`
+  <div class="trow ${t.n===8?'elite':''}">
+    <div class="tlabel"><div class="tname">${t.name}</div><div class="tsub">tier ${t.n} / 9</div></div>
+    ${[1,2,3,4].map(s=>`<div class="bcell"><div class="badge ${s>=3||t.holo?'anim':''}">${badge(t,{stage:s,animate:s>=3||!!t.holo,dur:6})}</div></div>`).join('')}
+  </div>`).join('');
+document.getElementById('showWC').innerHTML=badge(TIERS[8],{stage:4,animate:true,dur:5});
+</script>
+</body>
+</html>

@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>torq · rank badge concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0E0F0E; --panel:#151714; --panel2:#1B1E1A; --line:#262A24;
+    --ink:#F2F4EE; --dim:#9AA294; --faint:#5C6356;
+    --lime:#C8FE23; --lime-ink:#1A1B1A;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:'Space Grotesk',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; padding:28px 20px 80px;
+  }
+  .wrap{max-width:1060px;margin:0 auto}
+  header{margin-bottom:36px}
+  .brandrow{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .brandmark{width:40px;height:40px;border-radius:11px;background:#1A1B1A;display:flex;align-items:center;justify-content:center;flex:none}
+  .brandmark svg{width:22px;height:22px}
+  h1{font-size:30px;font-weight:700;margin:0;letter-spacing:-.5px}
+  .sub{color:var(--dim);font-size:15px;line-height:1.55;max-width:70ch;margin-top:10px}
+  .sub b{color:var(--ink)}
+  .pill{display:inline-block;background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--dim);margin-right:6px}
+
+  section.concept{
+    background:var(--panel); border:1px solid var(--line); border-radius:22px;
+    padding:26px 26px 22px; margin-bottom:26px; overflow:hidden;
+  }
+  .chead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+  .ctag{font-size:12px;font-weight:700;color:var(--lime-ink);background:var(--lime);border-radius:7px;padding:2px 8px;letter-spacing:.4px}
+  h2{font-size:21px;font-weight:700;margin:0;letter-spacing:-.3px}
+  .cdesc{color:var(--dim);font-size:14px;line-height:1.55;max-width:78ch;margin:8px 0 20px}
+  .cdesc b{color:var(--ink);font-weight:600}
+
+  .stage{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+  .hero{flex:none;width:230px;display:flex;flex-direction:column;align-items:center;gap:10px}
+  .hero .badge{width:190px;height:190px}
+  .herolabel{font-size:13px;color:var(--dim)}
+  .herolabel b{color:var(--ink)}
+
+  .ladder{flex:1 1 420px;display:flex;flex-wrap:wrap;gap:14px 10px;align-content:center}
+  .cell{width:86px;display:flex;flex-direction:column;align-items:center;gap:7px}
+  .cell .badge{width:72px;height:72px}
+  .cell .tname{font-size:11px;font-weight:600;letter-spacing:.3px;color:var(--dim);text-align:center;white-space:nowrap}
+  .cell.elite .tname{color:var(--lime)}
+
+  .microrow{display:flex;align-items:center;gap:14px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+  .microrow .mlabel{font-size:12px;color:var(--faint)}
+  .micro{display:flex;gap:8px;align-items:center}
+  .micro .badge{width:24px;height:24px}
+
+  .notes{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+  .note{font-size:12.5px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:7px 11px}
+  .note.good{color:#BFE86A;border-color:#39421F}
+  .note.risk{color:#E8A96A;border-color:#4A3A22}
+
+  .recommend{background:linear-gradient(140deg,#171A12,#131510);border:1px solid #39421F;border-radius:22px;padding:26px;margin:34px 0 26px}
+  .recommend h2{color:var(--lime)}
+  .recommend p{color:var(--dim);font-size:14.5px;line-height:1.6;max-width:80ch}
+  .recommend b{color:var(--ink)}
+
+  form.pick{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px}
+  form.pick h2{margin-bottom:6px}
+  form.pick .cdesc{margin-bottom:16px}
+  .optgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-bottom:16px}
+  label.opt{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer;font-size:14px;line-height:1.4}
+  label.opt:has(input:checked){border-color:var(--lime);background:#1B2110}
+  label.opt input{accent-color:var(--lime);margin-top:2px}
+  label.opt .on{font-weight:600}
+  label.opt .od{display:block;font-size:12px;color:var(--dim);margin-top:2px}
+  textarea{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:12px;color:var(--ink);font-family:inherit;font-size:14px;padding:11px 13px;resize:vertical;min-height:64px}
+  button.queue{margin-top:14px;background:var(--lime);color:var(--lime-ink);border:0;border-radius:999px;padding:12px 22px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  button.queue:hover{filter:brightness(1.06)}
+
+  /* ---------- animations ---------- */
+  @keyframes sweep{0%{transform:translateX(-140%) skewX(-18deg)}55%,100%{transform:translateX(160%) skewX(-18deg)}}
+  @keyframes glowpulse{0%,100%{opacity:.55}50%{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes hue{to{filter:hue-rotate(360deg)}}
+  @keyframes tickon{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .badge svg{width:100%;height:100%;display:block;overflow:visible}
+  .anim .sweepbar{animation:sweep 3.2s ease-in-out infinite}
+  .anim .glow{animation:glowpulse 2.6s ease-in-out infinite}
+  .anim .orbit{animation:spin 14s linear infinite;transform-origin:50% 50%}
+  .anim .orbit.rev{animation-direction:reverse;animation-duration:22s}
+  .anim.holo svg .holozone{animation:hue 6s linear infinite}
+  .anim .tick{animation:tickon .5s ease-out both}
+  .hero.anim{animation:floaty 4.5s ease-in-out infinite}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brandrow">
+    <div class="brandmark">
+      <svg viewBox="0 0 100 100"><path d="M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z" fill="#C8FE23"/></svg>
+    </div>
+    <h1>Rank badges — 4 visual concepts</h1>
+  </div>
+  <div class="sub">
+    Nine tiers: <b>Rust → Iron → Bronze → Silver → Gold → Platinum → Diamond → Elite → World Class</b>.
+    Every concept is pure SVG (ships as components, no image assets), built on the locked rebrand:
+    sharp tau, lime <b>#C8FE23</b> on near-black. Two deliberate color rules across all concepts:
+    <b>Elite is the brand-lime tier</b> (reaching the brand color = reaching the top of the human ladder),
+    and <b>World Class goes holographic</b> (animated iridescence — the only tier that cycles color).
+  </div>
+  <div style="margin-top:14px">
+    <span class="pill">hover any hero badge — animations run continuously</span>
+    <span class="pill">24 px strip under each concept = list-row legibility test</span>
+  </div>
+</header>
+
+<!-- ================= CONCEPT A ================= -->
+<section class="concept" id="concept-a">
+  <div class="chead"><span class="ctag">A</span><h2>Forged Crest</h2></div>
+  <div class="cdesc">
+    An angular kite-shield forged from the tier's metal, tau embossed dead-center.
+    The facet lines make it read as machined metal, not a flat sticker. Tier is encoded twice:
+    the <b>metal gradient</b> and the <b>pip count</b> on the lower facet (1–9), so colorblind users still
+    read rank. Animation: a specular <b>shimmer sweep</b> across the metal + a breathing rim glow on high tiers.
+    The most "game rank" of the four — strongest for share cards and rank-up moments.
+  </div>
+  <div class="stage">
+    <div class="hero anim"><div class="badge anim" id="heroA"></div><div class="herolabel">hero · <b id="heroAlabel"></b></div></div>
+    <div class="ladder" id="ladderA"></div>
+  </div>
+  <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microA"></div></div>
+  <div class="notes">
+    <span class="note good">Instantly reads as "rank" — zero explanation needed</span>
+    <span class="note good">Pips = redundant tier encoding</span>
+    <span class="note risk">Most visually loud — can fight the calm bento UI on dense screens</span>
+  </div>
+</section>
+
+<!-- ================= CONCEPT B ================= -->
+<section class="concept" id="concept-b">
+  <div class="chead"><span class="ctag">B</span><h2>Torque Ring</h2></div>
+  <div class="cdesc">
+    A dial of <b>9 arc segments</b> around the tau — your tier is how many segments are lit,
+    in the tier metal. This is the same visual language as the app's existing ArcGauges on Home,
+    so it feels native on day one, and it's the only concept where <b>progress to the next tier is drawable</b>:
+    the next segment can fill partially (see the hero — Diamond at 60% toward Elite).
+    Animation: segments <b>ignite sequentially</b> on mount, the partial segment breathes, tau glows.
+  </div>
+  <div class="stage">
+    <div class="hero anim"><div class="badge anim" id="heroB"></div><div class="herolabel">hero · <b>Diamond, 60% → Elite</b></div></div>
+    <div class="ladder" id="ladderB"></div>
+  </div>
+  <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microB"></div></div>
+  <div class="notes">
+    <span class="note good">Only concept that shows progress-to-next-tier in the badge itself</span>
+    <span class="note good">Extends the existing ArcGauge language — cheapest to make coherent</span>
+    <span class="note risk">Segment count unreadable below ~20 px — micro size leans on color alone</span>
+  </div>
+</section>
+
+<!-- ================= CONCEPT C ================= -->
+<section class="concept" id="concept-c">
+  <div class="chead"><span class="ctag">C</span><h2>Cut Gem</h2></div>
+  <div class="cdesc">
+    The badge is a gemstone and <b>the cut itself levels up</b>: Rust–Bronze are a rough 6-facet cut,
+    Silver–Platinum an 8-facet cut, Diamond and Elite a 10-facet brilliant, and World Class a 12-point star.
+    Higher rank literally means more light. Tau sits engraved in the table facet.
+    Animation: a rotating <b>specular flare</b> sliver sweeping the facets, like light moving over a stone.
+    The silhouette change means you can tell Gold from Diamond at a glance even in grayscale.
+  </div>
+  <div class="stage">
+    <div class="hero anim"><div class="badge anim holo" id="heroC"></div><div class="herolabel">hero · <b id="heroClabel"></b></div></div>
+    <div class="ladder" id="ladderC"></div>
+  </div>
+  <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microC"></div></div>
+  <div class="notes">
+    <span class="note good">Shape encodes tier band — survives grayscale and tiny sizes</span>
+    <span class="note good">World Class starburst is a genuinely distinct trophy</span>
+    <span class="note risk">"Gem" leans mobile-game; needs restrained gradients to stay premium</span>
+  </div>
+</section>
+
+<!-- ================= CONCEPT D ================= -->
+<section class="concept" id="concept-d">
+  <div class="chead"><span class="ctag">D</span><h2>Plate</h2></div>
+  <div class="cdesc">
+    The quiet one: the app icon's <b>rounded dark square</b>, tau struck in the tier metal, a thin tier-metal
+    ring, and a 9-slot <b>notch rail</b> along the bottom edge (lit notches = tier). Background stays near-black
+    for every tier, so a column of these in a list stays calm — only the tau's metal changes.
+    Animation: a vertical <b>scanline</b> pass + the newest notch blinking.
+    This is the concept that looks best <em>inside</em> the UI; the crest looks best <em>outside</em> it.
+  </div>
+  <div class="stage">
+    <div class="hero anim"><div class="badge anim holo" id="heroD"></div><div class="herolabel">hero · <b id="heroDlabel"></b></div></div>
+    <div class="ladder" id="ladderD"></div>
+  </div>
+  <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microD"></div></div>
+  <div class="notes">
+    <span class="note good">Calmest in dense lists — matches the app-icon language exactly</span>
+    <span class="note good">Notch rail = precise tier readout</span>
+    <span class="note risk">Least trophy-like — weak as a share-card centerpiece on its own</span>
+  </div>
+</section>
+
+<!-- ================= RECOMMENDATION ================= -->
+<div class="recommend">
+  <h2>A pairing, not a single pick</h2>
+  <p>
+    These jobs pull in opposite directions: a badge living in a 24 px exercise row wants to be quiet;
+    a rank-up share card wants a trophy. My lean: <b>Torque Ring (B) as the system badge</b> — it inherits the
+    ArcGauge language you already ship, and it's the only one that can show "820 pts to Elite" <em>in the badge</em> —
+    paired with <b>Forged Crest (A) as the celebration/share asset</b> (rank-up modal, share cards, profile hero).
+    Same tier metals, same tau, two silhouettes for two jobs. Cut Gem's shape-escalation trick
+    (silhouette changes per tier band) is worth stealing into whichever direction wins.
+  </p>
+</div>
+
+<!-- ================= PICK ================= -->
+<form class="pick" data-lavish-question="badge-direction" onsubmit="
+  event.preventDefault();
+  const fd=new FormData(event.currentTarget);
+  const c=fd.get('concept'); const n=(fd.get('notes')||'').toString().trim();
+  if(!c)return;
+  window.lavish.queuePrompt('Badge direction chosen: '+c+(n?('. Notes: '+n):''),
+    {tag:'choice',text:'Badge direction: '+c,element:event.currentTarget,
+     data:{question:'badge-direction',answer:c,notes:n}});
+">
+  <h2>Pick a direction</h2>
+  <div class="cdesc">Selecting is local until you press <b>Queue answer</b>, then send from the panel. Annotate any specific badge above for finer feedback (tier colors, tau weight, animation speed…).</div>
+  <div class="optgrid">
+    <label class="opt"><input type="radio" name="concept" value="A — Forged Crest"><span><span class="on">A · Forged Crest</span><span class="od">the game-rank shield, loudest & most shareable</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="B — Torque Ring"><span><span class="on">B · Torque Ring</span><span class="od">segment dial, shows progress, native to the app</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="C — Cut Gem"><span><span class="on">C · Cut Gem</span><span class="od">facet cut levels up with tier</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="D — Plate"><span><span class="on">D · Plate</span><span class="od">quiet icon-language badge for dense UI</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="B + A pairing (recommended)"><span><span class="on">B + A pairing</span><span class="od">Ring in-app, Crest for celebrations & shares</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Optional: tweaks, mixes, vetoes… e.g. 'B but with C's starburst for World Class'"></textarea>
+  <br><button class="queue" type="submit">Queue answer</button>
+</form>
+
+</div>
+
+<script>
+/* ---------------- tier data ---------------- */
+const TIERS=[
+  {n:1,name:'Rust',      lo:'#5A3220', hi:'#9C5A33', rim:'#6E3B22', glow:'rgba(156,90,51,.35)'},
+  {n:2,name:'Iron',      lo:'#43484F', hi:'#8B929B', rim:'#565C64', glow:'rgba(139,146,155,.30)'},
+  {n:3,name:'Bronze',    lo:'#6E4218', hi:'#D08A3E', rim:'#8A5522', glow:'rgba(208,138,62,.35)'},
+  {n:4,name:'Silver',    lo:'#7E8894', hi:'#E7EDF3', rim:'#98A2AE', glow:'rgba(231,237,243,.30)'},
+  {n:5,name:'Gold',      lo:'#8F6414', hi:'#F7CE47', rim:'#B8901F', glow:'rgba(247,206,71,.40)'},
+  {n:6,name:'Platinum',  lo:'#6F8F94', hi:'#DFF4F6', rim:'#8FB3B8', glow:'rgba(223,244,246,.35)'},
+  {n:7,name:'Diamond',   lo:'#2F6FAE', hi:'#A8E0FF', rim:'#4E8FCB', glow:'rgba(168,224,255,.45)'},
+  {n:8,name:'Elite',     lo:'#5F7F0E', hi:'#C8FE23', rim:'#8CB817', glow:'rgba(200,254,35,.50)'},
+  {n:9,name:'World Class',lo:'#8A5CFF',hi:'#FF5CA8', rim:'#B48CFF', glow:'rgba(255,92,168,.45)', holo:true},
+];
+const TAU='M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z';
+let uid=0; const id=p=>p+'_'+(++uid);
+
+function metalDefs(t,g){ // returns [defsMarkup, fillRef]
+  const gid=id('m');
+  if(t.holo){
+    return [`<linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7CF9D4"/><stop offset=".28" stop-color="#7FB2FF"/>
+      <stop offset=".55" stop-color="#C08CFF"/><stop offset=".78" stop-color="#FF7FB8"/>
+      <stop offset="1" stop-color="#FFD97F"/></linearGradient>`,`url(#${gid})`];
+  }
+  return [`<linearGradient id="${gid}" x1="0" y1="0" x2="${g==='v'?0:1}" y2="1">
+    <stop offset="0" stop-color="${t.hi}"/><stop offset=".5" stop-color="${t.lo}"/>
+    <stop offset="1" stop-color="${t.hi}"/></linearGradient>`,`url(#${gid})`];
+}
+function sweepDef(clipShape){ // shimmer bar clipped to shape
+  const cid=id('c'), sid=id('s');
+  return [`<clipPath id="${cid}">${clipShape}</clipPath>
+    <linearGradient id="${sid}" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`,
+    `<g clip-path="url(#${cid})"><rect class="sweepbar" x="20" y="-10" width="34" height="120" fill="url(#${sid})"/></g>`];
+}
+
+/* ---------------- A · Forged Crest ---------------- */
+function crest(t,{animate=false}={}){
+  const shield='M50 3 L93 16 L93 54 L50 97 L7 54 L7 16 Z';
+  const [mg,mf]=metalDefs(t);
+  const [sw,swBody]=sweepDef(`<path d="${shield}"/>`);
+  const pips=Array.from({length:9},(_,i)=>{
+    const x=50+(i-4)*7.2;
+    return `<circle cx="${x}" cy="80.5" r="2.1" fill="${i<t.n?'#10120E':'rgba(14,15,14,.25)'}"/>`;
+  }).join('');
+  const holoCls=t.holo?' class="holozone"':'';
+  return `<svg viewBox="0 0 100 100" ${t.holo&&animate?'':''}>
+    <defs>${mg}${animate?sw:''}
+      <linearGradient id="${id('e')}" x1="0" y1="0" x2="0" y2="1"></linearGradient>
+    </defs>
+    ${animate?`<path class="glow" d="${shield}" fill="none" stroke="${t.hi}" stroke-width="5" opacity=".5" style="filter:blur(6px)"/>`:''}
+    <g${holoCls}>
+      <path d="${shield}" fill="${mf}"/>
+      <path d="M50 3 L93 16 L93 54 L50 97 Z" fill="rgba(0,0,0,.22)"/>
+      <path d="M50 3 L7 16 L50 30 L93 16 Z" fill="rgba(255,255,255,.14)"/>
+      <path d="${shield}" fill="none" stroke="rgba(0,0,0,.5)" stroke-width="1.4"/>
+      <path d="M50 10 L86 21 L86 51 L50 89 L14 51 L14 21 Z" fill="none" stroke="rgba(0,0,0,.35)" stroke-width="1.2"/>
+      <g transform="translate(50 47) scale(.47) translate(-50 -50)"><path d="${TAU}" fill="#10120E"/></g>
+      ${pips}
+      ${animate?swBody:''}
+    </g></svg>`;
+}
+
+/* ---------------- B · Torque Ring ---------------- */
+function arcSeg(cx,cy,r,a0,a1){
+  const p=a=>[cx+r*Math.cos(a),cy+r*Math.sin(a)];
+  const [x0,y0]=p(a0),[x1,y1]=p(a1);
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+function ring(t,{animate=false,partial=0}={}){
+  const [mg,mf]=metalDefs(t);
+  const segs=[]; const N=9, gap=.13, start=-Math.PI/2;
+  for(let i=0;i<N;i++){
+    const a0=start+i*(2*Math.PI/N)+gap/2, a1=start+(i+1)*(2*Math.PI/N)-gap/2;
+    const lit=i<t.n, part=(i===t.n)&&partial>0;
+    let d=arcSeg(50,50,42,a0,a1);
+    let seg='';
+    if(lit) seg=`<path d="${d}" stroke="${mf}" stroke-width="8" fill="none" stroke-linecap="butt"
+      ${animate?`class="tick" style="animation-delay:${i*90}ms"`:''}/>`;
+    else if(part){
+      const am=a0+(a1-a0)*partial;
+      seg=`<path d="${d}" stroke="rgba(255,255,255,.10)" stroke-width="8" fill="none"/>
+           <path d="${arcSeg(50,50,42,a0,am)}" stroke="${t.hi}" stroke-width="8" fill="none"
+             ${animate?'class="glow"':''}/>`;
+    }
+    else seg=`<path d="${d}" stroke="rgba(255,255,255,.10)" stroke-width="8" fill="none"/>`;
+    segs.push(seg);
+  }
+  const holoCls=t.holo?' class="holozone"':'';
+  return `<svg viewBox="0 0 100 100"><defs>${mg}</defs>
+    <circle cx="50" cy="50" r="33" fill="#14160F" stroke="rgba(255,255,255,.07)"/>
+    <g${holoCls}>${segs.join('')}
+    ${animate?`<circle class="glow" cx="50" cy="50" r="33" fill="none" stroke="${t.hi}" stroke-width="1.6" opacity=".6" style="filter:blur(3px)"/>`:''}
+    <g transform="translate(50 50) scale(.36) translate(-50 -50)"><path d="${TAU}" fill="${mf}"/></g></g>
+  </svg>`;
+}
+
+/* ---------------- C · Cut Gem ---------------- */
+function gemPoints(t){
+  const band=t.n<=3?6:t.n<=6?8:t.n<=8?10:12;
+  const star=t.n===9;
+  const pts=[];
+  for(let i=0;i<band;i++){
+    const a=-Math.PI/2+i*2*Math.PI/band;
+    pts.push([50+44*Math.cos(a),50+44*Math.sin(a)]);
+    if(star){
+      const a2=a+Math.PI/band;
+      pts.push([50+26*Math.cos(a2),50+26*Math.sin(a2)]);
+    }
+  }
+  return pts;
+}
+function gem(t,{animate=false}={}){
+  const pts=gemPoints(t);
+  const [mg,mf]=metalDefs(t);
+  const poly=pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const facets=pts.map((p,i)=>{
+    const q=pts[(i+1)%pts.length];
+    const op=i%2?0.20:0.06;
+    return `<path d="M50 50 L${p[0].toFixed(1)} ${p[1].toFixed(1)} L${q[0].toFixed(1)} ${q[1].toFixed(1)} Z" fill="rgba(255,255,255,${op})"/>`;
+  }).join('');
+  const [sw,swBody]=sweepDef(`<polygon points="${poly}"/>`);
+  const holoCls=t.holo?' class="holozone"':'';
+  return `<svg viewBox="0 0 100 100"><defs>${mg}${animate?sw:''}</defs>
+    ${animate?`<polygon class="glow" points="${poly}" fill="none" stroke="${t.hi}" stroke-width="4" opacity=".5" style="filter:blur(6px)"/>`:''}
+    <g${holoCls}>
+      <polygon points="${poly}" fill="${mf}" stroke="rgba(0,0,0,.45)" stroke-width="1.3"/>
+      ${facets}
+      <circle cx="50" cy="50" r="21" fill="rgba(0,0,0,.28)"/>
+      <g transform="translate(50 50) scale(.34) translate(-50 -50)"><path d="${TAU}" fill="rgba(255,255,255,.92)"/></g>
+      ${animate?swBody:''}
+    </g></svg>`;
+}
+
+/* ---------------- D · Plate ---------------- */
+function plate(t,{animate=false}={}){
+  const [mg,mf]=metalDefs(t,'v');
+  const notches=Array.from({length:9},(_,i)=>{
+    const x=20+i*7;
+    const lit=i<t.n;
+    const blink=animate&&i===t.n-1;
+    return `<rect x="${x}" y="84" width="4.4" height="5" rx="1.2"
+      fill="${lit?mf:'rgba(255,255,255,.12)'}" ${blink?'class="glow"':''}/>`;
+  }).join('');
+  const [sw,swBody]=sweepDef('<rect x="4" y="4" width="92" height="92" rx="24"/>');
+  const holoCls=t.holo?' class="holozone"':'';
+  return `<svg viewBox="0 0 100 100"><defs>${mg}${animate?sw:''}</defs>
+    <rect x="4" y="4" width="92" height="92" rx="24" fill="#1A1B1A"/>
+    <g${holoCls}>
+      <rect x="4" y="4" width="92" height="92" rx="24" fill="none" stroke="${mf}" stroke-width="2.4"/>
+      <g transform="translate(50 46) scale(.52) translate(-50 -50)"><path d="${TAU}" fill="${mf}"/></g>
+      ${notches}
+      ${animate?swBody:''}
+    </g></svg>`;
+}
+
+/* ---------------- render ---------------- */
+function renderLadder(el,fn){
+  el.innerHTML=TIERS.map(t=>`
+    <div class="cell ${t.name==='Elite'?'elite':''}">
+      <div class="badge ${t.holo?'anim holo':''}">${fn(t,{animate:!!t.holo})}</div>
+      <div class="tname">${t.name}</div>
+    </div>`).join('');
+}
+function renderMicro(el,fn){
+  el.innerHTML=TIERS.map(t=>`<div class="badge">${fn(t,{animate:false})}</div>`).join('');
+}
+const $=s=>document.querySelector(s);
+
+renderLadder($('#ladderA'),crest); renderMicro($('#microA'),crest);
+$('#heroA').innerHTML=crest(TIERS[7],{animate:true}); $('#heroAlabel').textContent='Elite';
+
+renderLadder($('#ladderB'),(t,o)=>ring(t,o)); renderMicro($('#microB'),t=>ring(t));
+$('#heroB').innerHTML=ring(TIERS[6],{animate:true,partial:.6});
+
+renderLadder($('#ladderC'),gem); renderMicro($('#microC'),gem);
+$('#heroC').innerHTML=gem(TIERS[8],{animate:true}); $('#heroClabel').textContent='World Class';
+
+renderLadder($('#ladderD'),plate); renderMicro($('#microD'),plate);
+$('#heroD').innerHTML=plate(TIERS[8],{animate:true}); $('#heroDlabel').textContent='World Class';
+</script>
+</body>
+</html>
