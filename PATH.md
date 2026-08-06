@@ -90,7 +90,13 @@ graph, none of which a Strong clone has.
 - Pure rank math module: points, tier, percentile, "N pts to next tier".
 - Ranks surfaces: overall Rank Card on the profile, per-exercise rank page
   with the world-record mention, tier badges in exercise info.
-- Done so far: Space Grotesk shipped; logo direction locked.
+- Done so far: Space Grotesk shipped; vortex logo shipped app-wide;
+  rank engine v1 live (`src/lib/rank.ts`: DOTS points normalized by
+  sex+bodyweight, 9-tier ladder on calibrated thresholds, best-e1RM
+  extraction with the ≤10-rep/no-warmup rule) + the Rank Card in Profile
+  (overall tier, points, progress-to-next, top-3 best lifts). Honest
+  scope: points and tiers only — no percentile claims until the
+  OpenPowerlifting dataset is curated and bundled.
 
 ### Phase 2 - Full rebrand
 - New visual system (palette to be finalized around the sharp tau + lime on

@@ -33,7 +33,7 @@ stop wrapping content in Card/surface containers. Content is text directly
 on the page background; hierarchy comes from type scale, weight, color
 (ink/dim/faint + lime accents) and whitespace; where separation is needed,
 use thin hairline dividers, not boxes. Surfaces are reserved for
-INTERACTIVE elements only (buttons, inputs, the dock, the top bar) and
+INTERACTIVE elements only (buttons, inputs, the dock) and
 true overlays (dialogs, sheets, pickers). Charts keep their plots but lose
 their card frames. Applies to every new screen and the Phase-2 rebrand;
 existing screens migrate as they're touched. Mockups of all pages in this
@@ -101,8 +101,9 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
 Five tabs: Home (default) · History · Workout · Exercises · Stats. Profile
-is NOT a tab — it opens as a full-screen overlay from the avatar button on
-the top bar's right. Stats (replaced Measure; tab id "stats", ChartColumn
+is NOT a tab — it opens as a full-screen overlay from the UserCircle
+button at the dock's far right (the floating top bar was REMOVED
+2026-08-06; TOP_BAR_SPACE is 0). Stats (replaced Measure; tab id "stats", ChartColumn
 icon) is the analytics home: lifetime overview cards, weekly volume +
 workout-count BarCharts (8 weeks, current week lime), muscle-split HBars
 (30-day working-set volume by body part), body-weight LineChart, and the
@@ -703,6 +704,31 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-08-04: PATH.md created (business idea, rank-system design, locked
   decisions, 4-phase roadmap) so torq-local sessions carry the full product
   context; pointer added at the top of this file.
+- 2026-08-06 (later): Rank engine v1 + Rank Card (PATH.md Phase 1 start,
+  from the approved concept mockup). `src/lib/rank.ts`: pure functions —
+  `dotsPoints` (official DOTS polynomial, sex+bodyweight normalized,
+  bw clamped to the formula's valid range), 9-tier ladder on calibrated
+  per-lift DOTS thresholds (Iron 30 → World Class 165; overall = ×3 on
+  the sum of the TOP-3 lifts), `rankLifts` (best e1RM per exercise:
+  finished workouts, no warmups, weight>0, reps 1–10; display-unit→kg
+  via LB_TO_KG), `tierFor` (tier + toNext + progress), `overallRank`.
+  Math spot-checked (mockup persona → 284 pts Gold; 60kg F ≈ 74kg M
+  equivalence; WR bench → World Class). NO percentile claims by design
+  until the OpenPowerlifting dataset ships. UI: `RankCard` in
+  Profile.tsx above Settings (cardless): lime avatar initial + name +
+  "NN kg · M/F" + translucent TierPill (TIER_COLORS/TIER_SHORT from
+  rank.ts), big points + lime progress bar + "N pts to <tier>", BEST
+  LIFTS top-3 rows (name · tier pill · e1RM), fine-print eligibility
+  note; empty state before any eligible lift. Verified on the emulator
+  with seeded data.
+- 2026-08-06 (later): Floating top bar removed entirely (Adilzhan's
+  request): App.tsx renders no bar; `TOP_BAR_SPACE` = 0 in theme.ts so
+  every screen/overlay padding collapses (constant kept for easy revival);
+  Profile now opens from a new fixed-width UserCircle icon button at the
+  FAR RIGHT of the BottomNav dock (`BottomNav` gained an `onProfile`
+  prop; plain Pressable, not a morphing tab — the overlay covers the
+  dock). Verified on the emulator: header at top, dock button opens
+  Profile.
 - 2026-08-06 (later): Splash/icon config modernized: legacy app.json
   `splash` key replaced by the `expo-splash-screen` config plugin (SDK 57
   deprecates the old key; package installed — without it Metro dies with
