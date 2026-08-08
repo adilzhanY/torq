@@ -234,3 +234,51 @@ create policy "write own events" on public.rank_events
 drop policy if exists "delete own events" on public.rank_events;
 create policy "delete own events" on public.rank_events
   for delete using (auth.uid() = user_id);
+
+-- ── search_profiles (appended 2026-08-08) ─────────────────────────────────
+-- Adilzhan asked for real friend SEARCH: exact-handle-only discovery means
+-- you must know someone's handle character-for-character, which is a wall
+-- for a social feature.
+--
+-- The privacy tradeoff, stated plainly: prefix search over opted-in
+-- profiles is inherently more enumerable than exact match. It is bounded on
+-- purpose — minimum 2 characters, at most 20 rows, `visible` profiles only,
+-- and it returns nothing but handle + display name (never a rank, never an
+-- id you could not already reach). Opting in stays a deliberate act: a user
+-- who never publishes a profile is unfindable by any query here.
+create or replace function public.search_profiles(p_query text)
+returns table (user_id uuid, handle citext, display_name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with q as (select lower(trim(p_query)) as term)
+  select p.user_id, p.handle, p.display_name
+  from public.profiles p, q
+  where p.visible
+    and length(q.term) >= 2
+    and p.user_id <> auth.uid()
+    and (p.handle::text ilike q.term || '%'
+      or p.handle::text ilike '%' || q.term || '%'
+      or lower(p.display_name) like '%' || q.term || '%')
+  -- Prefix matches first: someone typing "adi" most likely wants @adilzhan,
+  -- not @radiohead.
+  order by
+    (case when p.handle::text ilike q.term || '%' then 0
+          when lower(p.display_name) like q.term || '%' then 1
+          else 2 end),
+    length(p.handle),
+    p.handle
+  limit 20;
+$$;
+
+revoke all on function public.search_profiles(text) from public;
+grant execute on function public.search_profiles(text) to authenticated;
+
+-- Keeps the ILIKE search off a sequential scan as the table grows.
+create extension if not exists "pg_trgm";
+create index if not exists profiles_handle_trgm_idx
+  on public.profiles using gin ((handle::text) gin_trgm_ops);
+create index if not exists profiles_name_trgm_idx
+  on public.profiles using gin (lower(display_name) gin_trgm_ops);

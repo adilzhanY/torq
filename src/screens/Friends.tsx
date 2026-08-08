@@ -34,6 +34,7 @@ import {
   publishRankFromData,
   removeEdge,
   saveProfile,
+  searchProfiles,
   sendRequest,
   suggestHandle,
   type Friend,
@@ -85,17 +86,21 @@ function Banner({ text, tone = "bad" }: { text: string; tone?: "bad" | "good" })
   );
 }
 
-/** Bare input row used by both the handle claim and the add-friend field. */
+/** Bare input row used by both the handle claim and the search field. */
 function HandleInput({
   value,
   onChange,
   placeholder,
   onSubmit,
+  /** Claim mode: force handle characters. Search mode must NOT, or you can
+   *  never type a display name with a space in it. */
+  handleOnly = true,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder: string;
   onSubmit?: () => void;
+  handleOnly?: boolean;
 }) {
   const [focused, setFocused] = useState(false);
   return (
@@ -113,10 +118,16 @@ function HandleInput({
         paddingVertical: 10,
       }}
     >
-      <Txt size={15} weight="bold" color={C.inkFaint}>@</Txt>
+      {handleOnly ? (
+        <Txt size={15} weight="bold" color={C.inkFaint}>@</Txt>
+      ) : (
+        <Icon name="Search" size={16} color={C.inkFaint} />
+      )}
       <TextInput
         value={value}
-        onChangeText={(v) => onChange(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+        onChangeText={(v) =>
+          onChange(handleOnly ? v.toLowerCase().replace(/[^a-z0-9_]/g, "") : v)
+        }
         placeholder={placeholder}
         placeholderTextColor={C.inkFaint}
         autoCapitalize="none"
@@ -151,6 +162,9 @@ export function Friends() {
   const [unfriending, setUnfriending] = useState<Friend | null>(null);
   /** Friend opened in the head-to-head compare overlay. */
   const [comparing, setComparing] = useState<Friend | null>(null);
+  /** Live search results for the current query. */
+  const [results, setResults] = useState<Profile[] | null>(null);
+  const [searching, setSearching] = useState(false);
 
   /** Republish own rank so friends never see a stale badge. */
   const publishMine = useCallback(
@@ -188,6 +202,26 @@ export function Friends() {
     else setLoading(false);
   }, [user, refresh]);
 
+  // Debounced search: typing a handle fires one request after a pause, not
+  // one per keystroke.
+  useEffect(() => {
+    const term = search.trim();
+    if (term.length < 2) {
+      setResults(null);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const res = await searchProfiles(term);
+      // Hide people already in the list — adding them again is a dead end.
+      const known = new Set([...friends.map((f) => f.userId), ...requests.map((r) => r.userId)]);
+      setResults((res.data ?? []).filter((p) => !known.has(p.userId)));
+      setSearching(false);
+    }, 300);
+    return () => clearTimeout(t);
+  }, [search, friends, requests]);
+
   const act = async (fn: () => Promise<{ error: string | null }>, ok?: string) => {
     setBusy(true);
     setError(null);
@@ -207,13 +241,28 @@ export function Friends() {
       "Profile published — friends can find you by your handle.",
     );
 
-  const add = () =>
+  /** Send a request to a specific search result. */
+  const addUser = (p: Profile) =>
+    void act(async () => {
+      const sent = await sendRequest(p.userId);
+      if (!sent.error) {
+        setSearch("");
+        setResults(null);
+      }
+      return sent;
+    }, "Request sent.");
+
+  /** Enter on the field: if the query is an exact handle, add that person. */
+  const addExact = () =>
     void act(async () => {
       const found = await findProfile(search);
       if (found.error) return { error: found.error };
       if (!found.data) return { error: `No one is using @${search.trim().toLowerCase()}.` };
       const sent = await sendRequest(found.data.userId);
-      if (!sent.error) setSearch("");
+      if (!sent.error) {
+        setSearch("");
+        setResults(null);
+      }
       return sent;
     }, "Request sent.");
 
@@ -285,29 +334,61 @@ export function Friends() {
           </Pressable>
         </View>
 
-        {/* Add someone */}
+        {/* Find someone */}
         <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
           <HandleInput
             value={search}
             onChange={setSearch}
-            placeholder="add by handle"
-            onSubmit={add}
+            placeholder="search by name or handle"
+            onSubmit={addExact}
+            handleOnly={false}
           />
-          <Pressable
-            onPress={add}
-            disabled={!handleOk(search) || busy}
-            style={{
-              borderRadius: R.ctrl,
-              backgroundColor: handleOk(search) && !busy ? C.accent : C.page2,
-              paddingHorizontal: 18,
-              justifyContent: "center",
-            }}
-          >
-            <Txt size={13} weight="extrabold" color={handleOk(search) && !busy ? C.accentInk : C.inkFaint}>
-              Add
-            </Txt>
-          </Pressable>
+          {searching ? (
+            <View style={{ width: 44, alignItems: "center", justifyContent: "center" }}>
+              <ActivityIndicator color={C.accent} />
+            </View>
+          ) : null}
         </View>
+
+        {/* Results */}
+        {results != null ? (
+          results.length === 0 ? (
+            <Txt size={12.5} color={C.inkFaint} style={{ marginTop: 12 }}>
+              {searching
+                ? "Searching…"
+                : `Nobody matches "${search.trim()}". They need a published profile to be findable.`}
+            </Txt>
+          ) : (
+            <>
+              <Eyebrow>Results ({results.length})</Eyebrow>
+              {results.map((p, i) => (
+                <View key={p.userId}>
+                  {i > 0 ? <Divider /> : null}
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 }}>
+                    <View style={{ flex: 1, gap: 1 }}>
+                      <Txt size={14.5} weight="bold" numberOfLines={1}>{p.displayName}</Txt>
+                      <Txt size={12} color={C.inkFaint}>@{p.handle}</Txt>
+                    </View>
+                    <Pressable
+                      onPress={() => addUser(p)}
+                      disabled={busy}
+                      style={{
+                        borderRadius: R.ctrl,
+                        backgroundColor: busy ? C.page2 : C.accent,
+                        paddingHorizontal: 16,
+                        paddingVertical: 8,
+                      }}
+                    >
+                      <Txt size={12.5} weight="extrabold" color={busy ? C.inkFaint : C.accentInk}>
+                        Add
+                      </Txt>
+                    </Pressable>
+                  </View>
+                </View>
+              ))}
+            </>
+          )
+        ) : null}
 
         {error ? <View style={{ marginTop: 10 }}><Banner text={error} /></View> : null}
         {notice ? <View style={{ marginTop: 10 }}><Banner text={notice} tone="good" /></View> : null}

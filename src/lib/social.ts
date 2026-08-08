@@ -503,6 +503,29 @@ export async function findProfile(handle: string): Promise<Result<Profile | null
  * request in the opposite direction (the unique constraint is on the
  * ordered pair, so both edges could otherwise exist at once).
  */
+/**
+ * Search opted-in profiles by handle or display name. Deliberately bounded:
+ * the RPC needs 2+ characters, returns at most 20 rows, and exposes only a
+ * handle and a name. See the privacy note in supabase/social.sql.
+ */
+export async function searchProfiles(query: string): Promise<Result<Profile[]>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const term = query.trim();
+  if (term.length < 2) return { data: [], error: null };
+  const { data, error } = await sb.rpc("search_profiles", { p_query: term });
+  if (error) return fail(friendly(error.message));
+  return {
+    data: (data ?? []).map((r: { user_id: string; handle: string; display_name: string }) => ({
+      userId: r.user_id,
+      handle: r.handle,
+      displayName: r.display_name || r.handle,
+      visible: true,
+    })),
+    error: null,
+  };
+}
+
 export async function sendRequest(userId: string): Promise<Result<true>> {
   const sb = supabase();
   if (!sb) return fail(OFFLINE);

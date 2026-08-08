@@ -147,8 +147,15 @@ graph, none of which a Strong clone has.
   `find_profile()` / `handle_taken()` RPCs), `src/lib/social.ts`, and the
   Friends view behind the You/Friends switch in the Ranks tab. Only a
   handle, a display name and a COMPUTED rank snapshot ever leave the
-  device — never workout logs. Discovery is exact-handle only: no listing,
-  no prefix search, nothing to enumerate.
+  device — never workout logs.
+  DISCOVERY (revised 2026-08-08): exact-handle-only proved to be a wall —
+  you had to know someone's handle character-for-character — so
+  `search_profiles()` now does prefix/substring matching over handles and
+  display names. The privacy tradeoff is real and deliberately bounded:
+  opted-in (`visible`) profiles only, minimum 2 characters, at most 20 rows,
+  and it returns nothing but a handle and a name — never a rank, never
+  anything you couldn't already reach. Someone who never publishes a profile
+  stays unfindable.
 - Friends compare: **SHIPPED 2026-08-08** — tapping a friend opens
   `FriendCompare`: two badge columns, the points lead, then a lift-by-lift
   table. Compared on DOTS POINTS, never raw kilos (comparing kilos would

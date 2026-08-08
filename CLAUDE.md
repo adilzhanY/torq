@@ -245,9 +245,12 @@ private mirror tables: those hold raw logs and never leave their owner.
   nothing at all on a first publish, and idempotent because the diff is
   against the stored row, so republishing on every workout and every Friends
   open cannot duplicate an event.
-- `find_profile(handle)` / `handle_taken(handle)` — SECURITY DEFINER RPCs,
-  execute granted to `authenticated` only. Exact-handle match is the ONLY
-  discovery path (friends-first: no browsing, no enumeration).
+- `find_profile(handle)` / `handle_taken(handle)` / `search_profiles(query)`
+  — SECURITY DEFINER RPCs, execute granted to `authenticated` only.
+  `search_profiles` (2026-08-08) does prefix/substring matching on handle
+  and display name, bounded on purpose: `visible` profiles only, 2-character
+  minimum, 20-row cap, and it returns only handle + display name. Backed by
+  pg_trgm GIN indexes so it does not degrade into a sequential scan.
 
 `src/lib/social.ts` wraps all of it, every call returning
 `{ data, error }` with an already-friendly message. `publishRankFromData()`
@@ -1207,3 +1210,11 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   NOT yet eyeballed on a device.
 - 2026-08-08 (later): Test suite added (see "Tests" above) — 128 vitest
   assertions across ten lib modules, plus the MAX_DOTS fix it caught.
+- 2026-08-08 (later): Friend SEARCH replaced exact-handle-only discovery
+  (Adilzhan's request mid-session). `search_profiles` RPC + trigram indexes
+  appended to supabase/social.sql (re-run the file), `searchProfiles()` in
+  social.ts, and a debounced (300ms) results list in Friends with a per-row
+  Add button; people already in your list or with a pending request are
+  filtered out. The handle-claim field still forces handle characters, but
+  the search field does NOT sanitise input — otherwise a display name with a
+  space is untypeable.
