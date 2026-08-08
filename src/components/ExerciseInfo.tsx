@@ -7,6 +7,9 @@
  * - History: History-style cards for every workout containing the exercise;
  *   tapping one opens the full WorkoutSummary with this exercise ringed in
  *   light green.
+ * - Rank: this lift's tier badge, DOTS points, progress to the next tier
+ *   and — for the three competition lifts — how it compares to the world
+ *   record in the user's weight class.
  * - Records: personal records, best real performance per rep count with the
  *   estimated rep-max curve (inverse Epley off the best 1RM), lifetime stats.
  */
@@ -16,13 +19,24 @@ import { Image } from "expo-image";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
-import { Card, Divider, Pill, PrimaryButton, SectionTitle, Txt } from "./ui";
+import { Card, Divider, Eyebrow, Pill, PrimaryButton, SectionTitle, Txt } from "./ui";
 import { ConfirmDialog } from "./Dialog";
+import { RankBadge } from "./RankBadge";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
 import { DB_BY_ID } from "../lib/exercisedb";
 import { est1RM, exerciseSeries, repMax } from "../lib/stats";
+import { bodyProfileAt } from "../lib/calories";
+import { dotsPoints, kgForPoints, stageOf, tierFor, tierLabel, TIER_COLORS } from "../lib/rank";
+import {
+  LIFT_LABEL,
+  RECORDS_SOURCE,
+  recordLiftOf,
+  recordShare,
+  worldRecord,
+} from "../lib/records";
+import { LB_TO_KG } from "../lib/units";
 import { fmtShort } from "./charts";
 import {
   MetricPills,
@@ -46,9 +60,10 @@ export interface ExerciseRef {
   gifUrl?: string;
 }
 
-type InfoTab = "about" | "history" | "records" | "charts";
+export type InfoTab = "about" | "rank" | "history" | "records" | "charts";
 const TABS: { key: InfoTab; label: string }[] = [
   { key: "about", label: "About" },
+  { key: "rank", label: "Rank" },
   { key: "history", label: "History" },
   { key: "records", label: "Records" },
   { key: "charts", label: "Charts" },
@@ -72,12 +87,15 @@ function StatRow({ label, value }: { label: string; value: string }) {
 export function ExerciseInfo({
   exercise,
   onClose,
+  initialTab = "about",
 }: {
   exercise: ExerciseRef;
   onClose: () => void;
+  /** Which tab opens first (the Ranks tab jumps straight to "rank"). */
+  initialTab?: InfoTab;
 }) {
-  const { exercises, workouts, settings, addExercise, deleteExercise } = useStore();
-  const [tab, setTab] = useState<InfoTab>("about");
+  const { exercises, workouts, measurements, settings, addExercise, deleteExercise } = useStore();
+  const [tab, setTab] = useState<InfoTab>(initialTab);
   /** A history workout opened as a full summary (exercise highlighted). */
   const [viewing, setViewing] = useState<Workout | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -163,6 +181,40 @@ export function ExerciseInfo({
   }, [log]);
 
   const u = settings.unit;
+  const toKg = u === "lb" ? LB_TO_KG : 1;
+
+  /** This lift's rank: best rank-eligible e1RM → DOTS points → tier. */
+  const profile = bodyProfileAt(settings, measurements, Date.now());
+  const rank = useMemo(() => {
+    let best = 0;
+    let at = 0;
+    for (const s of log) {
+      if (s.warmup || s.weight <= 0 || s.reps <= 0 || s.reps > 10) continue;
+      const rm = est1RM(s.weight, s.reps);
+      if (rm > best) {
+        best = rm;
+        at = s.at;
+      }
+    }
+    if (best <= 0) return null;
+    const points = dotsPoints(best * toKg, profile.weightKg, profile.sex);
+    const tier = tierFor(points, 1);
+    const toGo = tier.next
+      ? Math.max(
+          0,
+          (kgForPoints(points + tier.toNext, profile.weightKg, profile.sex) - best * toKg) / toKg,
+        )
+      : 0;
+    return { best, at, points, tier, toGo };
+  }, [log, toKg, profile.weightKg, profile.sex]);
+
+  /** World-record mention — only the three plain barbell competition lifts. */
+  const wr = useMemo(() => {
+    const name = libRow?.name ?? exercise.name;
+    const equipment = libRow?.equipment ?? exercise.equipment;
+    const lift = recordLiftOf(name, equipment);
+    return lift ? worldRecord(lift, profile.sex, profile.weightKg) : null;
+  }, [libRow, exercise.name, exercise.equipment, profile.sex, profile.weightKg]);
 
   return (
     <SlideUp
@@ -193,9 +245,19 @@ export function ExerciseInfo({
         <Txt size={20} weight="extrabold" numberOfLines={1} style={{ flex: 1 }}>
           {libRow?.name ?? exercise.name}
         </Txt>
+        {rank ? (
+          <Pressable hitSlop={6} onPress={() => setTab("rank")}>
+            <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={38} />
+          </Pressable>
+        ) : null}
       </View>
 
-      <View style={{ flexDirection: "row", gap: 6, paddingHorizontal: 16, paddingBottom: 4 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0, flexShrink: 0 }}
+        contentContainerStyle={{ flexDirection: "row", gap: 6, paddingHorizontal: 16, paddingBottom: 4 }}
+      >
         {TABS.map((t) => (
           <Pressable
             key={t.key}
@@ -212,7 +274,7 @@ export function ExerciseInfo({
             </Txt>
           </Pressable>
         ))}
-      </View>
+      </ScrollView>
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
         {tab === "about" ? (
@@ -281,6 +343,115 @@ export function ExerciseInfo({
               />
             )}
           </>
+        ) : null}
+
+        {tab === "rank" ? (
+          !rank ? (
+            <Txt size={13} color={C.inkFaint}>
+              No rank yet — log a weighted set of 10 reps or fewer (warmups
+              don't count) and this lift gets a tier, normalized to your sex
+              and bodyweight.
+            </Txt>
+          ) : (
+            <>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+                <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={92} />
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Txt size={15} weight="extrabold" color={TIER_COLORS[rank.tier.tier]}>
+                    {tierLabel(rank.tier)}
+                  </Txt>
+                  <View style={{ flexDirection: "row", alignItems: "baseline", gap: 5 }}>
+                    <Txt size={30} weight="extrabold" color={C.accent}>
+                      {Math.round(rank.points)}
+                    </Txt>
+                    <Txt size={13} weight="extrabold" color={C.accent}>
+                      pts
+                    </Txt>
+                  </View>
+                  <Txt size={12} color={C.inkSoft}>
+                    {rank.best} {u} e1RM · {fmtDay(rank.at)}
+                  </Txt>
+                </View>
+              </View>
+
+              <View
+                style={{
+                  height: 5,
+                  borderRadius: 99,
+                  backgroundColor: C.page2,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    width: `${Math.round(rank.tier.progress * 100)}%`,
+                    height: "100%",
+                    borderRadius: 99,
+                    backgroundColor: C.accent,
+                  }}
+                />
+              </View>
+              <Txt size={12} color={C.inkSoft}>
+                {rank.tier.next
+                  ? `${Math.ceil(rank.tier.toNext)} pts to ${rank.tier.next} — about ${
+                      Math.round(rank.toGo * 10) / 10
+                    } ${u} more on your best set.`
+                  : "Top of the ladder."}
+              </Txt>
+
+              {wr ? (
+                (() => {
+                  const recordDisp = Math.round((wr.kg / toKg) * 10) / 10;
+                  const share = recordShare(rank.best * toKg, wr.kg);
+                  return (
+                    <View style={{ gap: 8, marginTop: 6 }}>
+                      <Divider />
+                      <Eyebrow>World record</Eyebrow>
+                      <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                        <Txt size={26} weight="extrabold">
+                          {Math.round(share * 100)}%
+                        </Txt>
+                        <Txt size={13} color={C.inkSoft}>
+                          of the {wr.className} record
+                        </Txt>
+                      </View>
+                      <View
+                        style={{
+                          height: 5,
+                          borderRadius: 99,
+                          backgroundColor: C.page2,
+                          overflow: "hidden",
+                        }}
+                      >
+                        <View
+                          style={{
+                            width: `${Math.max(2, Math.round(share * 100))}%`,
+                            height: "100%",
+                            borderRadius: 99,
+                            backgroundColor: C.prAcc,
+                          }}
+                        />
+                      </View>
+                      <Txt size={12} color={C.inkSoft}>
+                        {LIFT_LABEL[wr.lift]} · {wr.className} ·{" "}
+                        {profile.sex === "male" ? "men" : "women"} · {recordDisp} {u}
+                      </Txt>
+                      <Txt size={10} color={C.inkFaint}>
+                        {RECORDS_SOURCE}, bundled snapshot. Your number is an
+                        estimated 1RM, not a competition lift.
+                      </Txt>
+                    </View>
+                  );
+                })()
+              ) : null}
+
+              <Txt size={10} color={C.inkFaint} style={{ marginTop: 6 }}>
+                DOTS points, normalized to {Math.round(profile.weightKg)} kg ·{" "}
+                {profile.sex === "male" ? "M" : "F"}
+                {profile.complete ? "" : " (default body stats — set yours in Profile)"}
+              </Txt>
+            </>
+          )
         ) : null}
 
         {tab === "history" ? (

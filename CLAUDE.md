@@ -821,3 +821,23 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-07-11: Implemented a month switcher on the Stats page ([Stats.tsx](file:///home/wopler/dev/torq/src/screens/Stats.tsx)). Users can click left/right arrows to switch months, with the right arrow disabled for the future (relative to the current real month). Overview cards (workouts, volume, sets, hours), weekly charts (custom Monday-start weeks that fall in the month), body weight trendline, and logged measurements list are all scoped/filtered to the selected month.
 
 
+- 2026-08-08: Per-exercise rank page + world-record mentions (PATH.md Phase 1
+  continued). New `src/data/records.ts` — bundled, versioned IPF Classic
+  (raw) world-record table per sex and weight class for squat/bench/deadlift
+  (`RECORDS_VERSION`, `RECORDS_VERIFIED = false`: the numbers are an
+  APPROXIMATE snapshot and must be re-checked against the official IPF
+  database before release). New `src/lib/records.ts` — `recordLiftOf(name,
+  equipment)` maps a library exercise onto a competition lift with strict
+  keyword exclusions (barbell only; variations like incline bench, front
+  squat, RDL, JM press, Jefferson squat get NO record line rather than a
+  misleading one — verified against the catalog: 13 of 1500 names match),
+  `worldRecord(lift, sex, bwKg)` picks the weight class, `recordShare`.
+  ExerciseInfo gained a "Rank" tab (tabs row is now a horizontal ScrollView
+  since there are five): big RankBadge + tier label + DOTS points + progress
+  bar + "N pts to <tier> — about N kg more on your best set" (via
+  `kgForPoints`), then the world-record block ("41% of the 83 kg record",
+  bar, source fine print) when the lift matches. The info header shows the
+  tier badge (tap → Rank tab) whenever the lift is ranked, and `initialTab`
+  lets callers open straight on it. Ranks-tab lift rows are now Pressable
+  (chevron) and open that page. tsc + android export clean; NOT yet
+  eyeballed on the emulator.

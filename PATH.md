@@ -96,9 +96,19 @@ graph, none of which a Strong clone has.
   extraction with the ≤10-rep/no-warmup rule) + the Rank Card in Profile
   (overall tier, points, progress-to-next, top-3 best lifts); Ranks tab
   shipped (shield badges ported to react-native-svg — tier metals, vortex
-  emblem, orbit stages I–IV from tier progress; overall + per-lift rows).
+  emblem, orbit stages I–IV from tier progress; overall + per-lift rows);
+  per-exercise rank page (a "Rank" tab in ExerciseInfo: big badge, tier
+  label, points, progress to the next tier in both pts and kg, plus the
+  world-record mention) reachable by tapping a Ranks row, with the tier
+  badge also in the info-page header.
   Honest scope: points and tiers only — no percentile claims until the
   OpenPowerlifting dataset is curated and bundled.
+- OPEN: `src/data/records.ts` ships the IPF-classic record table as an
+  APPROXIMATE snapshot (`RECORDS_VERIFIED = false`). Every row must be
+  checked against the official IPF record database before public release,
+  then flip the flag and bump `RECORDS_VERSION`.
+- OPEN: the OpenPowerlifting percentile tables (the other half of the
+  hybrid engine) are still not curated or bundled.
 
 ### Phase 2 - Full rebrand
 - New visual system (palette to be finalized around the sharp tau + lime on
