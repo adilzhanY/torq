@@ -9,6 +9,8 @@ import { SlideUp } from "../components/anim";
 import { Divider, Eyebrow, NumberField, PrimaryButton, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
+import { deleteAccount } from "../lib/social";
+import { ConfirmDialog } from "../components/Dialog";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
 import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, TIER_COLORS, TIER_SHORT, type TierName } from "../lib/rank";
@@ -206,6 +208,110 @@ function Account() {
         Sign in to back it up and sync across devices.
       </Txt>
       <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
+    </View>
+  );
+}
+
+
+/**
+ * Export + delete. Play REQUIRES in-app account deletion for any app that
+ * offers account creation, so this is a launch blocker rather than a
+ * nicety. Export sits directly above it on purpose: deleting should never
+ * be the only way out, and someone about to wipe their account should see
+ * the way to keep their history first.
+ */
+function DataSection() {
+  const { exportLocal, wipeLocalData, workouts } = useStore();
+  const { user, signOut } = useAuth();
+  const [busy, setBusy] = useState<"export" | "delete" | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState<"account" | "local" | null>(null);
+
+  const doExport = async () => {
+    setBusy("export");
+    setNote(null);
+    const res = await exportLocal();
+    setBusy(null);
+    if (!res.ok && res.error) setNote(res.error);
+  };
+
+  const doDeleteAccount = async () => {
+    setBusy("delete");
+    setNote(null);
+    const res = await deleteAccount();
+    if (res.error) {
+      setBusy(null);
+      setNote(res.error);
+      return;
+    }
+    // The cloud copy is gone; the phone's copy must go too, or the next
+    // sign-up would silently re-upload the "deleted" history.
+    await wipeLocalData();
+    await signOut();
+    setBusy(null);
+  };
+
+  return (
+    <View style={{ gap: 10 }}>
+      <Txt size={12} color={C.inkFaint}>
+        {workouts.length} workout{workouts.length === 1 ? "" : "s"} stored on this device.
+      </Txt>
+      <PrimaryButton
+        label={busy === "export" ? "Preparing…" : "Export my data"}
+        background={C.page2}
+        color={C.ink}
+        disabled={busy !== null}
+        onPress={() => void doExport()}
+      />
+      {note ? (
+        <Txt size={12} weight="semibold" color={C.badAcc}>{note}</Txt>
+      ) : null}
+
+      {user ? (
+        <PrimaryButton
+          label={busy === "delete" ? "Deleting…" : "Delete my account"}
+          background={C.badSurf}
+          color={C.badAcc}
+          disabled={busy !== null}
+          onPress={() => setConfirming("account")}
+        />
+      ) : (
+        <PrimaryButton
+          label="Erase all data on this phone"
+          background={C.badSurf}
+          color={C.badAcc}
+          disabled={busy !== null}
+          onPress={() => setConfirming("local")}
+        />
+      )}
+
+      {confirming === "account" ? (
+        <ConfirmDialog
+          title="Delete your account?"
+          message={
+            "This erases your account, your workouts, your rank and your " +
+            "friendships — on the server AND on this phone. It cannot be " +
+            "undone. Export your data first if you want to keep it."
+          }
+          confirmLabel="Delete everything"
+          onConfirm={() => void doDeleteAccount()}
+          onClose={() => setConfirming(null)}
+        />
+      ) : null}
+
+      {confirming === "local" ? (
+        <ConfirmDialog
+          title="Erase everything on this phone?"
+          message={
+            "Every workout, routine and measurement stored locally will be " +
+            "deleted. You have no account, so there is no cloud copy to " +
+            "restore from. This cannot be undone."
+          }
+          confirmLabel="Erase everything"
+          onConfirm={() => void wipeLocalData()}
+          onClose={() => setConfirming(null)}
+        />
+      ) : null}
     </View>
   );
 }
@@ -518,6 +624,10 @@ export function Profile({
       <Divider />
       <Eyebrow>Account & sync</Eyebrow>
       <Account />
+
+      <Divider />
+      <Eyebrow>Your data</Eyebrow>
+      <DataSection />
 
       <Divider />
       <Eyebrow>Developer</Eyebrow>

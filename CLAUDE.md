@@ -337,6 +337,31 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## Account deletion + export (Play requirement)
+
+Google Play REQUIRES in-app account deletion from any app that offers
+account creation, so this is a launch blocker, not a nicety. Profile's
+"Your data" section holds both, export first on purpose: deleting must
+never be the only way out, and someone about to wipe their account should
+see how to keep their history first.
+
+- `delete_my_account()` in supabase/social.sql — SECURITY DEFINER because it
+  must reach `auth.users`, which no client role can touch. It takes NO
+  parameter and only ever deletes `auth.uid()`'s rows, which is what makes
+  granting it to `authenticated` safe. Everything cascades from auth.users
+  anyway; the explicit deletes are belt-and-braces for tables added later
+  without a cascade.
+- `deleteAccount()` in social.ts, then `wipeLocalData()` — BOTH are
+  required. Deleting only the cloud copy would leave the phone's history to
+  re-upload itself on the next sign-up, so the "deleted" account would come
+  back.
+- `exportData()` (`src/lib/exportData.ts`) writes the whole DB as JSON and
+  opens the share sheet. Uses the SDK 57 `File`/`Paths` API — the old
+  `FileSystem.cacheDirectory` + `writeAsStringAsync` moved to
+  `expo-file-system/legacy` in this version.
+- With no account, the destructive button becomes "Erase all data on this
+  phone" and says plainly that there is no cloud copy to restore from.
+
 ## Failure handling
 
 `src/components/ErrorBoundary.tsx` wraps the app twice: once PER TAB (keyed
@@ -1253,3 +1278,7 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-08-08 (later): Crash + data-loss hardening (see "Failure handling").
   Added ErrorBoundary (per-tab and app-wide) and fixed loadDB silently
   discarding a corrupt database — it now preserves the blob and warns.
+- 2026-08-08 (later): Account deletion + data export shipped (see the Play
+  requirement section above). supabase/social.sql gained
+  `delete_my_account()`; db.ts gained `wipeLocal()`; store gained
+  `exportLocal`/`wipeLocalData`.

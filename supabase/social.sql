@@ -282,3 +282,48 @@ create index if not exists profiles_handle_trgm_idx
   on public.profiles using gin ((handle::text) gin_trgm_ops);
 create index if not exists profiles_name_trgm_idx
   on public.profiles using gin (lower(display_name) gin_trgm_ops);
+
+-- ── delete_my_account (appended 2026-08-08) ───────────────────────────────
+-- Google Play REQUIRES any app offering account creation to offer in-app
+-- account deletion, so this is a launch blocker rather than a nicety.
+--
+-- SECURITY DEFINER because it must reach auth.users, which no client role
+-- can touch. It deletes only auth.uid()'s own rows — there is no parameter
+-- to point it at somebody else, which is the property that makes granting
+-- it to `authenticated` safe.
+--
+-- Every mirror table and social table cascades from auth.users, so removing
+-- the user removes the lot; the explicit deletes below are belt-and-braces
+-- for anything added later without a cascade.
+create or replace function public.delete_my_account()
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $fn$
+declare
+  me uuid := auth.uid();
+begin
+  if me is null then
+    raise exception 'Not signed in';
+  end if;
+
+  delete from public.rank_events   where user_id = me;
+  delete from public.rank_snapshots where user_id = me;
+  delete from public.friendships   where requester = me or addressee = me;
+  delete from public.profiles      where user_id = me;
+
+  delete from public.exercises     where user_id = me;
+  delete from public.routines      where user_id = me;
+  delete from public.workouts      where user_id = me;
+  delete from public.measurements  where user_id = me;
+  delete from public.settings      where user_id = me;
+  delete from public.active        where user_id = me;
+
+  -- Last: removing the auth row invalidates the caller's own JWT.
+  delete from auth.users where id = me;
+end;
+$fn$;
+
+revoke all on function public.delete_my_account() from public;
+grant execute on function public.delete_my_account() to authenticated;

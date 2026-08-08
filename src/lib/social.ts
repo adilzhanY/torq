@@ -568,6 +568,24 @@ export async function acceptRequest(edgeId: string): Promise<Result<true>> {
 }
 
 /** Declining, cancelling and unfriending are all "remove the edge". */
+/**
+ * Delete the account and every trace of it on the server. Play requires
+ * this to exist in-app; the RPC only ever touches auth.uid()'s own rows.
+ * The caller is responsible for wiping local data afterwards — the server
+ * copy going away must not silently take the phone's copy with it.
+ */
+export async function deleteAccount(): Promise<Result<true>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) return fail("Sign in first.");
+  const { error } = await sb.rpc("delete_my_account");
+  if (error) return fail(friendly(error.message));
+  // The JWT is dead the moment the row goes; clear it locally too.
+  await sb.auth.signOut().catch(() => {});
+  return { data: true, error: null };
+}
+
 export async function removeEdge(edgeId: string): Promise<Result<true>> {
   const sb = supabase();
   if (!sb) return fail(OFFLINE);

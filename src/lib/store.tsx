@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { emptyDB, getLoadFailure, loadDB, saveDB, type DB, type SyncedTable } from "./db";
+import { emptyDB, getLoadFailure, loadDB, saveDB, wipeLocal, type DB, type SyncedTable } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
 import { workoutName } from "./stats";
 import { buildPlan, GOAL_META } from "./plan";
@@ -21,6 +21,7 @@ import { sync } from "./sync";
 import { useAuth } from "./auth";
 import { publishRankFromData } from "./social";
 import { setSoundEnabled } from "./sounds";
+import { exportData } from "./exportData";
 import {
   uid,
   type Exercise,
@@ -74,6 +75,10 @@ interface StoreValue {
   syncNow: () => Promise<void>;
   /** Set when the stored data could not be read on launch (see db.ts). */
   loadError: string | null;
+  /** Export the whole local database as a shareable JSON file. */
+  exportLocal: () => Promise<{ ok: boolean; error: string | null }>;
+  /** Erase everything on this device and start from a blank database. */
+  wipeLocalData: () => Promise<void>;
 
   /** Dev: 12 weeks of realistic progressive PPL workouts (tagged
    *  notes:"demo-seed") so charts have something to show. */
@@ -490,6 +495,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     syncNow,
     loadError,
+    exportLocal: () => exportData(dbRef.current),
+    wipeLocalData: async () => {
+      await wipeLocal();
+      dbRef.current = emptyDB();
+      setVersion((v) => v + 1);
+    },
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

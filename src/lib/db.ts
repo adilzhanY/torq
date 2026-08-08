@@ -111,3 +111,16 @@ export async function loadDB(): Promise<DB> {
 export async function saveDB(db: DB): Promise<void> {
   await AsyncStorage.setItem(KEY, JSON.stringify(db));
 }
+
+/**
+ * Erase everything torq stores on this device: the database, the corrupt
+ * backup, and the sync cursors (leaving those behind would make a later
+ * account skip rows it has never actually pulled).
+ */
+export async function wipeLocal(): Promise<void> {
+  const keys = await AsyncStorage.getAllKeys();
+  const ours = keys.filter(
+    (k) => k === KEY || k === BACKUP_KEY || k.startsWith("torq."),
+  );
+  await AsyncStorage.multiRemove(ours);
+}
