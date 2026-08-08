@@ -58,7 +58,7 @@ export function RangePills({
       style={{
         flexDirection: "row",
         backgroundColor: C.page2,
-        borderRadius: R.pill,
+        borderRadius: R.md,
         padding: 4,
       }}
     >
@@ -71,7 +71,7 @@ export function RangePills({
             style={{
               flex: 1,
               paddingVertical: 8,
-              borderRadius: R.pill,
+              borderRadius: R.sm,
               backgroundColor: active ? C.primary : "transparent",
               alignItems: "center",
             }}
@@ -107,7 +107,7 @@ export function MetricPills<K extends string>({
             style={{
               paddingHorizontal: 14,
               paddingVertical: 7,
-              borderRadius: R.pill,
+              borderRadius: R.sm,
               borderWidth: 1.5,
               borderColor: active ? C.ink : "transparent",
               backgroundColor: active ? "rgba(200,254,35,0.18)" : C.page2,
@@ -231,7 +231,7 @@ export function TrendLine({
                 <View
                   style={{
                     backgroundColor: C.primary,
-                    borderRadius: 12,
+                    borderRadius: R.md,
                     paddingHorizontal: 12,
                     paddingVertical: 8,
                     alignItems: "center",
@@ -373,7 +373,7 @@ export function MuscleBreakdown({
         style={{
           flexDirection: "row",
           height: 28,
-          borderRadius: 14,
+          borderRadius: R.sm,
           overflow: "hidden",
           backgroundColor: C.page2,
         }}

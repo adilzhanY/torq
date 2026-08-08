@@ -264,7 +264,7 @@ export function ExerciseInfo({
             onPress={() => setTab(t.key)}
             style={{
               backgroundColor: tab === t.key ? C.accent : C.page2,
-              borderRadius: R.pill,
+              borderRadius: R.sm,
               paddingHorizontal: 16,
               paddingVertical: 7,
             }}

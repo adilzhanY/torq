@@ -284,7 +284,7 @@ function RestDivider({
           onPress={() => inputRef.current?.focus()}
           style={{
             backgroundColor: C.page2,
-            borderRadius: R.pill,
+            borderRadius: R.sm,
             paddingHorizontal: 16,
             paddingVertical: 5,
           }}
@@ -561,7 +561,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               }}
               style={{
                 backgroundColor: C.page2,
-                borderRadius: R.pill,
+                borderRadius: R.sm,
                 paddingHorizontal: 10,
                 paddingVertical: 5,
                 minHeight: 26,
@@ -710,7 +710,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     {
                       width: 32,
                       height: 32,
-                      borderRadius: 10,
+                      borderRadius: R.ctrl,
                       alignItems: "center",
                       justifyContent: "center",
                       backgroundColor: set.done ? C.accent : C.page2,
@@ -986,7 +986,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               onPress={togglePauseRest}
               style={{
                 height: 72,
-                borderRadius: 14,
+                borderRadius: R.ctrl,
                 backgroundColor: "rgba(255,255,255,0.14)",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1002,7 +1002,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 style={{
                   width: 64,
                   height: 56,
-                  borderRadius: 14,
+                  borderRadius: R.ctrl,
                   backgroundColor: "rgba(255,255,255,0.14)",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1015,7 +1015,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 style={{
                   width: 64,
                   height: 56,
-                  borderRadius: 14,
+                  borderRadius: R.ctrl,
                   backgroundColor: "rgba(255,255,255,0.14)",
                   alignItems: "center",
                   justifyContent: "center",
@@ -1028,7 +1028,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   onPress={skipRest}
                   style={{
                     height: 56,
-                    borderRadius: 14,
+                    borderRadius: R.ctrl,
                     backgroundColor: C.accent,
                     alignItems: "center",
                     justifyContent: "center",
@@ -1044,7 +1044,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   onPress={resetRest}
                   style={{
                     height: 56,
-                    borderRadius: 14,
+                    borderRadius: R.ctrl,
                     backgroundColor: C.accent,
                     alignItems: "center",
                     justifyContent: "center",
@@ -1258,7 +1258,7 @@ export function Workout() {
           style={{
             width: 36,
             height: 36,
-            borderRadius: 12,
+            borderRadius: R.ctrl,
             backgroundColor: C.accent,
             alignItems: "center",
             justifyContent: "center",

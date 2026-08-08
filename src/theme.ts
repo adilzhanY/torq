@@ -47,7 +47,23 @@ export const C = {
   chart5: "#C8FE23",
 } as const;
 
-export const R = { lg: 28, md: 22, sm: 16, pill: 999 } as const;
+/**
+ * Corner radii — the SHARP-10 system (2026-08-08, Adilzhan picked it from
+ * the lavish radius review, `.lavish/torq-radius.html`). The old clay skin
+ * was pill-round everywhere; the vortex mark is eight sharp blades and the
+ * cardless page leaves interactive shapes as the only geometry on screen,
+ * so controls got tighter:
+ *
+ * - `ctrl` (10) — the DEFAULT for anything pressable: CTAs, dock tabs,
+ *   icon buttons, menu rows, the done-set check.
+ * - `sm` (8) — inputs, KG/REPS cells, chips, tabs, thumbnails.
+ * - `md` (12) — buttons with a surface, gif tiles, popovers, tooltips.
+ * - `lg` (16) — dialogs, bottom sheets, the dock.
+ * - `pill` (999) — STATUS ONLY (LIVE, tier pills, PR trophies, the streak
+ *   pill, W/D/F letters) plus true circles (avatars, week dots) and the
+ *   round caps on thin progress bars. Never a plain button.
+ */
+export const R = { lg: 16, md: 12, ctrl: 10, sm: 8, pill: 999 } as const;
 
 /**
  * The floating top bar is GONE (2026-08-06: profile moved into the dock).

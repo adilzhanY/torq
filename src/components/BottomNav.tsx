@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUi, type Tab } from "../lib/ui";
-import { C, clay } from "../theme";
+import { C, R, clay } from "../theme";
 import { Icon } from "./Icon";
 import { Txt } from "./ui";
 
@@ -58,7 +58,7 @@ function NavItem({
         <Animated.View
           style={{
             flex: 1,
-            borderRadius: 999,
+            borderRadius: R.ctrl,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
@@ -126,7 +126,7 @@ export function BottomNav({ onProfile }: { onProfile: () => void }) {
           right: 14,
           bottom: Math.max(insets.bottom, 8) + 8,
           height: 62,
-          borderRadius: 999,
+          borderRadius: R.lg,
           backgroundColor: C.primary,
           borderWidth: 1,
           borderColor: C.line,

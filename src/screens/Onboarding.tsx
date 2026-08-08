@@ -170,7 +170,7 @@ function OptionCard({
           style={{
             width: 40,
             height: 40,
-            borderRadius: 13,
+            borderRadius: R.ctrl,
             backgroundColor: active ? LIME : "rgba(255,255,255,0.1)",
             alignItems: "center",
             justifyContent: "center",
@@ -565,7 +565,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
                     }
                     style={{
                       backgroundColor: on ? LIME : CARD_BG,
-                      borderRadius: R.pill,
+                      borderRadius: R.sm,
                       paddingHorizontal: 18,
                       paddingVertical: 10,
                     }}

@@ -36,8 +36,10 @@
     --color-accent: #c8fe23;
     --color-gold: #e9b920;
 
-    --radius-clay-lg: 28px;
-    --radius-clay-md: 22px;
-    --radius-clay-sm: 16px;
+    /* Mirrors theme.ts R — the SHARP-10 system (2026-08-08). */
+    --radius-clay-lg: 16px;
+    --radius-clay-md: 12px;
+    --radius-clay-ctrl: 10px;
+    --radius-clay-sm: 8px;
   }
 }

@@ -121,7 +121,7 @@ export function RoutineEditor({
           style={[
             {
               backgroundColor: C.accent,
-              borderRadius: R.pill,
+              borderRadius: R.ctrl,
               paddingHorizontal: 18,
               paddingVertical: 9,
             },

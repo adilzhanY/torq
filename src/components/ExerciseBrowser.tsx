@@ -82,7 +82,7 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
       onPress={onPress}
       style={{
         backgroundColor: active ? C.accent : C.page2,
-        borderRadius: R.pill,
+        borderRadius: R.sm,
         paddingHorizontal: 12,
         paddingVertical: 6,
       }}
@@ -118,7 +118,7 @@ const Row = React.memo(function Row({
       {item.gifUrl ? (
         <Image
           source={{ uri: item.gifUrl }}
-          style={{ width: 44, height: 44, borderRadius: 11, backgroundColor: "#fff" }}
+          style={{ width: 44, height: 44, borderRadius: R.sm, backgroundColor: "#fff" }}
           contentFit="cover"
           cachePolicy="memory-disk"
         />
@@ -127,7 +127,7 @@ const Row = React.memo(function Row({
           style={{
             width: 44,
             height: 44,
-            borderRadius: 11,
+            borderRadius: R.sm,
             backgroundColor: C.page2,
             alignItems: "center",
             justifyContent: "center",

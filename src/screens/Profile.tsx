@@ -248,7 +248,7 @@ function BodyProfileCard({
             onPress={() => updateSettings({ sex: s })}
             style={{
               backgroundColor: settings.sex === s ? C.accent : C.page2,
-              borderRadius: R.pill,
+              borderRadius: R.sm,
               paddingHorizontal: 16,
               paddingVertical: 6,
             }}
@@ -437,7 +437,7 @@ export function Profile({
               onPress={() => updateSettings({ unit: u })}
               style={{
                 backgroundColor: settings.unit === u ? C.accent : C.page2,
-                borderRadius: R.pill,
+                borderRadius: R.sm,
                 paddingHorizontal: 16,
                 paddingVertical: 6,
               }}

@@ -28,6 +28,18 @@ feature work.
 
 ## Design
 
+**RADIUS: SHARP-10 (2026-08-08, Adilzhan picked it in the lavish review
+`.lavish/torq-radius.html`):** the app is no longer pill-round. `R` in
+theme.ts is `{ lg: 16, md: 12, ctrl: 10, sm: 8, pill: 999 }` — `ctrl` (10)
+is the default for anything pressable, `sm` (8) for inputs/chips/tabs/
+thumbnails, `md` (12) for surfaced buttons/tiles/popovers/tooltips, `lg`
+(16) for dialogs, sheets and the dock. `pill` is STATUS ONLY (LIVE, tier
+pills, PR trophies, streak pill, W/D/F letters), plus true circles
+(avatars, week dots, chart dots) and the round caps on thin progress bars.
+Never give a plain button a pill. Reasons: the vortex mark is eight sharp
+blades, and on a cardless page the interactive shapes are the only geometry
+left, so they have to read as controls.
+
 **CARDLESS PRINCIPLE (2026-08-06, Adilzhan — overrides the bento habit):**
 stop wrapping content in Card/surface containers. Content is text directly
 on the page background; hierarchy comes from type scale, weight, color
@@ -841,3 +853,20 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   lets callers open straight on it. Ranks-tab lift rows are now Pressable
   (chevron) and open that page. tsc + android export clean; NOT yet
   eyeballed on the emulator.
+- 2026-08-08 (later): SHARP-10 radius system shipped app-wide (Adilzhan chose
+  "Sharp 10 px" from the lavish review `.lavish/torq-radius.html`, which put
+  today's pill look next to a live-adjustable preview of the same torq
+  surfaces). `R` in theme.ts went `{lg:28, md:22, sm:16, pill:999}` →
+  `{lg:16, md:12, ctrl:10, sm:8, pill:999}` (new `ctrl` token), mirrored in
+  global.css. Every component already reads `R`, so the sweep was the audit
+  of hand-written radii: pills that were really CONTROLS became tokens —
+  ProCharts range/metric pills, Profile sex+unit chips, ExerciseBrowser
+  filter chips + thumbnails, RoutineEditor Save, Stats measure chips, Home
+  lime CTA + calendar button, Onboarding focus chips + icon tiles,
+  ExerciseInfo tabs, Workout rest field / focus-metric pill / done check /
+  rest-pad buttons / quick-start chip, the BottomNav dock (16) and its
+  active capsule (10), Surface (dialogs) → R.lg, PrimaryButton → R.ctrl.
+  Left fully round on purpose: status pills (ui.tsx `Pill`, TierPill,
+  PrPill, StreakPill), true circles (avatar, week-strip dots, calendar days,
+  streak halo, chart legend dots) and thin progress bars. tsc + android
+  export clean; NOT yet eyeballed on the emulator.

@@ -106,7 +106,7 @@ function TodayHero({
         alignSelf: "flex-start",
         marginTop: 10,
         backgroundColor: C.accent,
-        borderRadius: R.pill,
+        borderRadius: R.ctrl,
         paddingHorizontal: 20,
         paddingVertical: 9,
       }}
@@ -329,7 +329,7 @@ export function Home() {
             {
               width: 44,
               height: 44,
-              borderRadius: 22,
+              borderRadius: R.ctrl,
               backgroundColor: C.surface,
               alignItems: "center",
               justifyContent: "center",

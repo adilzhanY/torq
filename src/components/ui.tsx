@@ -88,7 +88,7 @@ export function Surface({
       style={[
         {
           backgroundColor: background,
-          borderRadius: R.md,
+          borderRadius: R.lg,
           padding: 16,
           borderWidth: 1,
           borderColor: C.line,
@@ -183,7 +183,7 @@ export function PrimaryButton({
       style={[
         {
           backgroundColor: background,
-          borderRadius: R.sm,
+          borderRadius: R.ctrl,
           paddingHorizontal: 20,
           paddingVertical: 11,
           opacity: disabled ? 0.4 : 1,

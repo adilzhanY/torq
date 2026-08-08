@@ -279,7 +279,7 @@ export function Stats() {
               onPress={() => setKind(k)}
               style={{
                 backgroundColor: kind.kind === k.kind ? C.accent : C.page2,
-                borderRadius: R.pill,
+                borderRadius: R.sm,
                 paddingHorizontal: 12,
                 paddingVertical: 5,
               }}

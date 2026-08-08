@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>torq · how round should we be?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --page:#0E0F0E; --page2:#1B1E1A; --surface:#151714;
+    --ink:#F2F4EE; --inkSoft:#9AA294; --inkFaint:#5C6356;
+    --line:#262A24; --hair:#22261F;
+    --accent:#C8FE23; --accentInk:#1A1B1A;
+    --good:#5AC8A0; --warn:#F0A742; --bad:#E06A5A; --pr:#9C86E8; --gold:#E9B920;
+    /* radius tokens the PREVIEW phone reads */
+    --r-ctrl:10px; --r-chip:8px; --r-field:8px; --r-sheet:16px;
+  }
+  *{box-sizing:border-box;min-width:0}
+  html,body{margin:0;background:var(--page);color:var(--ink);
+    font-family:"Space Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:32px 20px 96px}
+  .wrap{max-width:1120px;margin:0 auto}
+  h1{font-size:34px;font-weight:700;letter-spacing:-.02em;margin:0 0 8px}
+  h2{font-size:19px;font-weight:700;margin:44px 0 10px;letter-spacing:-.01em}
+  h3{font-size:14px;font-weight:700;margin:0 0 6px}
+  p{color:var(--inkSoft);font-size:14.5px;line-height:1.6;margin:0 0 12px;max-width:74ch}
+  .eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--inkFaint);margin-bottom:6px}
+  .lede{font-size:16px;color:var(--inkSoft);max-width:70ch}
+  .hair{height:1px;background:var(--hair);margin:26px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;color:var(--accent);
+    background:#171A15;padding:1px 6px;border-radius:5px;word-break:break-word}
+
+  /* ── verdict ─────────────────────────────── */
+  .verdict{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;border:1px solid var(--line);
+    border-radius:14px;background:var(--surface);padding:20px 22px}
+  .verdict .big{font-size:22px;font-weight:700;color:var(--ink);letter-spacing:-.01em;line-height:1.35}
+  .verdict .big b{color:var(--accent)}
+  .why{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .why div{border-left:2px solid var(--line);padding-left:12px}
+  .why h3{color:var(--ink)}
+  .why p{font-size:13px;margin:0}
+
+  /* ── playground ──────────────────────────── */
+  .lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:26px;align-items:start}
+  @media(max-width:900px){.lab{grid-template-columns:minmax(0,1fr)}}
+  .phones{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+
+  .phone{border:1px solid var(--line);border-radius:22px;background:var(--page);overflow:hidden;
+    padding:16px 14px 0;display:flex;flex-direction:column;min-height:520px}
+  .phone .tag{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--inkFaint);margin-bottom:12px}
+  .phone.now{--r-ctrl:999px;--r-chip:999px;--r-field:16px;--r-sheet:22px}
+
+  .row{display:flex;align-items:center;gap:10px}
+  .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);flex:none;
+    display:grid;place-items:center}
+  .mark svg{width:18px;height:18px}
+  .title{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .muted{color:var(--inkSoft);font-size:11.5px}
+  .faint{color:var(--inkFaint);font-size:10px}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 4px}
+  .chip{border-radius:var(--r-chip);background:var(--page2);color:var(--inkSoft);
+    font-size:11px;font-weight:700;padding:7px 13px}
+  .chip.on{background:var(--accent);color:var(--accentInk)}
+
+  .cta{border-radius:var(--r-ctrl);background:var(--accent);color:var(--accentInk);
+    font-size:14px;font-weight:700;padding:13px 16px;text-align:center;margin-top:12px}
+  .ghost{border-radius:var(--r-ctrl);background:var(--page2);color:var(--ink);
+    font-size:13px;font-weight:700;padding:11px 16px;text-align:center;flex:1}
+  .danger{border-radius:var(--r-ctrl);background:#2B1715;color:var(--bad);
+    font-size:13px;font-weight:700;padding:11px 16px;text-align:center;flex:1}
+
+  .setgrid{display:grid;grid-template-columns:26px minmax(0,1fr) 52px 52px 34px;gap:8px;align-items:center;margin-top:6px}
+  .hdr{font-size:9px;font-weight:700;color:var(--inkFaint);letter-spacing:.08em}
+  .field{border-radius:var(--r-field);background:var(--page2);border:1px solid var(--line);
+    text-align:center;font-size:13px;font-weight:700;padding:7px 0}
+  .check{border-radius:var(--r-field);background:var(--accent);color:var(--accentInk);
+    display:grid;place-items:center;font-size:13px;font-weight:700;height:30px}
+  .rest{border-radius:var(--r-ctrl);background:#26320C;height:26px;margin-top:8px;position:relative;overflow:hidden}
+  .rest i{position:absolute;inset:0 38% 0 0;background:var(--accent);border-radius:var(--r-ctrl)}
+  .rest span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--accentInk)}
+
+  .bar{height:5px;border-radius:999px;background:var(--page2);overflow:hidden;margin-top:10px}
+  .bar i{display:block;height:100%;width:62%;background:var(--accent);border-radius:999px}
+
+  .dots{display:flex;gap:8px;margin-top:14px}
+  .dot{width:26px;height:26px;border-radius:999px;border:1px solid var(--line);display:grid;place-items:center;
+    font-size:10px;color:var(--inkFaint)}
+  .dot.done{background:var(--accent);color:var(--accentInk);border-color:var(--accent);font-weight:700}
+  .dot.today{border-color:var(--accent);color:var(--accent)}
+
+  .dock{margin:auto -14px 0;background:var(--surface);border-top:1px solid var(--line);
+    border-radius:var(--r-sheet) var(--r-sheet) 0 0;padding:9px 10px;display:flex;gap:6px;align-items:center}
+  .tab{width:34px;height:34px;border-radius:var(--r-ctrl);display:grid;place-items:center;color:var(--inkFaint)}
+  .tab.on{background:#2A2F27;color:var(--ink);width:auto;padding:0 14px;gap:7px;
+    display:flex;align-items:center;font-size:12px;font-weight:700}
+  .tab svg{width:16px;height:16px}
+
+  /* ── controls ────────────────────────────── */
+  .panel{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:18px;position:sticky;top:20px}
+  .presets{display:grid;gap:8px;margin:10px 0 18px}
+  .preset{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+    background:var(--page2);border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:10px;
+    font-family:inherit;font-size:13px;font-weight:700}
+  .preset:hover{border-color:#39402F}
+  .preset[aria-pressed="true"]{border-color:var(--accent);background:#1E2416}
+  .preset .sw{width:26px;height:26px;flex:none;background:transparent;border:2px solid var(--accent)}
+  .preset small{display:block;font-weight:400;color:var(--inkSoft);font-size:11px;margin-top:1px}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .readout{display:flex;justify-content:space-between;font-size:11.5px;color:var(--inkSoft);margin-top:6px}
+  .readout b{color:var(--accent)}
+
+  /* ── table ───────────────────────────────── */
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;min-width:640px;font-size:13px}
+  th{text-align:left;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--inkFaint);
+    font-weight:600;padding:11px 14px;background:var(--surface);white-space:nowrap}
+  td{padding:11px 14px;border-top:1px solid var(--hair);color:var(--inkSoft);vertical-align:top}
+  td b{color:var(--ink)}
+  td.n{color:var(--accent);font-weight:700;white-space:nowrap}
+  td.old{color:var(--inkFaint);text-decoration:line-through;white-space:nowrap}
+
+  .keep{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .keep div{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .keep b{display:block;margin-bottom:4px}
+  .keep p{font-size:12.5px;margin:0}
+
+  form.q{border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:20px 22px}
+  form.q label{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);
+    border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:13.5px;font-weight:600}
+  form.q label:hover{border-color:#39402F}
+  form.q small{display:block;font-weight:400;color:var(--inkSoft);font-size:12px;margin-top:2px}
+  form.q button{font-family:inherit;font-size:13px;font-weight:700;background:var(--accent);color:var(--accentInk);
+    border:0;border-radius:10px;padding:11px 18px;cursor:pointer;margin-top:6px}
+  textarea{width:100%;background:var(--page2);border:1px solid var(--line);border-radius:10px;color:var(--ink);
+    font-family:inherit;font-size:13px;padding:10px 12px;margin:6px 0 4px;resize:vertical}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">torq · design decision</div>
+  <h1>How round should torq be?</h1>
+  <p class="lede">We went cardless, dark, and Space Grotesk — but every chip, button, field and dock capsule
+  is still fully rounded (<code>R.pill = 999</code>) or very soft (<code>R.md = 22</code>). That radius is
+  left over from the warm clay/bento skin. Here is what it looks like at four settings, and what I think we
+  should lock in.</p>
+
+  <h2>My take</h2>
+  <div class="verdict">
+    <div class="big">Yes — go less round. Land on <b>10 px for controls, 8 px for chips and fields</b>,
+    and keep the pill for one job only: <b>status labels</b> (LIVE, tier pills, PR badges).</div>
+    <div class="why">
+      <div>
+        <h3>The logo is sharp now</h3>
+        <p>The vortex is eight pointed blades. A capsule-shaped button under a bladed mark reads as two
+        different brands. 10 px keeps the app friendly but stops fighting the logo.</p>
+      </div>
+      <div>
+        <h3>Cardless needs edges</h3>
+        <p>With no cards, the only shapes left on screen are the interactive ones. Fully-round shapes look
+        like floating candy on a bare black page; a tighter radius reads as a deliberate control.</p>
+      </div>
+      <div>
+        <h3>Pills stop meaning anything</h3>
+        <p>When buttons, tabs, fields and badges are all pills, "pill" carries no information. Reserve it
+        for status and the shape starts communicating again.</p>
+      </div>
+      <div>
+        <h3>Not fully square</h3>
+        <p>0–4 px reads as brutalist/dev-tool — wrong for a gym app people should find pretty. 10 px is the
+        line where it stays premium (Apple Fitness, Whoop, Strava all sit 8–14 px).</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>Try it — real torq surfaces</h2>
+  <p>Left is what ships today. Right updates live: pick a preset or drag the slider.</p>
+
+  <div class="lab">
+    <div class="phones">
+
+      <!-- NOW -->
+      <div class="phone now">
+        <div class="tag">Now · pill 999</div>
+        <div class="row">
+          <div class="mark"><svg viewBox="0 0 24 24"><path fill="#1A1B1A" d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"/></svg></div>
+          <div class="title" style="flex:1">Bench Press</div>
+          <div class="muted">83 kg · M</div>
+        </div>
+        <div class="chips">
+          <div class="chip on">Rank</div><div class="chip">About</div>
+          <div class="chip">History</div><div class="chip">Records</div>
+        </div>
+        <div class="bar"><i></i></div>
+        <div class="faint" style="margin-top:6px">18 pts to Gold — about 4.5 kg more</div>
+
+        <div class="setgrid" style="margin-top:16px">
+          <div class="hdr">SET</div><div class="hdr">PREVIOUS</div><div class="hdr" style="text-align:center">KG</div><div class="hdr" style="text-align:center">REPS</div><div></div>
+          <div style="font-weight:700;font-size:13px">1</div>
+          <div class="muted">80 kg × 5</div>
+          <div class="field">82.5</div><div class="field">5</div><div class="check">✓</div>
+        </div>
+        <div class="rest"><i></i><span>1:24</span></div>
+        <div class="cta">Finish workout</div>
+        <div class="row" style="gap:8px;margin-top:8px">
+          <div class="ghost">Cancel</div><div class="danger">Delete</div>
+        </div>
+        <div class="dots">
+          <div class="dot done">✓</div><div class="dot done">✓</div><div class="dot today">6</div>
+          <div class="dot">7</div><div class="dot">8</div>
+        </div>
+        <div class="dock">
+          <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M8 15l-2 7 6-3 6 3-2-7"/></svg></div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M7 8v8M17 8v8"/></svg></div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="phone" id="preview">
+        <div class="tag" id="previewTag">Proposal · 10 px</div>
+        <div class="row">
+          <div class="mark"><svg viewBox="0 0 24 24"><path fill="#1A1B1A" d="M12 2l2.6 6.4L21 11l-6.4 2.6L12 20l-2.6-6.4L3 11l6.4-2.6z"/></svg></div>
+          <div class="title" style="flex:1">Bench Press</div>
+          <div class="muted">83 kg · M</div>
+        </div>
+        <div class="chips">
+          <div class="chip on">Rank</div><div class="chip">About</div>
+          <div class="chip">History</div><div class="chip">Records</div>
+        </div>
+        <div class="bar"><i></i></div>
+        <div class="faint" style="margin-top:6px">18 pts to Gold — about 4.5 kg more</div>
+
+        <div class="setgrid" style="margin-top:16px">
+          <div class="hdr">SET</div><div class="hdr">PREVIOUS</div><div class="hdr" style="text-align:center">KG</div><div class="hdr" style="text-align:center">REPS</div><div></div>
+          <div style="font-weight:700;font-size:13px">1</div>
+          <div class="muted">80 kg × 5</div>
+          <div class="field">82.5</div><div class="field">5</div><div class="check">✓</div>
+        </div>
+        <div class="rest"><i></i><span>1:24</span></div>
+        <div class="cta">Finish workout</div>
+        <div class="row" style="gap:8px;margin-top:8px">
+          <div class="ghost">Cancel</div><div class="danger">Delete</div>
+        </div>
+        <div class="dots">
+          <div class="dot done">✓</div><div class="dot done">✓</div><div class="dot today">6</div>
+          <div class="dot">7</div><div class="dot">8</div>
+        </div>
+        <div class="dock">
+          <div class="tab on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10l9-7 9 7v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Home</div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="9" r="6"/><path d="M8 15l-2 7 6-3 6 3-2-7"/></svg></div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16M7 8v8M17 8v8"/></svg></div>
+          <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="panel">
+      <div class="eyebrow">Presets</div>
+      <div class="presets">
+        <button class="preset" type="button" data-ctrl="999" data-chip="999" data-field="16" data-sheet="22" data-name="Pill (today)">
+          <span class="sw" style="border-radius:999px"></span>
+          <span>Pill — today<small>Nothing changes. Soft, friendly, a bit generic.</small></span>
+        </button>
+        <button class="preset" type="button" data-ctrl="14" data-chip="12" data-field="12" data-sheet="20" data-name="Soft 14">
+          <span class="sw" style="border-radius:8px"></span>
+          <span>Soft · 14 px<small>Safe half-step. Still reads friendly.</small></span>
+        </button>
+        <button class="preset" type="button" data-ctrl="10" data-chip="8" data-field="8" data-sheet="16" data-name="Sharp 10" aria-pressed="true">
+          <span class="sw" style="border-radius:5px"></span>
+          <span>Sharp · 10 px ★<small>My recommendation. Premium, matches the blades.</small></span>
+        </button>
+        <button class="preset" type="button" data-ctrl="4" data-chip="4" data-field="4" data-sheet="8" data-name="Squared 4">
+          <span class="sw" style="border-radius:2px"></span>
+          <span>Squared · 4 px<small>Technical, brutalist. Loses the "pretty app" goal.</small></span>
+        </button>
+      </div>
+
+      <div class="eyebrow">Fine tune</div>
+      <input id="slider" type="range" min="0" max="28" step="1" value="10" />
+      <div class="readout">
+        <span>control <b id="vCtrl">10</b>px</span>
+        <span>chip/field <b id="vChip">8</b>px</span>
+        <span>sheet <b id="vSheet">16</b>px</span>
+      </div>
+      <p style="font-size:12px;margin-top:14px">Drag past 20 and the buttons start swallowing their own
+      labels at small sizes — that's the practical ceiling for a 30 px tall field.</p>
+    </div>
+  </div>
+
+  <h2>The token map I'd ship</h2>
+  <p>One edit in <code>src/theme.ts</code> changes the whole app, because every component already reads
+  <code>R</code>. The pill token stays — it just gets used in far fewer places.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Token</th><th>Now</th><th>Proposed</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td><b>R.lg</b></td><td class="old">28</td><td class="n">16</td><td>Dialogs, bottom sheets, the dock, overlay corners</td></tr>
+        <tr><td><b>R.md</b></td><td class="old">22</td><td class="n">12</td><td>Buttons, gif tiles, routine rows, popovers</td></tr>
+        <tr><td><b>R.sm</b></td><td class="old">16</td><td class="n">8</td><td>Inputs, KG/REPS cells, set-done check, chips</td></tr>
+        <tr><td><b>R.ctrl</b> <small>(new)</small></td><td class="old">—</td><td class="n">10</td><td>The default for any pressable: CTAs, dock tabs, menu rows</td></tr>
+        <tr><td><b>R.pill</b></td><td>999</td><td class="n">999</td><td><b>Status only</b> — LIVE, tier pills, PR trophies, streak pill, W/D/F set-type letters</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>What stays fully round — non-negotiable</h2>
+  <div class="keep">
+    <div><b>Circles that are circles</b><p>Week-strip dots, avatar, rank badge orbit balls, the quick-start play chip. A circle is not a rounded rectangle.</p></div>
+    <div><b>Progress bars</b><p>The 5 px rank/goal bars keep round caps — a squared 5 px bar looks broken, not sharp.</p></div>
+    <div><b>Status pills</b><p>LIVE, tier labels, PR badges, streak flame. This is the one place the pill earns its shape.</p></div>
+    <div><b>The rank shields</b><p>The hex badge geometry is its own system and is already sharp. Untouched.</p></div>
+  </div>
+
+  <h2>Cost</h2>
+  <p>Small. <code>R</code> is one object and 48 usages already reference it. The real work is auditing the
+  ~31 hardcoded <code>999</code>/<code>99</code> radii scattered in components and deciding per case whether
+  each is a true pill or a leftover — roughly an hour, screen by screen, no risk of behavior change.</p>
+
+  <h2>Pick one and I'll ship it</h2>
+  <form class="q" data-lavish-question="radius" onsubmit="event.preventDefault();
+      const f=new FormData(event.currentTarget); const choice=f.get('radius'); const note=(f.get('note')||'').toString().trim();
+      if(!choice) return;
+      window.lavish.queuePrompt('Radius decision: '+choice+(note?(' — extra notes: '+note):''),
+        {tag:'choice',text:'Radius: '+choice,element:event.currentTarget,data:{question:'radius',answer:choice,note:note}});">
+    <label><input type="radio" name="radius" value="Sharp 10 px — ctrl 10 / chip+field 8 / sheet 16, pill reserved for status" checked>
+      <span>Sharp · 10 px <small>My recommendation — apply the full token map above across the app.</small></span></label>
+    <label><input type="radio" name="radius" value="Soft 14 px — ctrl 14 / chip+field 12 / sheet 20">
+      <span>Soft · 14 px <small>Half-step. Less round than today, still soft.</small></span></label>
+    <label><input type="radio" name="radius" value="Squared 4 px — ctrl 4 / chip+field 4 / sheet 8">
+      <span>Squared · 4 px <small>Full technical look.</small></span></label>
+    <label><input type="radio" name="radius" value="Keep the pills — no radius change">
+      <span>Keep pills <small>Leave it alone, the round look is fine.</small></span></label>
+    <textarea name="note" rows="2" placeholder="Anything to adjust? e.g. 'sharp 10 but keep the dock capsule round'"></textarea>
+    <button type="submit">Queue this decision</button>
+  </form>
+
+</div>
+
+<script>
+  const root = document.getElementById('preview');
+  const tag = document.getElementById('previewTag');
+  const slider = document.getElementById('slider');
+  const vCtrl = document.getElementById('vCtrl'), vChip = document.getElementById('vChip'), vSheet = document.getElementById('vSheet');
+
+  function apply(ctrl, chip, field, sheet, name){
+    root.style.setProperty('--r-ctrl', ctrl + 'px');
+    root.style.setProperty('--r-chip', chip + 'px');
+    root.style.setProperty('--r-field', field + 'px');
+    root.style.setProperty('--r-sheet', sheet + 'px');
+    tag.textContent = name;
+    vCtrl.textContent = ctrl >= 999 ? '∞' : ctrl;
+    vChip.textContent = chip >= 999 ? '∞' : chip;
+    vSheet.textContent = sheet;
+  }
+
+  document.querySelectorAll('.preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset').forEach(b => b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed','true');
+      const d = btn.dataset;
+      apply(+d.ctrl, +d.chip, +d.field, +d.sheet, d.name + (d.ctrl === '999' ? '' : ' · ' + d.ctrl + ' px'));
+      slider.value = Math.min(28, +d.ctrl);
+    });
+  });
+
+  slider.addEventListener('input', () => {
+    const v = +slider.value;
+    document.querySelectorAll('.preset').forEach(b => b.setAttribute('aria-pressed','false'));
+    apply(v, Math.max(2, v - 2), Math.max(2, v - 2), v + 6, 'Custom · ' + v + ' px');
+  });
+</script>
+</body>
+</html>

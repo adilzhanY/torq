@@ -186,7 +186,7 @@ export function WorkoutSummary({
                     ...(highlighted
                       ? {
                           backgroundColor: "rgba(160,210,20,0.14)",
-                          borderRadius: 12,
+                          borderRadius: R.md,
                           marginHorizontal: -8,
                           paddingHorizontal: 8,
                           paddingVertical: 6,
