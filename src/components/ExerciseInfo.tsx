@@ -25,7 +25,7 @@ import { RankBadge } from "./RankBadge";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
-import { DB_BY_ID } from "../lib/exercisedb";
+import { DB_BY_ID, dbInstructions } from "../lib/exercisedb";
 import { est1RM, exerciseSeries, repMax } from "../lib/stats";
 import { bodyProfileAt } from "../lib/calories";
 import { dotsPoints, kgForPoints, stageOf, tierFor, tierLabel, TIER_COLORS } from "../lib/rank";
@@ -338,7 +338,7 @@ export function ExerciseInfo({
                   {db.secondaryMuscles.length ? ` · also ${db.secondaryMuscles.join(", ")}` : ""}
                 </Txt>
                 <View style={{ gap: 6 }}>
-                  {db.instructions.map((step, i) => (
+                  {dbInstructions(db.id).map((step, i) => (
                     <Txt key={i} size={13} color={C.inkSoft}>
                       {step.replace(/^Step:\d+\s*/, `${i + 1}. `)}
                     </Txt>

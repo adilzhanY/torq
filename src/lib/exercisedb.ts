@@ -14,12 +14,10 @@ import RAW from "../data/exercisedb.json";
 interface RawExercise {
   exerciseId: string;
   name: string;
-  gifUrl: string;
   bodyParts: string[];
   equipments: string[];
   targetMuscles: string[];
   secondaryMuscles: string[];
-  instructions: string[];
 }
 
 export interface DbExercise {
@@ -31,7 +29,6 @@ export interface DbExercise {
   equipments: string[];
   targetMuscles: string[];
   secondaryMuscles: string[];
-  instructions: string[];
 }
 
 const raw = RAW as RawExercise[];
@@ -48,12 +45,13 @@ export const DB_EXERCISES: DbExercise[] = raw
   .map((e) => ({
     id: e.exerciseId,
     name: e.name,
+    // Derived, not stored: the URL is a template around the id, and keeping
+    // 1500 copies of it in the snapshot cost 89 KB of startup parsing.
     gifUrl: `${GIF_BASE}/${e.exerciseId}.gif`,
     bodyParts: e.bodyParts,
     equipments: e.equipments,
     targetMuscles: e.targetMuscles,
     secondaryMuscles: e.secondaryMuscles,
-    instructions: e.instructions,
   }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -66,6 +64,34 @@ export const DB_GIF_BY_ID: Record<string, string> = Object.fromEntries(
 export const DB_BY_ID: Record<string, DbExercise> = Object.fromEntries(
   DB_EXERCISES.map((e) => [e.id, e]),
 );
+
+/**
+ * How-to steps for one exercise, loaded ON DEMAND.
+ *
+ * Instructions are 776 KB — 69% of the original snapshot — and are read on
+ * exactly one screen (the exercise About tab), so they are NOT part of the
+ * startup blob. The inline require is the point: Metro evaluates the module
+ * the first time this runs, not at app launch. Measured: splitting these
+ * out took catalog load from ~274 ms to ~65 ms on every cold start.
+ */
+let instructionsById: Record<string, string[]> | null = null;
+
+export function dbInstructions(id: string): string[] {
+  if (!instructionsById) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      instructionsById = require("../data/exercisedb-instructions.json") as Record<
+        string,
+        string[]
+      >;
+    } catch {
+      // Non-Metro runtimes (tests) have no require; instructions are not
+      // load-bearing, so degrade to "no steps" rather than throwing.
+      instructionsById = {};
+    }
+  }
+  return instructionsById[id] ?? [];
+}
 
 /** Catalog names are lowercase; display them in title case. */
 export function titleCase(s: string): string {

@@ -85,7 +85,7 @@ export function ExercisePicker({
               name: row.name,
               bodyPart: row.bodyPart,
               equipment: row.equipment,
-              hay: [],
+              hay: "",
               count: 0,
               lastAt: 0,
             }),

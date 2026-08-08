@@ -97,6 +97,19 @@ tombstones any leftover `seed-…` rows from the removed starter library.
 
 `src/data/exercisedb.json` is a snapshot of the full open-source ExerciseDB
 (1500 exercises) from `https://oss.exercisedb.dev/api/v1/exercises`.
+
+SPLIT FOR STARTUP (2026-08-08, measured not guessed): the full snapshot cost
+~274 ms to materialise on EVERY cold start, before the first frame — and
+~270 of those 289 ms were the JSON itself, not the map/sort around it, so
+deferring the transform would have saved nothing. `instructions` was 786 KB
+of 1141 KB (69%) and is read on exactly one screen, and `gifUrl` was another
+89 KB of pure duplication of a template around `exerciseId`. So
+`scripts/split-catalog.py` now emits two files: the core
+`exercisedb.json` (271 KB, loaded at startup, gifUrl derived) and
+`exercisedb-instructions.json` (776 KB, id → steps), which
+`dbInstructions(id)` pulls in with an INLINE require the first time the
+About tab needs it. Catalog load: 289 ms → 86 ms. Re-run the script after
+refreshing the snapshot.
 Pagination gotchas: pages are capped at 25 rows and the cursor param is
 `after=<meta.nextCursor>` — the documented `cursor` param is silently ignored
 (you get the same page forever). `src/lib/exercisedb.ts` loads the snapshot
@@ -1282,3 +1295,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   requirement section above). supabase/social.sql gained
   `delete_my_account()`; db.ts gained `wipeLocal()`; store gained
   `exportLocal`/`wipeLocalData`.
+- 2026-08-08 (later): Startup + search performance, measured before and
+  after. (1) Catalog split (see "ExerciseDB catalog"): 289 ms → 86 ms of
+  cold-start work. (2) Search: the browser rebuilt each row's haystack —
+  array alloc + join + toLowerCase over 1500 rows — on EVERY keystroke.
+  `haystack()` now precomputes it once when the list is built and
+  `matchesText()` takes pre-tokenized input, so 8 keystrokes over the full
+  catalog went 17.3 ms → 1.1 ms. (3) The list was ALREADY virtualized (a
+  SectionList with tuned windowing), so nothing was needed there — worth
+  recording so nobody "optimizes" it again.

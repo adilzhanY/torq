@@ -17,7 +17,7 @@ import { CenterDialog } from "./Dialog";
 import { Divider, SectionTitle, TextField, Txt } from "./ui";
 import { useKeyboardHeight } from "./KeyboardAware";
 import { useStore } from "../lib/store";
-import { matches } from "../lib/search";
+import { haystack, matchesText, tokenize } from "../lib/search";
 import {
   DB_EXERCISES,
   DB_GIF_BY_ID,
@@ -50,7 +50,8 @@ export interface BrowserItem {
   bodyPart: BodyPart;
   equipment: Equipment;
   gifUrl?: string;
-  hay: string[];
+  /** Pre-lowercased searchable text (see lib/search.haystack). */
+  hay: string;
   /** Sessions this exercise appears in / most recent one (library only). */
   count: number;
   lastAt: number;
@@ -219,7 +220,7 @@ export function ExerciseBrowser({
       bodyPart: e.bodyPart,
       equipment: e.equipment,
       gifUrl: e.dbId ? DB_GIF_BY_ID[e.dbId] : undefined,
-      hay: [e.name, e.bodyPart, e.equipment],
+      hay: haystack([e.name, e.bodyPart, e.equipment]),
       count: stats.get(e.id)?.n ?? 0,
       lastAt: stats.get(e.id)?.last ?? 0,
     }));
@@ -232,7 +233,7 @@ export function ExerciseBrowser({
         bodyPart: toBodyPart(d.bodyParts[0] ?? "other"),
         equipment: toEquipment(d.equipments[0] ?? "other"),
         gifUrl: d.gifUrl,
-        hay: [d.name, ...d.bodyParts, ...d.equipments, ...d.targetMuscles],
+        hay: haystack([d.name, ...d.bodyParts, ...d.equipments, ...d.targetMuscles]),
         count: 0,
         lastAt: 0,
       });
@@ -252,7 +253,9 @@ export function ExerciseBrowser({
   );
 
   const sections = useMemo(() => {
-    const visible = chipFiltered.filter((i) => matches(q, i.hay));
+    // Tokenize ONCE per query, not once per row.
+    const tokens = tokenize(q);
+    const visible = chipFiltered.filter((i) => matchesText(tokens, i.hay));
     const groups = new Map<string, BrowserItem[]>();
     const now = Date.now();
     for (const i of visible) {
