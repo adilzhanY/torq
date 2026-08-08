@@ -45,6 +45,7 @@ interface StoreValue {
 
   /** Returns the created row (the picker selects it right away). */
   addExercise: (e: Omit<Exercise, "id" | "updatedAt">) => Exercise;
+  updateExercise: (id: string, patch: Partial<Exercise>) => void;
   deleteExercise: (id: string) => void;
 
   saveRoutine: (name: string, entries: WorkoutEntry[], id?: string) => void;
@@ -168,6 +169,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       dbRef.current.exercises.push(row);
       commit();
       return row;
+    },
+    updateExercise: (id, patch) => {
+      const i = dbRef.current.exercises.findIndex((e) => e.id === id);
+      if (i < 0) return;
+      dbRef.current.exercises[i] = stamp({ ...dbRef.current.exercises[i], ...patch });
+      commit();
     },
     deleteExercise: (id) => {
       dbRef.current.exercises = dbRef.current.exercises.filter((e) => e.id !== id);

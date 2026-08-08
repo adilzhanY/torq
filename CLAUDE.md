@@ -1218,3 +1218,16 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   filtered out. The handle-claim field still forces handle characters, but
   the search field does NOT sanitise input — otherwise a display name with a
   space is untypeable.
+- 2026-08-08 (later): The live-session exercise ⋯ menu is no longer a set of
+  dead stubs. Implemented: **Add note** (WorkoutEntry.notes — this session
+  only) and **Add sticky note** (Exercise.notes — comes back every session;
+  that split is the whole reason both exist), both rendered under the
+  exercise header and tappable to re-edit; **Add warm-up sets**, which
+  prepends a 40/60/80% ramp of the heaviest WORKING set, rounded to the
+  bar's step and de-duplicated so a light top set doesn't produce three
+  identical warm-ups (no-op on bodyweight); **Update rest timers**, one rest
+  applied to every set of the exercise; **Replace exercise**, reusing the
+  picker and keeping the set scheme. REMOVED rather than faked: "Create
+  superset" (needs real grouping) and "Preferences" (never specified) — a
+  menu item that does nothing is worse than no menu item. Store gained
+  `updateExercise`.

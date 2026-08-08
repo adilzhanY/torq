@@ -408,6 +408,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
     workouts,
     settings,
     updateActiveWorkout,
+    updateExercise,
     finishWorkout,
     discardWorkout,
   } = useStore();
@@ -433,6 +434,13 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [dotsMenu, setDotsMenu] = useState<{ ei: number; y: number } | null>(null);
   /** Entry index pending delete confirmation. */
   const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
+  /** ⋯ menu actions that open their own editor, by entry index. */
+  const [noteFor, setNoteFor] = useState<number | null>(null);
+  const [stickyFor, setStickyFor] = useState<number | null>(null);
+  const [restFor_, setRestForEntry] = useState<number | null>(null);
+  const [replaceFor, setReplaceFor] = useState<number | null>(null);
+  /** Draft text while a note dialog is open. */
+  const [draftNote, setDraftNote] = useState("");
   /** "ei-si" keys of sets added via Add set this render lifetime — only
    * those mount with the GrowIn entrance (restored/prefilled rows don't). */
   const grownSets = useRef<Set<string>>(new Set());
@@ -508,6 +516,54 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       reps: `${reps} reps`,
       weightReps: top ? `${top.weight} ${u} × ${top.reps}` : `0 ${u}`,
     } satisfies Record<FocusMetric, string>;
+  };
+
+  /**
+   * Prepend a Strong-style warm-up ramp. Percentages are of the heaviest
+   * WORKING set (the sets already logged), rounded to the bar's step so the
+   * numbers are actually loadable, and de-duplicated so a light working
+   * weight doesn't produce three identical warm-ups.
+   */
+  const addWarmups = (ei: number) => {
+    const entry = w.entries[ei];
+    if (!entry) return;
+    const top = Math.max(...entry.sets.filter((s) => s.type !== "warmup").map((s) => s.weight), 0);
+    if (top <= 0) return; // bodyweight or nothing typed yet — nothing to ramp to
+    const step = settings.unit === "lb" ? 5 : 2.5;
+    const round = (v: number) => Math.max(step, Math.round(v / step) * step);
+    const ramp = [0.4, 0.6, 0.8]
+      .map((pct) => round(top * pct))
+      .filter((kg, i, arr) => kg < top && arr.indexOf(kg) === i);
+    if (ramp.length === 0) return;
+    const warmups: WorkoutSet[] = ramp.map((weight, i) => ({
+      type: "warmup",
+      weight,
+      // Warm-ups descend in reps as the weight climbs.
+      reps: [8, 5, 3][i] ?? 3,
+      done: false,
+      restSec: 60,
+    }));
+    setEntries(
+      w.entries.map((e, i) =>
+        i !== ei ? e : { ...e, sets: [...warmups, ...e.sets.filter((s) => s.type !== "warmup")] },
+      ),
+    );
+  };
+
+  /** Apply one rest period to every set of an exercise. */
+  const setAllRest = (ei: number, sec: number) => {
+    setEntries(
+      w.entries.map((e, i) =>
+        i !== ei ? e : { ...e, sets: e.sets.map((s) => ({ ...s, restSec: sec })) },
+      ),
+    );
+  };
+
+  /** Swap the movement, keeping the set scheme the user already built. */
+  const replaceExercise = (ei: number, exerciseId: string) => {
+    setEntries(
+      w.entries.map((e, i) => (i !== ei ? e : { ...e, exerciseId, focusMetric: undefined })),
+    );
   };
 
   const toggleDone = (ei: number, si: number, set: WorkoutSet) => {
@@ -650,6 +706,41 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Ellipsis" size={20} color={C.inkSoft} />
             </Pressable>
           </View>
+          {/* Notes, if any. Sticky (on the exercise) is pinned and dimmer;
+              the session note is today's. Tap either to edit. */}
+          {(() => {
+            const sticky = exercises.find((e) => e.id === entry.exerciseId)?.notes;
+            if (!sticky && !entry.notes) return null;
+            return (
+              <View style={{ gap: 4, marginTop: 8 }}>
+                {sticky ? (
+                  <Pressable
+                    onPress={() => {
+                      setDraftNote(sticky);
+                      setStickyFor(ei);
+                    }}
+                    style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}
+                  >
+                    <Icon name="Pin" size={12} color={C.inkFaint} />
+                    <Txt size={12} color={C.inkFaint} style={{ flex: 1 }}>{sticky}</Txt>
+                  </Pressable>
+                ) : null}
+                {entry.notes ? (
+                  <Pressable
+                    onPress={() => {
+                      setDraftNote(entry.notes ?? "");
+                      setNoteFor(ei);
+                    }}
+                    style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}
+                  >
+                    <Icon name="FileText" size={12} color={C.inkSoft} />
+                    <Txt size={12} color={C.inkSoft} style={{ flex: 1 }}>{entry.notes}</Txt>
+                  </Pressable>
+                ) : null}
+              </View>
+            );
+          })()}
+
           <View
             style={{
               flexDirection: "row",
@@ -1000,8 +1091,6 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     { icon: "Diff", label: "Add warm-up sets" },
                     { icon: "Timer", label: "Update rest timers" },
                     { icon: "Undo2", label: "Replace exercise", divider: true },
-                    { icon: "List", label: "Create superset" },
-                    { icon: "SlidersVertical", label: "Preferences", divider: true },
                     { icon: "X", label: "Remove exercise", divider: true, danger: true },
                   ] as { icon: string; label: string; divider?: boolean; danger?: boolean }[]
                 ).map((item) => (
@@ -1011,8 +1100,32 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     ) : null}
                     <Pressable
                       onPress={() => {
+                        const ei = dotsMenu.ei;
                         setDotsMenu(null);
-                        if (item.label === "Remove exercise") setConfirmRemove(dotsMenu.ei);
+                        switch (item.label) {
+                          case "Add note":
+                            setDraftNote(w.entries[ei]?.notes ?? "");
+                            setNoteFor(ei);
+                            break;
+                          case "Add sticky note":
+                            setDraftNote(
+                              exercises.find((e) => e.id === w.entries[ei]?.exerciseId)?.notes ?? "",
+                            );
+                            setStickyFor(ei);
+                            break;
+                          case "Add warm-up sets":
+                            addWarmups(ei);
+                            break;
+                          case "Update rest timers":
+                            setRestForEntry(ei);
+                            break;
+                          case "Replace exercise":
+                            setReplaceFor(ei);
+                            break;
+                          case "Remove exercise":
+                            setConfirmRemove(ei);
+                            break;
+                        }
                       }}
                       style={{
                         flexDirection: "row",
@@ -1129,6 +1242,62 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           </View>
         </SlideUp>
       ) : null}
+
+      {/* Session note — lives on the WorkoutEntry, so it belongs to this
+          workout only. */}
+      {noteFor != null ? (
+        <NoteDialog
+          title="Note for this workout"
+          hint="Only on today's session — how it felt, what to change next time."
+          value={draftNote}
+          onChange={setDraftNote}
+          onSave={() => {
+            patchEntry(noteFor, { notes: draftNote.trim() || undefined });
+            setNoteFor(null);
+          }}
+          onClose={() => setNoteFor(null)}
+        />
+      ) : null}
+
+      {/* Sticky note — lives on the EXERCISE, so it comes back every session
+          (cue, setup, seat height). That's the difference Strong draws
+          between the two, and why both exist. */}
+      {stickyFor != null ? (
+        <NoteDialog
+          title="Sticky note"
+          hint="Shown every time you train this exercise — cues, seat height, grip."
+          value={draftNote}
+          onChange={setDraftNote}
+          onSave={() => {
+            const id = w.entries[stickyFor]?.exerciseId;
+            if (id) updateExercise(id, { notes: draftNote.trim() || undefined });
+            setStickyFor(null);
+          }}
+          onClose={() => setStickyFor(null)}
+        />
+      ) : null}
+
+      {restFor_ != null ? (
+        <RestAllDialog
+          current={restFor(w.entries[restFor_]?.sets?.[0] ?? { restSec: undefined } as WorkoutSet)}
+          onPick={(sec) => {
+            setAllRest(restFor_, sec);
+            setRestForEntry(null);
+          }}
+          onClose={() => setRestForEntry(null)}
+        />
+      ) : null}
+
+      {/* Replace: the same picker, but the first pick swaps the movement and
+          keeps every set the user already typed. */}
+      <ExercisePicker
+        open={replaceFor != null}
+        onClose={() => setReplaceFor(null)}
+        onAdd={(ids) => {
+          if (replaceFor != null && ids[0]) replaceExercise(replaceFor, ids[0]);
+          setReplaceFor(null);
+        }}
+      />
 
       {confirmRemove != null ? (
         <ConfirmDialog
@@ -1517,5 +1686,75 @@ export function Workout() {
         <WorkoutSummary workout={summary} onClose={() => setSummary(null)} />
       ) : null}
     </View>
+  );
+}
+
+/** Shared editor for both note kinds. */
+function NoteDialog({
+  title,
+  hint,
+  value,
+  onChange,
+  onSave,
+  onClose,
+}: {
+  title: string;
+  hint: string;
+  value: string;
+  onChange: (v: string) => void;
+  onSave: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <CenterDialog onClose={onClose}>
+      <Txt size={17} weight="extrabold">{title}</Txt>
+      <Txt size={12} color={C.inkFaint}>{hint}</Txt>
+      <TextField value={value} onChange={onChange} placeholder="Type a note" autoFocus />
+      <PrimaryButton label="Save" onPress={onSave} />
+    </CenterDialog>
+  );
+}
+
+/** Set one rest period across every set of an exercise. */
+function RestAllDialog({
+  current,
+  onPick,
+  onClose,
+}: {
+  current: number;
+  onPick: (sec: number) => void;
+  onClose: () => void;
+}) {
+  const OPTIONS = [60, 90, 120, 180, 240, 300];
+  return (
+    <CenterDialog onClose={onClose}>
+      <Txt size={17} weight="extrabold">Rest for every set</Txt>
+      <Txt size={12} color={C.inkFaint}>
+        Applies to all sets of this exercise, replacing any per-set rest.
+      </Txt>
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {OPTIONS.map((sec) => {
+          const active = sec === current;
+          return (
+            <Pressable
+              key={sec}
+              onPress={() => onPick(sec)}
+              style={{
+                backgroundColor: active ? C.accent : C.page2,
+                borderRadius: R.sm,
+                borderWidth: 1,
+                borderColor: active ? C.accent : C.line,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+              }}
+            >
+              <Txt size={14} weight="extrabold" color={active ? C.accentInk : C.ink}>
+                {fmtClock(sec)}
+              </Txt>
+            </Pressable>
+          );
+        })}
+      </View>
+    </CenterDialog>
   );
 }
