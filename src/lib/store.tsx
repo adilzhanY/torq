@@ -11,7 +11,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { emptyDB, loadDB, saveDB, type DB, type SyncedTable } from "./db";
+import { emptyDB, getLoadFailure, loadDB, saveDB, type DB, type SyncedTable } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
 import { workoutName } from "./stats";
 import { buildPlan, GOAL_META } from "./plan";
@@ -72,6 +72,8 @@ interface StoreValue {
 
   updateSettings: (patch: Partial<Settings>) => void;
   syncNow: () => Promise<void>;
+  /** Set when the stored data could not be read on launch (see db.ts). */
+  loadError: string | null;
 
   /** Dev: 12 weeks of realistic progressive PPL workouts (tagged
    *  notes:"demo-seed") so charts have something to show. */
@@ -85,6 +87,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const dbRef = useRef<DB>(emptyDB());
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   // Bumped on every commit so consumers re-render off the mutable DB ref.
   const [, setVersion] = useState(0);
 
@@ -103,6 +106,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       }
       dbRef.current = db;
       setSoundEnabled(db.settings.sound !== false);
+      setLoadError(getLoadFailure());
       setReady(true);
       setVersion((v) => v + 1);
     });
@@ -485,6 +489,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       commit();
     },
     syncNow,
+    loadError,
   };
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

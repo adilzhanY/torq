@@ -16,6 +16,7 @@ import { UiProvider, useUi } from "./src/lib/ui";
 import { C } from "./src/theme";
 import { Logo, SpinningLogo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
+import { ErrorBoundary } from "./src/components/ErrorBoundary";
 import { Icon } from "./src/components/Icon";
 import { Txt } from "./src/components/ui";
 import { ConfirmDialog } from "./src/components/Dialog";
@@ -31,10 +32,11 @@ import { Profile } from "./src/screens/Profile";
 
 function Root() {
   const { tab, planWizard, openPlanWizard, closePlanWizard } = useUi();
-  const { ready, settings } = useStore();
+  const { ready, settings, loadError } = useStore();
   const auth = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const [configNoteOpen, setConfigNoteOpen] = useState(false);
+  const [dataNoteOpen, setDataNoteOpen] = useState(false);
 
   // Restoring the session and reading the local DB both gate the first
   // frame — one splash covers both so the app never flashes the auth screen
@@ -61,13 +63,63 @@ function Root() {
   return (
     <View style={{ flex: 1, backgroundColor: C.page }}>
       <View style={{ flex: 1 }}>
-        {tab === "home" && <Home />}
-        {tab === "ranks" && <Ranks />}
-        {tab === "workout" && <Workout />}
-        {tab === "history" && <History />}
-        {tab === "exercises" && <Exercises />}
-        {tab === "stats" && <Stats />}
+        {/* Per-TAB boundary, not one around the whole app: if Stats throws,
+            the dock survives and the user can walk to another tab instead of
+            force-quitting. Keyed by tab so switching away clears the error. */}
+        <ErrorBoundary key={tab}>
+          {tab === "home" && <Home />}
+          {tab === "ranks" && <Ranks />}
+          {tab === "workout" && <Workout />}
+          {tab === "history" && <History />}
+          {tab === "exercises" && <Exercises />}
+          {tab === "stats" && <Stats />}
+        </ErrorBoundary>
       </View>
+
+      {/* Data that could not be read is the most serious thing this app can
+          report: the app is running on an empty database, and the damaged
+          blob is parked under db.ts's BACKUP_KEY. Say so before the user
+          logs a session on top of it. */}
+      {loadError ? (
+        <Pressable
+          onPress={() => setDataNoteOpen(true)}
+          style={{
+            position: "absolute",
+            left: 12,
+            right: 12,
+            top: 8,
+            zIndex: 60,
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 8,
+            backgroundColor: C.badSurf,
+            borderRadius: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 8,
+          }}
+        >
+          <Icon name="TriangleAlert" size={14} color={C.badAcc} />
+          <Txt size={11} weight="bold" color={C.badAcc} style={{ flex: 1 }}>
+            Saved data could not be read — tap before logging anything
+          </Txt>
+        </Pressable>
+      ) : null}
+
+      {dataNoteOpen ? (
+        <ConfirmDialog
+          title="Your saved data could not be read"
+          message={
+            "torq is running on an empty database right now. The unreadable " +
+            "copy has been kept on this device, so nothing has been deleted " +
+            "— but logging new workouts will save over it. If you have an " +
+            "account, sign in first and your data will come back from the " +
+            "cloud."
+          }
+          confirmLabel="Understood"
+          onConfirm={() => setDataNoteOpen(false)}
+          onClose={() => setDataNoteOpen(false)}
+        />
+      ) : null}
 
       {/* Loud failure instead of a silent one. When the Supabase env vars
           are missing the auth gate quietly skips itself and accounts look
@@ -161,7 +213,11 @@ export default function App() {
                 once here means no child can draw under the bar, and every
                 hardcoded paddingBottom in the app stays correct. */}
             <SafeAreaView style={{ flex: 1, backgroundColor: C.page }} edges={["top", "bottom"]}>
-              <Root />
+              {/* Outer net: onboarding, the auth gate and the providers
+                  themselves are outside any tab boundary. */}
+              <ErrorBoundary>
+                <Root />
+              </ErrorBoundary>
             </SafeAreaView>
             <StatusBar style="light" />
           </UiProvider>

@@ -337,6 +337,25 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## Failure handling
+
+`src/components/ErrorBoundary.tsx` wraps the app twice: once PER TAB (keyed
+by tab, so a crash in Stats leaves the dock alive and the user can walk to
+another tab instead of force-quitting) and once around the whole tree for
+crashes outside a tab (onboarding, the auth gate, providers). The recovery
+screen NEVER touches storage — every option re-renders or navigates. A bug
+in a chart must not be able to take a year of workouts with it. Reset works
+by bumping a key so the subtree remounts; without that React reuses the same
+instances and rethrows immediately.
+
+`loadDB()` used to swallow a JSON parse failure and return an empty DB.
+That was silent data loss: the app looked like a fresh install and the next
+save overwrote the user's real history. It now parks the unreadable blob
+under `BACKUP_KEY` and sets a failure flag that the store exposes as
+`loadError`, which App.tsx surfaces as a red banner BEFORE the user can log
+a session on top of it. A missing key is still treated as a genuinely new
+install — only an unparseable one is an error.
+
 ## Tests
 
 `npm test` (vitest, `src/lib/__tests__/`). 128 assertions over the PURE
@@ -1231,3 +1250,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   superset" (needs real grouping) and "Preferences" (never specified) — a
   menu item that does nothing is worse than no menu item. Store gained
   `updateExercise`.
+- 2026-08-08 (later): Crash + data-loss hardening (see "Failure handling").
+  Added ErrorBoundary (per-tab and app-wide) and fixed loadDB silently
+  discarding a corrupt database — it now preserves the blob and warns.

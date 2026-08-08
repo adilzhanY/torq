@@ -58,10 +58,35 @@ export function emptyDB(): DB {
   };
 }
 
+/**
+ * Set when a stored blob existed but could not be parsed. The app MUST NOT
+ * treat that as "new user": returning an empty DB and carrying on would
+ * overwrite the real (if damaged) data on the next save, turning a
+ * recoverable glitch into permanent loss of someone's training history.
+ */
+let loadFailure: string | null = null;
+
+/** Non-null when the last loadDB() hit a corrupt blob. */
+export function getLoadFailure(): string | null {
+  return loadFailure;
+}
+
+/** Key holding the last unparseable blob, kept for manual recovery. */
+export const BACKUP_KEY = `${KEY}.corrupt`;
+
 export async function loadDB(): Promise<DB> {
+  loadFailure = null;
+  let raw: string | null = null;
   try {
-    const raw = await AsyncStorage.getItem(KEY);
-    if (!raw) return emptyDB();
+    raw = await AsyncStorage.getItem(KEY);
+  } catch (e) {
+    loadFailure = e instanceof Error ? e.message : "Storage could not be read.";
+    return emptyDB();
+  }
+  // A genuinely new install: nothing stored, nothing to lose.
+  if (!raw) return emptyDB();
+
+  try {
     const parsed = JSON.parse(raw) as Partial<DB>;
     const base = emptyDB();
     return {
@@ -70,7 +95,15 @@ export async function loadDB(): Promise<DB> {
       // Merge settings so fields added later get defaults.
       settings: { ...base.settings, ...(parsed.settings ?? {}) },
     };
-  } catch {
+  } catch (e) {
+    // Keep the damaged blob: it is the only copy of this device's history,
+    // and a human (or a later migration) may still salvage it.
+    loadFailure = e instanceof Error ? e.message : "Saved data could not be read.";
+    try {
+      await AsyncStorage.setItem(BACKUP_KEY, raw);
+    } catch {
+      // Nothing more we can do; the flag still stops us pretending all is well.
+    }
     return emptyDB();
   }
 }
