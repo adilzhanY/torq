@@ -27,6 +27,7 @@ import {
   acceptRequest,
   findProfile,
   handleOk,
+  loadFeed,
   loadFriends,
   myProfile,
   publishRankFromData,
@@ -37,7 +38,21 @@ import {
   type Friend,
   type FriendRequest,
   type Profile,
+  type RankEvent,
 } from "../lib/social";
+
+/** "3d" / "2h" / "now" — feed timestamps, short enough to sit in a row. */
+function ago(iso: string): string {
+  const ms = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(ms / 60000);
+  if (min < 1) return "now";
+  if (min < 60) return `${min}m`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h}h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d`;
+  return `${Math.floor(d / 7)}w`;
+}
 
 /** Snapshot tiers arrive as plain strings — keep the badge total. */
 function asTier(name: string): TierName {
@@ -123,6 +138,7 @@ export function Friends() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [feed, setFeed] = useState<RankEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -156,12 +172,13 @@ export function Friends() {
       return;
     }
     await publishMine();
-    const list = await loadFriends();
+    const [list, events] = await Promise.all([loadFriends(), loadFeed(12)]);
     if (list.error) setError(list.error);
     if (list.data) {
       setFriends(list.data.friends);
       setRequests(list.data.requests);
     }
+    if (events.data) setFeed(events.data);
     setLoading(false);
   }, [publishMine, settings.name]);
 
@@ -321,6 +338,32 @@ export function Friends() {
                   <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
                     <Icon name="X" size={18} color={C.inkFaint} />
                   </Pressable>
+                </View>
+              </View>
+            ))}
+          </>
+        ) : null}
+
+        {/* Rank-ups — the reason to open this tab twice a week */}
+        {feed.length > 0 ? (
+          <>
+            <Eyebrow>Rank-ups</Eyebrow>
+            {feed.map((e, i) => (
+              <View key={e.id}>
+                {i > 0 ? <Divider /> : null}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 }}>
+                  <RankBadge tier={asTier(e.toTier)} stage={4} size={34} />
+                  <Txt size={12.5} color={C.inkSoft} style={{ flex: 1 }}>
+                    <Txt size={12.5} weight="extrabold" color={e.isMe ? C.accent : C.ink}>
+                      {e.isMe ? "You" : `@${e.handle}`}
+                    </Txt>
+                    {e.isMe ? " reached " : " reached "}
+                    <Txt size={12.5} weight="extrabold" color={TIER_COLORS[asTier(e.toTier)]}>
+                      {e.toTier}
+                    </Txt>
+                    {e.kind === "lift" && e.liftName ? ` on ${e.liftName}` : " overall"}
+                  </Txt>
+                  <Txt size={11} weight="bold" color={C.inkFaint}>{ago(e.createdAt)}</Txt>
                 </View>
               </View>
             ))}

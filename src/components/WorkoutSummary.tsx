@@ -21,6 +21,7 @@ import { CenterDialog, ConfirmDialog, MenuRow } from "./Dialog";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
+import { ShareWorkoutCard } from "./ShareCard";
 import { computePRs, est1RM, fmtDuration, fmtLongDate } from "../lib/stats";
 import { workoutSets, workoutVolume, type Workout, type WorkoutEntry } from "../types";
 
@@ -93,6 +94,7 @@ export function WorkoutSummary({
     return () => sub.remove();
   }, [onClose]);
 
+  const [shareCard, setShareCard] = useState(false);
   const prs = useMemo(() => computePRs(workout, workouts), [workout, workouts]);
   const kcal = useMemo(
     () =>
@@ -120,6 +122,18 @@ export function WorkoutSummary({
       message: `${workout.name}\n${fmtLongDate(workout.startedAt)}\n${stats}\n\n${lines.join("\n")}`,
     });
   };
+
+  /** The record-setting sets, as one line each for the share card. */
+  const prLines = useMemo(() => {
+    const out: string[] = [];
+    workout.entries.forEach((e, ei) => {
+      e.sets.forEach((set, si) => {
+        if (!prs.bySet.has(`${ei}-${si}`)) return;
+        out.push(`${name(e.exerciseId)} · ${set.weight} ${settings.unit} × ${set.reps}`);
+      });
+    });
+    return out;
+  }, [workout, prs, settings.unit, name]);
 
   return (
     <SlideUp
@@ -275,8 +289,16 @@ export function WorkoutSummary({
               }}
             />
             <MenuRow
+              icon="Sparkles"
+              label="Share as image"
+              onPress={() => {
+                setMenuOpen(false);
+                setShareCard(true);
+              }}
+            />
+            <MenuRow
               icon="Share2"
-              label="Share workout"
+              label="Share as text"
               onPress={() => {
                 setMenuOpen(false);
                 share();
@@ -293,6 +315,37 @@ export function WorkoutSummary({
             />
           </View>
         </CenterDialog>
+      ) : null}
+
+      {shareCard ? (
+        <ShareWorkoutCard
+          title={workout.name}
+          date={fmtLongDate(workout.startedAt)}
+          stats={[
+            {
+              icon: "Clock",
+              value: workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : "—",
+              label: "DURATION",
+            },
+            { icon: "CheckCheck", value: String(workoutSets(workout)), label: "SETS" },
+            {
+              icon: "Scale",
+              value: `${Math.round(workoutVolume(workout))} ${settings.unit}`,
+              label: "VOLUME",
+            },
+            ...(prs.total > 0
+              ? [{ icon: "Trophy", value: String(prs.total), label: "PERSONAL RECORDS" }]
+              : kcal > 0
+                ? [{ icon: "Flame", value: `${kcal}`, label: "KCAL" }]
+                : []),
+          ]}
+          prs={prLines}
+          exercises={workout.entries.map(
+            (e) =>
+              `${e.sets.length} × ${name(e.exerciseId)} — ${Math.max(...e.sets.map((x) => x.weight), 0)} ${settings.unit}`,
+          )}
+          onClose={() => setShareCard(false)}
+        />
       ) : null}
 
       {confirmingDelete ? (

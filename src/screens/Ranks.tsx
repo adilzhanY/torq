@@ -11,7 +11,7 @@ import { Divider, Eyebrow, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { ExerciseInfo } from "../components/ExerciseInfo";
-import { ShareRankCard } from "../components/ShareRankCard";
+import { ShareRankCard } from "../components/ShareCard";
 import { Friends } from "./Friends";
 import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";

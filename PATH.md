@@ -120,7 +120,7 @@ graph, none of which a Strong clone has.
   Ranks surfaces, then Home, live session, and the rest.
 - New app icon, splash, and the rank-badge family derived from the tau.
 
-### Phase 3 - Social (IN PROGRESS)
+### Phase 3 - Social (IN PROGRESS — core shipped, polish left)
 - Public profile (opt-in), friend requests, friends list. **SHIPPED
   2026-08-08**: `supabase/social.sql` (profiles / friendships /
   rank_snapshots, friend-scoped RLS, `are_friends()` +
@@ -132,13 +132,19 @@ graph, none of which a Strong clone has.
 - Friends compare: **SHIPPED 2026-08-08** — tapping a friend opens
   `FriendCompare`: two badge columns, the points lead, then a lift-by-lift
   table. Compared on DOTS POINTS, never raw kilos (comparing kilos would
-  undo the whole normalization). Feed of friends' rank-ups: TODO — needs a
-  `rank_events` table plus a retention/dedup rule for what counts as a
-  rank-up, so it wants a design pass before more SQL.
-- Share cards: **rank card SHIPPED 2026-08-08** (`ShareRankCard`, share
-  button in the Ranks header) — 1080×1350 PNG via react-native-view-shot
-  `captureRef` + `expo-sharing`, both confirmed in Expo Go against the SDK
-  57 docs. PR card: TODO, same machinery off WorkoutSummary.
+  undo the whole normalization). Feed of friends' rank-ups **SHIPPED
+  2026-08-08**: a `rank_events` row per TIER change (points tick constantly,
+  tiers do not), written by the device when it publishes a snapshot and sees
+  the stored tier differs. PROMOTIONS ONLY — a tier can fall when bodyweight
+  rises, and "reached Silver" would be a lie on the way down. No event on a
+  first publish (a new user must not spray "Rust → Gold" at their friends).
+- Share cards: **SHIPPED 2026-08-08** — `ShareSheet` in
+  `src/components/ShareCard.tsx` captures whatever face it is given as a
+  1080×1350 PNG (react-native-view-shot `captureRef` + `expo-sharing`, both
+  confirmed in Expo Go against the SDK 57 docs). Two faces so far:
+  `ShareRankCard` (share button in the Ranks header) and `ShareWorkoutCard`
+  (WorkoutSummary ⋯ → "Share as image", PRs first, falling back to the
+  exercise list when the session set no records).
 
 ### Phase 4 - Arena + launch
 - Global/regional leaderboards with the anti-cheat stack (plausibility caps,

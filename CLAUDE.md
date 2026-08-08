@@ -193,6 +193,15 @@ private mirror tables: those hold raw logs and never leave their owner.
 - `rank_snapshots` — the published half of the rank engine: points, tier,
   stage, top-5 lifts as jsonb. Readable by you and accepted friends via the
   SECURITY DEFINER `are_friends()` helper.
+- `rank_events` — one row per TIER change, the friends' feed. Same friend
+  scoping; insert/delete own, and NO update policy at all (an event is a
+  fact about a moment, so it can be created or removed but never rewritten).
+  `publishRankFromData()` writes them by diffing the stored snapshot against
+  the freshly computed rank: PROMOTIONS ONLY (a tier can fall when
+  bodyweight rises — "reached Silver" would be a lie on the way down),
+  nothing at all on a first publish, and idempotent because the diff is
+  against the stored row, so republishing on every workout and every Friends
+  open cannot duplicate an event.
 - `find_profile(handle)` / `handle_taken(handle)` — SECURITY DEFINER RPCs,
   execute granted to `authenticated` only. Exact-handle match is the ONLY
   discovery path (friends-first: no browsing, no enumeration).
@@ -221,7 +230,10 @@ lifter would undo the normalization the whole app is built on. A friend's
 snapshot only carries their top 5, so a blank cell means "not in their top
 five", which the caption says out loud.
 
-`src/components/ShareRankCard.tsx` turns a rank into a 4:5 story image:
+`src/components/ShareCard.tsx` turns things into 4:5 story images:
+`ShareSheet` is the overlay + capture + system share sheet, and each card
+FACE is a child of it (`ShareRankCard`, `ShareWorkoutCard` — add faces, not
+capture code). The mechanism:
 react-native-view-shot `captureRef` + `expo-sharing` (both in Expo Go,
 checked against the SDK 57 docs). The card is the VISIBLE overlay, not an
 off-screen view — off-screen views can capture blank on Android, and the

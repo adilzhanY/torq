@@ -11,7 +11,7 @@
  */
 import { supabase } from "./supabase";
 import { bodyProfileAt } from "./calories";
-import { overallRank, rankLifts, stageOf, type BestLift } from "./rank";
+import { overallRank, rankLifts, stageOf, TIER_NAMES, type BestLift } from "./rank";
 import type { Exercise, Measurement, Settings, Workout } from "../types";
 
 export interface Profile {
@@ -57,6 +57,23 @@ export interface FriendRequest {
   displayName: string;
   /** "in" = they asked you; "out" = you asked them. */
   direction: "in" | "out";
+}
+
+/** One tier change, as the feed renders it. */
+export interface RankEvent {
+  id: string;
+  userId: string;
+  kind: "overall" | "lift";
+  liftName: string | null;
+  fromTier: string;
+  toTier: string;
+  points: number;
+  createdAt: string;
+  /** Filled in by loadFeed from the profiles it already fetched. */
+  handle: string;
+  displayName: string;
+  /** True when it's your own rank-up. */
+  isMe: boolean;
 }
 
 export type Result<T> = { data: T | null; error: string | null };
@@ -221,23 +238,127 @@ export async function publishRankFromData(source: {
   measurements: Measurement[];
   settings: Settings;
 }): Promise<void> {
+  const sb = supabase();
+  if (!sb) return;
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) return;
+
   const { workouts, exercises, measurements, settings } = source;
   const body = bodyProfileAt(settings, measurements, Date.now());
   const lifts = rankLifts(workouts, settings.unit, body.weightKg, body.sex);
   if (lifts.length === 0) return;
   const overall = overallRank(lifts);
-  await publishSnapshot({
+  const named = lifts.slice(0, 5).map((l) => ({
+    ...l,
+    name: exercises.find((e) => e.id === l.exerciseId)?.name ?? "Exercise",
+  }));
+
+  // Read the PREVIOUS snapshot first: the feed is the diff between what the
+  // server last knew and what we're about to publish.
+  const { data: prev } = await sb
+    .from("rank_snapshots")
+    .select("tier, lifts")
+    .eq("user_id", auth.user.id)
+    .maybeSingle();
+
+  const res = await publishSnapshot({
     points: overall.state.points,
     tier: overall.state.tier,
     stage: stageOf(overall.state.progress),
-    lifts: lifts.slice(0, 5).map((l) => ({
-      ...l,
-      name: exercises.find((e) => e.id === l.exerciseId)?.name ?? "Exercise",
-    })),
+    lifts: named,
     unit: settings.unit,
     bodyweightKg: body.weightKg,
     sex: body.sex,
   });
+  if (res.error) return;
+
+  // No previous row means this is a first publish, not a promotion — a
+  // brand-new user should not spray "Rust → Gold" across their friends' feed.
+  if (!prev) return;
+
+  // Only PROMOTIONS reach the feed. A tier can fall (gaining bodyweight
+  // lowers DOTS for the same lift), and "@you reached Silver" would be a lie
+  // on the way down — demotions are silent, by design.
+  const rank = (t: string) => (TIER_NAMES as readonly string[]).indexOf(t);
+  const promoted = (from: string, to: string) => rank(to) > rank(from) && rank(from) >= 0;
+
+  const events: {
+    user_id: string;
+    kind: "overall" | "lift";
+    lift_name: string | null;
+    from_tier: string;
+    to_tier: string;
+    points: number;
+  }[] = [];
+
+  if (prev.tier && promoted(prev.tier, overall.state.tier)) {
+    events.push({
+      user_id: auth.user.id,
+      kind: "overall",
+      lift_name: null,
+      from_tier: prev.tier,
+      to_tier: overall.state.tier,
+      points: Math.round(overall.state.points * 10) / 10,
+    });
+  }
+
+  const before = new Map<string, string>();
+  for (const l of (prev.lifts ?? []) as SnapshotLift[]) before.set(l.name, l.tier);
+  for (const l of named) {
+    const was = before.get(l.name);
+    // Only movements we already knew about: a lift's first appearance is a
+    // new entry, not a tier-up.
+    if (was && promoted(was, l.tier.tier)) {
+      events.push({
+        user_id: auth.user.id,
+        kind: "lift",
+        lift_name: l.name,
+        from_tier: was,
+        to_tier: l.tier.tier,
+        points: Math.round(l.points * 10) / 10,
+      });
+    }
+  }
+
+  // Tier changes are rare and the diff is against the stored row, so running
+  // this on every publish stays idempotent — no duplicate events.
+  if (events.length > 0) await sb.from("rank_events").insert(events);
+}
+
+/** Friends' (and your own) recent tier changes, newest first. */
+export async function loadFeed(limit = 20): Promise<Result<RankEvent[]>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) return fail("Sign in first.");
+  // RLS already restricts this to you + accepted friends.
+  const { data, error } = await sb
+    .from("rank_events")
+    .select("id, user_id, kind, lift_name, from_tier, to_tier, points, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (error) return fail(friendly(error.message));
+  const rows = data ?? [];
+  const profiles = await profilesByIds([...new Set(rows.map((r) => r.user_id))]);
+  return {
+    data: rows.map((r) => {
+      const p = profiles.get(r.user_id);
+      return {
+        id: r.id,
+        userId: r.user_id,
+        kind: r.kind,
+        liftName: r.lift_name,
+        fromTier: r.from_tier,
+        toTier: r.to_tier,
+        points: Number(r.points),
+        createdAt: r.created_at,
+        handle: p?.handle ?? (r.user_id === auth.user!.id ? "you" : "unknown"),
+        displayName: p?.displayName || p?.handle || "You",
+        isMe: r.user_id === auth.user!.id,
+      };
+    }),
+    error: null,
+  };
 }
 
 // ── friends ────────────────────────────────────────────────────────────────

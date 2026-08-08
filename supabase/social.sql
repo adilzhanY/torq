@@ -192,3 +192,45 @@ $$;
 
 revoke all on function public.handle_taken(text) from public;
 grant execute on function public.handle_taken(text) to authenticated;
+
+-- ── rank events (the friends' rank-up feed) ────────────────────────────────
+-- Appended 2026-08-08. Re-running this whole file is safe, so just paste it
+-- again to add these.
+--
+-- One row per TIER CHANGE, written by the device when it publishes a
+-- snapshot and notices the stored tier differs. Points tick constantly;
+-- tiers do not, which is exactly why they make a feed worth reading.
+create table if not exists public.rank_events (
+  id         uuid        primary key default gen_random_uuid(),
+  user_id    uuid        not null references auth.users(id) on delete cascade,
+  -- 'overall' = the whole ladder moved; 'lift' = one movement moved.
+  kind       text        not null check (kind in ('overall', 'lift')),
+  -- Null for 'overall'; the movement's name for 'lift'.
+  lift_name  text,
+  from_tier  text        not null,
+  to_tier    text        not null,
+  points     numeric     not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists rank_events_user_created_idx
+  on public.rank_events (user_id, created_at desc);
+
+alter table public.rank_events enable row level security;
+
+-- Same friend scoping as the snapshots: yours plus your friends'.
+drop policy if exists "read own or friends" on public.rank_events;
+create policy "read own or friends" on public.rank_events
+  for select using (
+    auth.uid() = user_id or public.are_friends(auth.uid(), user_id)
+  );
+
+-- Write your own only. No update policy at all: an event is a fact about a
+-- moment, so it can be created and deleted but never rewritten.
+drop policy if exists "write own events" on public.rank_events;
+create policy "write own events" on public.rank_events
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "delete own events" on public.rank_events;
+create policy "delete own events" on public.rank_events
+  for delete using (auth.uid() = user_id);
