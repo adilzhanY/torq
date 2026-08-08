@@ -10,6 +10,7 @@
  */
 import {
   LIFT_LABEL,
+  RECORDS_CHECKED_AT,
   RECORDS_SOURCE,
   RECORDS_VERSION,
   RECORD_CLASSES,
@@ -18,7 +19,7 @@ import {
 } from "../data/records";
 import type { Equipment } from "../types";
 
-export { LIFT_LABEL, RECORDS_SOURCE, RECORDS_VERSION };
+export { LIFT_LABEL, RECORDS_CHECKED_AT, RECORDS_SOURCE, RECORDS_VERSION };
 export type { RecordLift };
 
 /** Words that turn a competition lift into a variation (→ no record). */
@@ -59,18 +60,24 @@ export interface WorldRecord {
   lift: RecordLift;
   /** Record weight in kg. */
   kg: number;
+  /** Who holds it. */
+  holder: string;
   /** Weight-class label the record belongs to. */
   className: string;
 }
 
-/** The record for this lift in the user's sex + weight class. */
+/**
+ * The record for this lift in the user's sex + weight class, or null when
+ * that cell isn't curated yet (no line beats a wrong line).
+ */
 export function worldRecord(
   lift: RecordLift,
   sex: "male" | "female",
   bodyweightKg: number,
-): WorldRecord {
+): WorldRecord | null {
   const row = classFor(sex, bodyweightKg);
-  return { lift, kg: row[lift], className: row.label };
+  const cell = row[lift];
+  return cell ? { lift, kg: cell.kg, holder: cell.holder, className: row.label } : null;
 }
 
 /** Share of the record a lift represents, 0..1 (clamped at 1). */

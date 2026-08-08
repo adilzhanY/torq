@@ -886,3 +886,13 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   its container shrinks). `PrimaryButton` gained `large` (15px padding,
   15.5px extrabold), used by Finish workout. tsc + android export clean;
   NOT yet eyeballed on the emulator.
+- 2026-08-08 (later): World-record data replaced with SOURCED values. The
+  first pass wrote the IPF table from memory and was off by up to 17 kg
+  (men's 83 squat 337.5 → 320.5 actual), so `src/data/records.ts` was
+  rebuilt from published record tables (garagegymreviews, checked
+  2026-08-08) plus the 2026 Sheffield reports for the women's 84 kg squat:
+  version `ipf-classic-2026.1`, `RECORDS_CHECKED_AT`, and every cell is now
+  `{kg, holder} | null`. `worldRecord()` returns null for uncurated cells
+  (seven women's SQUAT classes — that source duplicates its bench table
+  there) so the Rank tab simply omits the record line instead of showing a
+  wrong one. The mention now names the holder and the check date.

@@ -31,6 +31,7 @@ import { bodyProfileAt } from "../lib/calories";
 import { dotsPoints, kgForPoints, stageOf, tierFor, tierLabel, TIER_COLORS } from "../lib/rank";
 import {
   LIFT_LABEL,
+  RECORDS_CHECKED_AT,
   RECORDS_SOURCE,
   recordLiftOf,
   recordShare,
@@ -436,9 +437,13 @@ export function ExerciseInfo({
                         {LIFT_LABEL[wr.lift]} · {wr.className} ·{" "}
                         {profile.sex === "male" ? "men" : "women"} · {recordDisp} {u}
                       </Txt>
+                      <Txt size={12} weight="bold" color={C.ink}>
+                        {wr.holder}
+                      </Txt>
                       <Txt size={10} color={C.inkFaint}>
-                        {RECORDS_SOURCE}, bundled snapshot. Your number is an
-                        estimated 1RM, not a competition lift.
+                        {RECORDS_SOURCE}, bundled snapshot checked{" "}
+                        {RECORDS_CHECKED_AT}. Your number is an estimated 1RM,
+                        not a competition lift.
                       </Txt>
                     </View>
                   );

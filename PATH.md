@@ -103,10 +103,14 @@ graph, none of which a Strong clone has.
   badge also in the info-page header.
   Honest scope: points and tiers only — no percentile claims until the
   OpenPowerlifting dataset is curated and bundled.
-- OPEN: `src/data/records.ts` ships the IPF-classic record table as an
-  APPROXIMATE snapshot (`RECORDS_VERIFIED = false`). Every row must be
-  checked against the official IPF record database before public release,
-  then flip the flag and bump `RECORDS_VERSION`.
+- `src/data/records.ts` now holds SOURCED IPF-classic records
+  (`ipf-classic-2026.1`, checked 2026-08-08) with record holders: men's
+  three lifts and women's bench + deadlift from the published
+  garagegymreviews record tables, women's 84 kg squat from the 2026
+  Sheffield reports. OPEN: the other seven women's SQUAT classes are `null`
+  (that source's women's-squat table is a duplicate of its bench table), so
+  those users see no squat record line — fill them from the official IPF
+  database, and re-check the whole table before public release.
 - OPEN: the OpenPowerlifting percentile tables (the other half of the
   hybrid engine) are still not curated or bundled.
 

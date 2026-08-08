@@ -1,54 +1,156 @@
 /**
  * World-record reference marks (PATH.md Phase 1, data half).
  *
- * IPF Classic (raw, no supportive equipment) world records for the three
- * competition lifts, per sex and weight class, in kilograms. Bundled and
- * versioned — never live-scraped (locked decision).
+ * IPF Classic (raw) world records for the three competition lifts, per sex
+ * and weight class, in kilograms. Bundled and versioned — never
+ * live-scraped (locked decision).
  *
- * ⚠ SNAPSHOT QUALITY: these values are an approximate snapshot of the IPF
- * classic records and are marked `verified: false`. Records break, and a
- * number shown next to a user's lift must be right, so re-check every row
- * against the official IPF record database (https://www.powerlifting.sport/
- * records) before the app ships publicly, then flip VERIFIED to true and
- * bump RECORDS_VERSION.
+ * PROVENANCE: transcribed 2026-08-08 from the published record tables at
+ * garagegymreviews.com/powerlifting-records (men: all three lifts; women:
+ * bench and deadlift), plus the women's 84 kg squat from the 2026 SBD
+ * Sheffield reports of Amanda Lawrence's 250.5 kg. That source's women's
+ * squat table is a duplicate of its bench table, so the remaining women's
+ * squat classes are `null` — the app shows NO record line rather than a
+ * wrong one. Fill them in from the official IPF database
+ * (https://www.powerlifting.sport/records) when curating properly, and
+ * re-check the whole table before a public release: records break.
  */
 
 export type RecordLift = "squat" | "bench" | "deadlift";
 
-export const RECORDS_VERSION = "ipf-classic-2025.1";
-export const RECORDS_VERIFIED = false;
+export const RECORDS_VERSION = "ipf-classic-2026.1";
+export const RECORDS_CHECKED_AT = "2026-08-08";
 export const RECORDS_SOURCE = "IPF Classic (raw) world records";
+
+/** One record: the weight in kg and who holds it. `null` = not curated. */
+export type RecordCell = { kg: number; holder: string } | null;
 
 export interface RecordClass {
   /** Upper bound of the class in kg (Infinity for the super-heavyweight). */
   max: number;
   /** Class label as lifters know it ("83 kg", "120+ kg"). */
   label: string;
-  squat: number;
-  bench: number;
-  deadlift: number;
+  squat: RecordCell;
+  bench: RecordCell;
+  deadlift: RecordCell;
 }
 
 export const RECORD_CLASSES: Record<"male" | "female", RecordClass[]> = {
   male: [
-    { max: 59, label: "59 kg", squat: 245, bench: 158.5, deadlift: 289.5 },
-    { max: 66, label: "66 kg", squat: 275.5, bench: 180.5, deadlift: 310 },
-    { max: 74, label: "74 kg", squat: 303, bench: 200.5, deadlift: 340 },
-    { max: 83, label: "83 kg", squat: 337.5, bench: 221.5, deadlift: 372.5 },
-    { max: 93, label: "93 kg", squat: 375, bench: 236.5, deadlift: 390.5 },
-    { max: 105, label: "105 kg", squat: 400.5, bench: 253.5, deadlift: 400 },
-    { max: 120, label: "120 kg", squat: 420.5, bench: 261.5, deadlift: 420 },
-    { max: Infinity, label: "120+ kg", squat: 490, bench: 280, deadlift: 440 },
+    {
+      max: 59,
+      label: "59 kg",
+      squat: { kg: 240, holder: "Kevin Gray" },
+      bench: { kg: 171, holder: "Sergei Fedosienko" },
+      deadlift: { kg: 275, holder: "Derek Ng" },
+    },
+    {
+      max: 66,
+      label: "66 kg",
+      squat: { kg: 271, holder: "Jonathan Garcia" },
+      bench: { kg: 213.5, holder: "Eddie Berglund" },
+      deadlift: { kg: 298, holder: "Hassan El Belghiti" },
+    },
+    {
+      max: 74,
+      label: "74 kg",
+      squat: { kg: 283, holder: "Taylor Atwood" },
+      bench: { kg: 211.5, holder: "Daiki Kodama" },
+      deadlift: { kg: 322, holder: "Kjell Egil Bakkelund" },
+    },
+    {
+      max: 83,
+      label: "83 kg",
+      squat: { kg: 320.5, holder: "Russel Orhii" },
+      bench: { kg: 218.5, holder: "Owen Hubbard" },
+      deadlift: { kg: 362.5, holder: "Asein Enahoro" },
+    },
+    {
+      max: 93,
+      label: "93 kg",
+      squat: { kg: 331, holder: "Anatolii Novopismennyi" },
+      bench: { kg: 238.5, holder: "Jonathan Cayco" },
+      deadlift: { kg: 373.5, holder: "Chance Mitchell" },
+    },
+    {
+      max: 105,
+      label: "105 kg",
+      squat: { kg: 360, holder: "Anatolii Novopismennyi" },
+      bench: { kg: 233.5, holder: "Rene Caky" },
+      deadlift: { kg: 390.5, holder: "Krzysztof Wierzbicki" },
+    },
+    {
+      max: 120,
+      label: "120 kg",
+      squat: { kg: 386, holder: "Dennis Cornelius" },
+      bench: { kg: 253, holder: "Dennis Cornelius" },
+      deadlift: { kg: 385.5, holder: "Bryce Krawczyk" },
+    },
+    {
+      max: Infinity,
+      label: "120+ kg",
+      squat: { kg: 477.5, holder: "Ray Williams" },
+      bench: { kg: 291.5, holder: "Ilyas Boughalem" },
+      deadlift: { kg: 398.5, holder: "Ray Williams" },
+    },
   ],
   female: [
-    { max: 47, label: "47 kg", squat: 158, bench: 92, deadlift: 191 },
-    { max: 52, label: "52 kg", squat: 174, bench: 107.5, deadlift: 207.5 },
-    { max: 57, label: "57 kg", squat: 195.5, bench: 115.5, deadlift: 227.5 },
-    { max: 63, label: "63 kg", squat: 213, bench: 122.5, deadlift: 240.5 },
-    { max: 69, label: "69 kg", squat: 226, bench: 134, deadlift: 251.5 },
-    { max: 76, label: "76 kg", squat: 237, bench: 141, deadlift: 259 },
-    { max: 84, label: "84 kg", squat: 247.5, bench: 148.5, deadlift: 270 },
-    { max: Infinity, label: "84+ kg", squat: 267.5, bench: 162.5, deadlift: 285 },
+    {
+      max: 47,
+      label: "47 kg",
+      squat: null,
+      bench: { kg: 96, holder: "Tiffany Chapon" },
+      deadlift: { kg: 185, holder: "Heather Connor" },
+    },
+    {
+      max: 52,
+      label: "52 kg",
+      squat: null,
+      bench: { kg: 113.5, holder: "Selma Ramberg" },
+      deadlift: { kg: 200.5, holder: "Farhanna Farid" },
+    },
+    {
+      max: 57,
+      label: "57 kg",
+      squat: null,
+      bench: { kg: 123, holder: "Donna Berglund" },
+      deadlift: { kg: 230, holder: "Joy Nnamani" },
+    },
+    {
+      max: 63,
+      label: "63 kg",
+      squat: null,
+      bench: { kg: 143.5, holder: "Carola Garra" },
+      deadlift: { kg: 231, holder: "Prescillia Bavoil" },
+    },
+    {
+      max: 69,
+      label: "69 kg",
+      squat: null,
+      bench: { kg: 144, holder: "Jennifer Thompson" },
+      deadlift: { kg: 240, holder: "Kimberly Walford" },
+    },
+    {
+      max: 76,
+      label: "76 kg",
+      squat: null,
+      bench: { kg: 145.5, holder: "Laura Mautalen" },
+      deadlift: { kg: 261.5, holder: "Jessica Buettner" },
+    },
+    {
+      max: 84,
+      label: "84 kg",
+      squat: { kg: 250.5, holder: "Amanda Lawrence" },
+      bench: { kg: 147.5, holder: "Agata Sitko" },
+      deadlift: { kg: 260.5, holder: "Amanda Lawrence" },
+    },
+    {
+      max: Infinity,
+      label: "84+ kg",
+      squat: null,
+      bench: { kg: 164.5, holder: "Mahailya Reeves" },
+      deadlift: { kg: 257.5, holder: "Sarah Brenner" },
+    },
   ],
 };
 
