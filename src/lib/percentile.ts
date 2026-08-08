@@ -19,6 +19,7 @@
  */
 import type { Equipment } from "../types";
 import { recordLiftOf, type RecordLift } from "./records";
+import RAW from "../data/percentiles.json";
 
 interface LiftTable {
   n: number;
@@ -29,7 +30,7 @@ interface Data {
   table: Record<"male" | "female", Record<RecordLift, LiftTable>>;
 }
 
-const DATA = require("../data/percentiles.json") as Data;
+const DATA = RAW as unknown as Data;
 
 export const PERCENTILE_SOURCE = DATA.meta.source;
 export const PERCENTILE_BUILT = DATA.meta.built;

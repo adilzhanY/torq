@@ -334,6 +334,28 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## Tests
+
+`npm test` (vitest, `src/lib/__tests__/`). 128 assertions over the PURE
+logic: rank/DOTS, percentiles, plausibility, records matching, password
+policy, streaks, weight progression, plan generation, calories, PRs. No
+component tests — the libs are where the product's claims live, and they
+import no React Native, so vitest runs them directly with no RN harness.
+
+Two things this bought immediately:
+- It caught a REAL bug on the first run: `MAX_DOTS` was 200 on the
+  assumption that elite single lifts score 130–140 DOTS. They don't — DOTS
+  is calibrated for a three-lift TOTAL, so a world-record single scores
+  ~270, and the cap would have silently refused to publish real elite lifts.
+- The `plan.test.ts` sweep (4 goals x every 2–6 day subset x focus combos,
+  1000+ combinations) is the regression net for the generator; that shape of
+  check is what caught flat 5x5 producing two-hour sessions.
+
+Run it before every commit; `npm run tsc` only proves types, not behaviour.
+Note both data modules now use `import x from "*.json"` rather than
+`require()` — Metro supports both, but vitest is ESM and `require` is not
+defined there.
+
 ## Commands
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
@@ -1183,3 +1205,5 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Stats, Friends, RoutineEditor, Onboarding's about-you step, and the
   new-exercise bottom sheet in ExerciseBrowser. tsc + android export clean;
   NOT yet eyeballed on a device.
+- 2026-08-08 (later): Test suite added (see "Tests" above) — 128 vitest
+  assertions across ten lib modules, plus the MAX_DOTS fix it caught.

@@ -9,6 +9,7 @@
  * meta.nextCursor) into src/data/exercisedb.json.
  */
 import type { BodyPart, Equipment } from "../types";
+import RAW from "../data/exercisedb.json";
 
 interface RawExercise {
   exerciseId: string;
@@ -33,7 +34,7 @@ export interface DbExercise {
   instructions: string[];
 }
 
-const raw = require("../data/exercisedb.json") as RawExercise[];
+const raw = RAW as RawExercise[];
 
 /**
  * The dataset's gifUrl points at static.exercisedb.dev, a domain with no DNS

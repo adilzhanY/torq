@@ -19,12 +19,23 @@ import { recordLiftOf, worldRecord } from "./records";
 import type { Equipment } from "./../types";
 
 /**
- * Ceiling for exercises with no official record, expressed in DOTS. The
- * per-lift ladder tops out at 165 (World Class); raw deadlift world records
- * sit near 130–140 DOTS, so 200 clears every real human by a wide margin
- * and still catches a decimal-point slip.
+ * Ceiling for exercises with no official record, expressed in DOTS.
+ *
+ * CAUGHT BY A TEST (2026-08-08): this was 200, on the mistaken belief that
+ * elite single lifts land near 130–140 DOTS. They do not — DOTS is
+ * calibrated for a three-lift TOTAL, so a single world-record lift scores
+ * far higher: Ray Williams' 490 kg squat is ~270, and the highest any
+ * bundled record can score inside its own weight class is ~350. A 200
+ * ceiling would have silently refused to publish real elite lifts.
+ *
+ * 400 is set above every achievable single-lift score and still catches the
+ * failure this actually exists for: a missed decimal point (a 1000 kg squat
+ * at 80 kg bodyweight scores ~690). The asymmetry is deliberate — refusing
+ * to publish someone's genuine lift is worse than letting one typo through
+ * to their friends, and the three competition lifts have a far tighter
+ * world-record check above anyway.
  */
-export const MAX_DOTS = 200;
+export const MAX_DOTS = 400;
 
 export interface PlausibilityCheck {
   ok: boolean;
