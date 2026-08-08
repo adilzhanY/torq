@@ -350,6 +350,25 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## Entitlements / paywall
+
+`src/lib/entitlements.ts` is the ONLY place that decides what is paid. The
+split lives in the `FEATURES` table as data — the point is that changing the
+business model is one edit, not an audit of `if (isPro)` scattered through
+the app. Screens ask `can("ranks")` and render `LockedPanel`/`Paywall` from
+`src/components/Paywall.tsx`.
+
+TWO RULES that are not arbitrary:
+- `cloudSync` is free forever. Holding someone's training history hostage
+  behind a subscription is not a business model.
+- `BILLING_UNAVAILABLE_SO_EVERYTHING_IS_FREE = true` until Play Billing is
+  actually connected. Shipping a paywall over features nobody can buy would
+  break the app for its only user. `unlock()` is the single seam: run the
+  purchase, verify server-side, call `setPro(true)`.
+
+Profile's Developer card has a Pro ON/OFF toggle so the locked states can be
+exercised before billing exists.
+
 ## The Arena (global leaderboards)
 
 `src/screens/Arena.tsx`, third segment of the Ranks tab. Backed by
@@ -1335,3 +1354,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 - 2026-08-08 (later): The Arena shipped (PATH.md Phase 4) — see the section
   above. Re-run supabase/social.sql: it gained profiles.arena/.verified and
   the two arena RPCs. Regional boards remain TODO (no country is collected).
+- 2026-08-08 (later): Freemium groundwork shipped (see "Entitlements /
+  paywall"): entitlements.ts, Paywall + LockedPanel, gates on
+  Ranks/Friends/Arena/share cards, a dev Pro toggle, and 8 tests pinning the
+  promises (logging and backup stay free, nothing is both free and paid,
+  unlock() refuses honestly instead of pretending).

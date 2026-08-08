@@ -12,6 +12,8 @@ import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { ShareRankCard } from "../components/ShareCard";
+import { LockedPanel, Paywall } from "../components/Paywall";
+import { can, type Feature } from "../lib/entitlements";
 import { Arena } from "./Arena";
 import { Friends } from "./Friends";
 import { Logo } from "../components/Logo";
@@ -29,6 +31,8 @@ export function Ranks() {
   const [view, setView] = useState<"you" | "friends" | "arena">("you");
   /** Share-card overlay (the rank as a story image). */
   const [sharing, setSharing] = useState(false);
+  /** Paid surface the user reached for, if it is locked. */
+  const [paywall, setPaywall] = useState<Feature | null>(null);
   const profile = bodyProfileAt(settings, measurements, Date.now());
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
@@ -71,7 +75,7 @@ export function Ranks() {
       {lifts.length > 0 ? (
         <Pressable
           hitSlop={8}
-          onPress={() => setSharing(true)}
+          onPress={() => (can("shareCards") ? setSharing(true) : setPaywall("shareCards"))}
           style={{
             width: 34,
             height: 34,
@@ -130,7 +134,17 @@ export function Ranks() {
         <View style={{ flex: 1 }}>
           <View style={{ paddingHorizontal: 16, paddingTop: TOP_BAR_SPACE + 16 }}>{head}</View>
           <View style={{ flex: 1, paddingHorizontal: 16 }}>
-            {view === "friends" ? <Friends /> : <Arena />}
+            {view === "friends" ? (
+              can("friends") ? (
+                <Friends />
+              ) : (
+                <LockedPanel feature="friends" onUnlock={() => setPaywall("friends")} />
+              )
+            ) : can("arena") ? (
+              <Arena />
+            ) : (
+              <LockedPanel feature="arena" onUnlock={() => setPaywall("arena")} />
+            )}
           </View>
         </View>
       ) : (
@@ -138,7 +152,9 @@ export function Ranks() {
           contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120 }}
         >
           {head}
-        {lifts.length === 0 ? (
+        {!can("ranks") ? (
+          <LockedPanel feature="ranks" onUnlock={() => setPaywall("ranks")} />
+        ) : lifts.length === 0 ? (
           <View>
             <Eyebrow>Overall</Eyebrow>
             <Txt size={13} color={C.inkFaint}>
@@ -221,6 +237,8 @@ export function Ranks() {
         </ScrollView>
       )}
 
+
+      {paywall ? <Paywall feature={paywall} onClose={() => setPaywall(null)} /> : null}
 
       {sharing ? (
         <ShareRankCard

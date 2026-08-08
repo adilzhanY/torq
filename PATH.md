@@ -206,6 +206,18 @@ graph, none of which a Strong clone has.
 - Monetization: freemium; core logging free, ranks/social/insights behind a
   cheap subscription or lifetime unlock (price BELOW the iOS incumbents).
   Play Billing takes 15% on the first $1M/yr.
+  **GROUNDWORK SHIPPED 2026-08-08**: `src/lib/entitlements.ts` holds the
+  whole split as DATA in one table, so changing your mind about what is paid
+  is an edit rather than an audit of twenty screens; `Paywall` +
+  `LockedPanel` render it; Ranks/Friends/Arena/share ask `can()`.
+  BILLING IS NOT WIRED and deliberately so — it needs your Play account and
+  signed products, and a half-wired purchase path can take money without
+  granting anything. `unlock()` is the single seam to fill. Until then
+  `can()` returns true for everything, because shipping a paywall over
+  features nobody can buy would just break the app.
+  STILL OPEN: the exact split (the current table is a proposal — ranks,
+  percentiles, friends, arena, share cards and insights paid; logging,
+  history, routines, plan AND backup free) and the price.
 
 ## Open questions (decide when reached)
 

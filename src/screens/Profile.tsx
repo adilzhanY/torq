@@ -10,6 +10,7 @@ import { Divider, Eyebrow, NumberField, PrimaryButton, TextField, Txt } from "..
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { deleteAccount } from "../lib/social";
+import { isPro, setPro } from "../lib/entitlements";
 import { ConfirmDialog } from "../components/Dialog";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
 import { bodyProfileAt } from "../lib/calories";
@@ -488,6 +489,8 @@ export function Profile({
   onRebuildPlan: () => void;
 }) {
   const { workouts, settings, updateSettings, seedDemoWorkouts, removeDemoWorkouts } = useStore();
+  // Dev-only: exercise the paywall before Play Billing exists.
+  const [proOn, setProOn] = useState(isPro());
   const totalVolume = workouts.reduce((s, w) => s + workoutVolume(w), 0);
 
   useEffect(() => {
@@ -632,6 +635,16 @@ export function Profile({
       <Divider />
       <Eyebrow>Developer</Eyebrow>
       <View style={{ gap: 10 }}>
+        <PrimaryButton
+          label={proOn ? "Pro: ON (tap to turn off)" : "Pro: OFF (tap to turn on)"}
+          background={C.page2}
+          color={C.ink}
+          onPress={() => {
+            const next = !proOn;
+            setProOn(next);
+            void setPro(next);
+          }}
+        />
         <PrimaryButton
           label="Seed demo workouts (12 weeks)"
           background={C.page2}

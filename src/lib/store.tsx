@@ -22,6 +22,7 @@ import { useAuth } from "./auth";
 import { publishRankFromData } from "./social";
 import { setSoundEnabled } from "./sounds";
 import { exportData } from "./exportData";
+import { loadEntitlements } from "./entitlements";
 import {
   uid,
   type Exercise,
@@ -97,6 +98,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [, setVersion] = useState(0);
 
   useEffect(() => {
+    // Entitlements gate paid surfaces, so they must be known before the
+    // first render that could show one.
+    void loadEntitlements();
     loadDB().then((db) => {
       // One-time cleanup: drop the old seeded starter library (ids "seed-…").
       // The ExerciseDB catalog replaced it — "my exercises" holds only what
