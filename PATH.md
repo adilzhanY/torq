@@ -174,6 +174,17 @@ graph, none of which a Strong clone has.
   the stored tier differs. PROMOTIONS ONLY — a tier can fall when bodyweight
   rises, and "reached Silver" would be a lie on the way down. No event on a
   first publish (a new user must not spray "Rust → Gold" at their friends).
+- Push notifications: **CODE SHIPPED 2026-08-08, SETUP PENDING** — a social
+  app where nothing tells you a request arrived is a dead loop.
+  `src/lib/notifications.ts` (permission + Expo push token + Android
+  channel + tap handling), a `push_tokens` table, and the
+  `supabase/functions/notify` Edge Function that fans out on new
+  friendships and rank_events. Remote push does NOT work in Expo Go from
+  SDK 53, so it needs a dev/preview build; the client no-ops quietly there
+  so the emulator loop is unaffected. Adilzhan must do the three things only
+  he can: FCM credentials via `eas credentials`, deploy the function, and
+  add the two Database Webhooks. Steps in
+  `supabase/functions/notify/README.md`.
 - Share cards: **SHIPPED 2026-08-08** — `ShareSheet` in
   `src/components/ShareCard.tsx` captures whatever face it is given as a
   1080×1350 PNG (react-native-view-shot `captureRef` + `expo-sharing`, both

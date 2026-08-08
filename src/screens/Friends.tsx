@@ -22,6 +22,7 @@ import { ConfirmDialog } from "../components/Dialog";
 import { FriendCompare } from "../components/FriendCompare";
 import { Divider, Eyebrow, PrimaryButton, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
+import { registerForPush } from "../lib/notifications";
 import { useStore } from "../lib/store";
 import { TIER_COLORS, TIER_NAMES, type TierName } from "../lib/rank";
 import {
@@ -201,6 +202,13 @@ export function Friends() {
     if (user) void refresh();
     else setLoading(false);
   }, [user, refresh]);
+
+  // Ask for notification permission HERE rather than at launch: the OS
+  // prompt appears once, and one shown out of context gets denied forever.
+  // Someone opening Friends has just demonstrated they care about this.
+  useEffect(() => {
+    if (user) void registerForPush();
+  }, [user]);
 
   // Debounced search: typing a handle fires one request after a pause, not
   // one per keystroke.

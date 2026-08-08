@@ -456,3 +456,26 @@ $$;
 
 revoke all on function public.arena_my_rank(text) from public;
 grant execute on function public.arena_my_rank(text) to authenticated;
+
+-- ── push tokens (appended 2026-08-08) ─────────────────────────────────────
+-- One row per DEVICE, not per user: people have a phone and a tablet, and a
+-- friend request should reach both.
+--
+-- `token` is the primary key so re-registering the same device updates it
+-- rather than accumulating duplicates that would each get a copy.
+create table if not exists public.push_tokens (
+  token      text        primary key,
+  user_id    uuid        not null references auth.users(id) on delete cascade,
+  platform   text        not null default 'android',
+  created_at timestamptz not null default now()
+);
+
+create index if not exists push_tokens_user_idx on public.push_tokens (user_id);
+
+alter table public.push_tokens enable row level security;
+
+-- Own rows only. Nobody may read anyone else's tokens: a leaked token lets a
+-- third party push arbitrary notifications to that device.
+drop policy if exists "own tokens" on public.push_tokens;
+create policy "own tokens" on public.push_tokens
+  for all using (auth.uid() = user_id) with check (auth.uid() = user_id);

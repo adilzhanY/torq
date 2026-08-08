@@ -350,6 +350,31 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## Push notifications
+
+Client: `src/lib/notifications.ts`. Server: `supabase/functions/notify`
+(Deno Edge Function) fanning out on inserts into `friendships` and
+`rank_events`, driven by Database Webhooks. Tokens live in `push_tokens`,
+one row per DEVICE keyed on the token itself.
+
+Things that are decisions, not accidents:
+- Remote push is DEAD in Expo Go from SDK 53. `pushSupported()` detects that
+  and every function no-ops, so `run_android.sh` still works — it just won't
+  deliver pushes. Testing push needs a dev/preview build.
+- Permission is requested when the user opens **Friends**, not at launch.
+  The OS prompt appears once; shown out of context it gets denied forever.
+- `unregisterPush()` runs on sign-out. A token left behind would deliver the
+  next person's friend requests to the previous owner's phone.
+- The Edge Function uses the SERVICE ROLE key to read recipients' tokens
+  (their RLS correctly forbids everyone else). That key must never appear in
+  the app bundle — which is exactly why the decision to notify lives server
+  side, quite apart from the fact that a closed phone can't notice anything.
+- `tsconfig.json` now EXCLUDES `supabase/functions`: it's Deno, with URL
+  imports and different globals, and `npm run tsc` would fail on it.
+
+Setup steps only Adilzhan can do (FCM credentials, deploy, webhooks) are in
+`supabase/functions/notify/README.md`.
+
 ## Entitlements / paywall
 
 `src/lib/entitlements.ts` is the ONLY place that decides what is paid. The
@@ -1359,3 +1384,7 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   Ranks/Friends/Arena/share cards, a dev Pro toggle, and 8 tests pinning the
   promises (logging and backup stay free, nothing is both free and paid,
   unlock() refuses honestly instead of pretending).
+- 2026-08-08 (later): Push notifications wired end to end in code (see the
+  section above) — client token registration, push_tokens table, and the
+  notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
+  until the FCM credentials, function deploy and two webhooks are done.

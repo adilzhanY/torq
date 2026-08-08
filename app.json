@@ -35,7 +35,14 @@
         }
       ],
       "expo-sharing",
-      "expo-audio"
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "color": "#C8FE23",
+          "defaultChannel": "default"
+        }
+      ]
     ],
     "extra": {
       "eas": {

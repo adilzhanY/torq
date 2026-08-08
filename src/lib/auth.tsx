@@ -8,6 +8,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase, supabaseConfigured } from "./supabase";
+import { unregisterPush } from "./notifications";
 
 type AuthResult = { error: string | null };
 /** Sign-up either lands a session or waits on an emailed confirm link. */
@@ -106,6 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    // Before the session goes: a token left behind would deliver the next
+    // person's friend requests to the previous owner's phone.
+    await unregisterPush().catch(() => {});
     await supabase()?.auth.signOut();
     // Signing out means "show me the gate again", not "keep me offline".
     setGuest(false);
