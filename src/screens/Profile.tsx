@@ -5,7 +5,7 @@ import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
-import { Card, Divider, Eyebrow, NumberField, PrimaryButton, SectionTitle, TextField, Txt } from "../components/ui";
+import { Divider, Eyebrow, NumberField, PrimaryButton, TextField, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
@@ -15,10 +15,10 @@ import { workoutVolume, type Settings, type Unit } from "../types";
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <Card style={{ flex: 1, gap: 4, alignItems: "center" }}>
-      <Txt size={20} weight="extrabold">{value}</Txt>
-      <Txt size={11} weight="bold" color={C.inkFaint}>{label}</Txt>
-    </Card>
+    <View style={{ flex: 1, gap: 2 }}>
+      <Txt size={24} weight="extrabold">{value}</Txt>
+      <Txt size={10} weight="bold" color={C.inkFaint}>{label}</Txt>
+    </View>
   );
 }
 
@@ -166,23 +166,23 @@ function Account() {
 
   if (!enabled) {
     return (
-      <Card>
+      <View>
         <Txt size={13} color={C.inkFaint}>
           Cloud sync is off. Add EXPO_PUBLIC_SUPABASE_URL and
           EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to .env to enable it — the app
           works fully offline without them.
         </Txt>
-      </Card>
+      </View>
     );
   }
 
   if (user) {
     return (
-      <Card style={{ gap: 10 }}>
+      <View style={{ gap: 10 }}>
         <Txt size={13} weight="semibold">Signed in as {user.email}</Txt>
         <PrimaryButton label="Sync now" onPress={() => void syncNow()} />
         <PrimaryButton label="Sign out" background={C.page2} color={C.ink} onPress={() => void signOut()} />
-      </Card>
+      </View>
     );
   }
 
@@ -195,7 +195,7 @@ function Account() {
   };
 
   return (
-    <Card style={{ gap: 10 }}>
+    <View style={{ gap: 10 }}>
       <TextField value={email} onChange={setEmail} placeholder="Email" />
       <TextField value={password} onChange={setPassword} placeholder="Password" />
       {error ? (
@@ -209,7 +209,7 @@ function Account() {
         onPress={() => void go(signUp)}
         disabled={busy}
       />
-    </Card>
+    </View>
   );
 }
 
@@ -239,7 +239,7 @@ function BodyProfileCard({
   };
 
   return (
-    <Card style={{ gap: 10 }}>
+    <View style={{ gap: 10 }}>
       <Txt size={12} weight="bold" color={C.inkSoft}>Sex</Txt>
       <View style={{ flexDirection: "row", gap: 6 }}>
         {(["male", "female"] as const).map((s) => (
@@ -329,7 +329,7 @@ function BodyProfileCard({
         Used to estimate calories burnt. Weight prefers your latest “Body
         weight” entry on the Measure tab; this one is the fallback.
       </Txt>
-    </Card>
+    </View>
   );
 }
 
@@ -345,7 +345,7 @@ function DailyGoalsCard({
   const [kcal, setKcal] = useState(settings.kcalGoal ? String(settings.kcalGoal) : "");
 
   return (
-    <Card style={{ gap: 10 }}>
+    <View style={{ gap: 10 }}>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1 }}>
           <NumberField
@@ -365,7 +365,7 @@ function DailyGoalsCard({
       <Txt size={11} color={C.inkFaint}>
         Workout, set and time targets come from your training plan.
       </Txt>
-    </Card>
+    </View>
   );
 }
 
@@ -411,7 +411,7 @@ export function Profile({
         <Pressable hitSlop={8} onPress={onClose}>
           <Icon name="ChevronLeft" size={24} color={C.ink} />
         </Pressable>
-        <Txt size={22} weight="extrabold" style={{ flex: 1 }}>Profile</Txt>
+        <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Profile</Txt>
       </View>
 
       <View style={{ flexDirection: "row", gap: 10 }}>
@@ -421,8 +421,9 @@ export function Profile({
 
       <RankCard />
 
-      <SectionTitle>Settings</SectionTitle>
-      <Card style={{ gap: 10 }}>
+      <Divider />
+      <Eyebrow>Settings</Eyebrow>
+      <View style={{ gap: 10 }}>
         <Txt size={12} weight="bold" color={C.inkSoft}>Your name</Txt>
         <TextField
           value={settings.name}
@@ -448,13 +449,15 @@ export function Profile({
             </Pressable>
           ))}
         </View>
-      </Card>
+      </View>
 
-      <SectionTitle>Body profile</SectionTitle>
+      <Divider />
+      <Eyebrow>Body profile</Eyebrow>
       <BodyProfileCard settings={settings} updateSettings={updateSettings} />
 
-      <SectionTitle>Training plan</SectionTitle>
-      <Card style={{ gap: 10 }}>
+      <Divider />
+      <Eyebrow>Training plan</Eyebrow>
+      <View style={{ gap: 10 }}>
         {settings.plan ? (
           <Txt size={13} weight="semibold">
             {GOAL_LABEL[settings.plan.goal] ?? settings.plan.goal} ·{" "}
@@ -472,16 +475,19 @@ export function Profile({
           label={settings.plan ? "Rebuild plan" : "Build my plan"}
           onPress={onRebuildPlan}
         />
-      </Card>
+      </View>
 
-      <SectionTitle>Daily goals</SectionTitle>
+      <Divider />
+      <Eyebrow>Daily goals</Eyebrow>
       <DailyGoalsCard settings={settings} updateSettings={updateSettings} />
 
-      <SectionTitle>Account & sync</SectionTitle>
+      <Divider />
+      <Eyebrow>Account & sync</Eyebrow>
       <Account />
 
-      <SectionTitle>Developer</SectionTitle>
-      <Card style={{ gap: 10 }}>
+      <Divider />
+      <Eyebrow>Developer</Eyebrow>
+      <View style={{ gap: 10 }}>
         <PrimaryButton
           label="Seed demo workouts (12 weeks)"
           background={C.page2}
@@ -498,7 +504,7 @@ export function Profile({
           Fake progressive PPL history for trying the charts — tagged, so
           removal only deletes seeded workouts.
         </Txt>
-      </Card>
+      </View>
     </ScrollView>
     </SlideUp>
   );

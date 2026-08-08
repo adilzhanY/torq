@@ -19,7 +19,7 @@ import { Image } from "expo-image";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
-import { Card, Divider, Eyebrow, Pill, PrimaryButton, SectionTitle, Txt } from "./ui";
+import { Divider, Eyebrow, Pill, PrimaryButton, Txt } from "./ui";
 import { ConfirmDialog } from "./Dialog";
 import { RankBadge } from "./RankBadge";
 import { WorkoutCard } from "./WorkoutCard";
@@ -461,11 +461,11 @@ export function ExerciseInfo({
 
         {tab === "history" ? (
           related.length === 0 ? (
-            <Card>
+            <View>
               <Txt size={13} color={C.inkFaint}>
                 No workouts with this exercise yet.
               </Txt>
-            </Card>
+            </View>
           ) : (
             related.map((w) => (
               <WorkoutCard key={w.id} workout={w} onPress={() => setViewing(w)} />
@@ -475,25 +475,25 @@ export function ExerciseInfo({
 
         {tab === "records" ? (
           rec.rows.length === 0 ? (
-            <Card>
+            <View>
               <Txt size={13} color={C.inkFaint}>
                 No sets logged yet — records show up after the first finished
                 workout with this exercise.
               </Txt>
-            </Card>
+            </View>
           ) : (
             <>
-              <SectionTitle>Personal records</SectionTitle>
-              <Card style={{ gap: 10 }}>
+              <Eyebrow>Personal records</Eyebrow>
+              <View style={{ gap: 10 }}>
                 <StatRow label="Estimated 1RM" value={`${rec.best1} ${u}`} />
                 <Divider />
                 <StatRow label="Max weight" value={`${rec.maxW} ${u}`} />
                 <Divider />
                 <StatRow label="Max volume" value={`${rec.maxV} ${u}`} />
-              </Card>
+              </View>
 
-              <SectionTitle>Rep maxes</SectionTitle>
-              <Card style={{ gap: 8 }}>
+              <Eyebrow>Rep maxes</Eyebrow>
+              <View style={{ gap: 8 }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <Txt size={11} weight="bold" color={C.inkFaint} style={{ width: 44 }}>
                     REPS
@@ -525,26 +525,26 @@ export function ExerciseInfo({
                   Estimated rep maxes come from your best 1RM (Epley); best
                   performance is your heaviest real set at each rep count.
                 </Txt>
-              </Card>
+              </View>
 
-              <SectionTitle>Lifetime stats</SectionTitle>
-              <Card style={{ gap: 10 }}>
+              <Eyebrow>Lifetime stats</Eyebrow>
+              <View style={{ gap: 10 }}>
                 <StatRow label="Total reps" value={`${rec.totalReps} reps`} />
                 <Divider />
                 <StatRow label="Total volume" value={`${Math.round(rec.totalVol)} ${u}`} />
-              </Card>
+              </View>
             </>
           )
         ) : null}
 
         {tab === "charts" ? (
           series.length === 0 ? (
-            <Card>
+            <View>
               <Txt size={13} color={C.inkFaint}>
                 No data yet — charts appear after the first finished workout
                 with this exercise.
               </Txt>
-            </Card>
+            </View>
           ) : (
             (() => {
               const METRICS = {
@@ -567,7 +567,7 @@ export function ExerciseInfo({
 
               return (
                 <>
-                  <Card style={{ gap: 14 }}>
+                  <View style={{ gap: 14 }}>
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                       <Txt size={32} weight="extrabold">
                         {fmtShort(latest)} {m.unit}
@@ -615,7 +615,7 @@ export function ExerciseInfo({
                     <Txt size={10} color={C.inkFaint}>
                       Hold a point to inspect it. The green line marks your all-time best.
                     </Txt>
-                  </Card>
+                  </View>
 
                   {shown.length > 0 ? (
                     <MinMaxTiles min={Math.min(...values)} max={Math.max(...values)} unit={m.unit} />

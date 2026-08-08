@@ -896,3 +896,20 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   (seven women's SQUAT classes — that source duplicates its bench table
   there) so the Rank tab simply omits the record line instead of showing a
   wrong one. The mention now names the holder and the check date.
+- 2026-08-08 (later): CARDLESS migration finished on the remaining screens
+  (PATH.md Phase 2, "screen by screen"). The bug driving it: `Card` is
+  transparent since the rebrand but still pads 16, so every Card inside an
+  already-padded ScrollView double-guttered its content — charts and rows
+  sat 32px from the screen edge while the page title sat at 16. Stats,
+  History, Profile, ExerciseInfo, WorkoutSummary and RoutineEditor now use
+  bare Views with `Eyebrow` section labels and hairline `Divider`s instead
+  of Cards; `SectionTitle` survives only inside ExerciseBrowser's filter
+  dialog/sheet (a true overlay). Screen specifics: Stats lost its surfaced
+  month box for a bare "Stats + ‹ ›" header row with the month underneath,
+  overview figures went 17px-in-a-box → 22px bare, streaks are a hairlined
+  row; History separates workouts with Dividers (WorkoutCard has documented
+  that contract since it went bare) and titles at 26; Profile's sections are
+  hairline-separated and its two Stat figures went 20 → 24. `Card` itself
+  stays for Workout.tsx's live-session exercise block, whose set rows
+  full-bleed with marginHorizontal -16 against its padding. tsc + android
+  export clean; NOT yet eyeballed on the emulator.

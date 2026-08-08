@@ -1,7 +1,7 @@
 /**
  * Stats tab (replaced the Measure tab; measurements now live at the
  * bottom): the analytics home —
- *  - lifetime overview cards (workouts / volume / sets / hours)
+ *  - month overview figures (workouts / volume / sets / hours), cardless
  *  - weekly volume + weekly workout-count BarCharts (last 8 weeks,
  *    current week in lime)
  *  - muscle split HBars (working-set volume by body part, last 30 days)
@@ -10,9 +10,9 @@
  */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
+import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
-import { Card, NumberField, Pill, PrimaryButton, SectionTitle, Txt } from "../components/ui";
+import { Divider, Eyebrow, NumberField, Pill, PrimaryButton, Txt } from "../components/ui";
 import { fmtShort } from "../components/charts";
 import { MuscleBreakdown, ProBars, TrendLine } from "../components/ProCharts";
 import { ConfirmDialog } from "../components/Dialog";
@@ -42,12 +42,45 @@ function weekStartOf(ms: number): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() - ((d.getDay() + 6) % 7)).getTime();
 }
 
+/** CARDLESS overview figure: the number carries it, the label whispers. */
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <Card style={{ flex: 1, gap: 4, alignItems: "center", paddingHorizontal: 8 }}>
-      <Txt size={17} weight="extrabold">{value}</Txt>
+    <View style={{ flex: 1, gap: 2 }}>
+      <Txt size={22} weight="extrabold">{value}</Txt>
       <Txt size={9} weight="bold" color={C.inkFaint}>{label}</Txt>
-    </Card>
+    </View>
+  );
+}
+
+/** Square icon button for the month stepper (interactive → gets a surface). */
+function StepButton({
+  icon,
+  onPress,
+  disabled,
+}: {
+  icon: string;
+  onPress: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <Pressable
+      hitSlop={8}
+      onPress={onPress}
+      disabled={disabled}
+      style={{
+        width: 34,
+        height: 34,
+        borderRadius: R.ctrl,
+        backgroundColor: C.page2,
+        borderWidth: 1,
+        borderColor: C.line,
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: disabled ? 0.35 : 1,
+      }}
+    >
+      <Icon name={icon} size={18} color={disabled ? C.inkFaint : C.ink} />
+    </Pressable>
   );
 }
 
@@ -172,93 +205,75 @@ export function Stats() {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={22} weight="extrabold">Stats</Txt>
-
-      {/* Month Switcher */}
-      <View
-        style={[
-          {
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            backgroundColor: C.surface,
-            borderRadius: R.md,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-          },
-          claySm(),
-        ]}
-      >
-        <Pressable hitSlop={12} onPress={prevMonth}>
-          <Icon name="ChevronLeft" size={22} color={C.ink} />
-        </Pressable>
-        <Txt size={16} weight="extrabold" color={C.ink}>
-          {MONTHS[currentMonth]} {currentYear}
-        </Txt>
-        <Pressable hitSlop={12} onPress={nextMonth} disabled={isCurrentMonth} style={{ opacity: isCurrentMonth ? 0.3 : 1 }}>
-          <Icon
-            name="ChevronRight"
-            size={22}
-            color={isCurrentMonth ? C.inkFaint : C.ink}
-          />
-        </Pressable>
+      {/* Header: title + month stepper, all on the bare page. */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Stats</Txt>
+        <StepButton icon="ChevronLeft" onPress={prevMonth} />
+        <StepButton icon="ChevronRight" onPress={nextMonth} disabled={isCurrentMonth} />
       </View>
+      <Txt size={14} weight="bold" color={C.inkSoft} style={{ marginTop: -8 }}>
+        {MONTHS[currentMonth]} {currentYear}
+      </Txt>
 
-      <View style={{ flexDirection: "row", gap: 8 }}>
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 4 }}>
         <Stat label="WORKOUTS" value={String(monthWorkouts.length)} />
         <Stat label={`VOLUME (${settings.unit.toUpperCase()})`} value={fmtShort(totalVolume)} />
         <Stat label="SETS" value={String(totalSets)} />
         <Stat label="HOURS" value={fmtShort(Math.round(totalHours))} />
       </View>
+      <Divider />
 
       {/* Lifetime streaks (not month-scoped — a streak has no month). */}
       {(() => {
         const streak = computeStreak(workouts, routines, Date.now());
         if (!streak.hasPlan) return null;
         return (
-          <Card style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Icon name="Flame" size={20} color={C.warnAcc} />
-              <View style={{ gap: 1 }}>
-                <Txt size={17} weight="extrabold">{streak.current}</Txt>
-                <Txt size={9} weight="bold" color={C.inkFaint}>CURRENT STREAK</Txt>
+          <>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Icon name="Flame" size={20} color={C.warnAcc} />
+                <View style={{ gap: 1 }}>
+                  <Txt size={19} weight="extrabold">{streak.current}</Txt>
+                  <Txt size={9} weight="bold" color={C.inkFaint}>CURRENT STREAK</Txt>
+                </View>
+              </View>
+              <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Icon name="Trophy" size={20} color={C.gold} />
+                <View style={{ gap: 1 }}>
+                  <Txt size={19} weight="extrabold">{streak.longest}</Txt>
+                  <Txt size={9} weight="bold" color={C.inkFaint}>LONGEST STREAK</Txt>
+                </View>
               </View>
             </View>
-            <View style={{ flex: 1, flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Icon name="Trophy" size={20} color={C.gold} />
-              <View style={{ gap: 1 }}>
-                <Txt size={17} weight="extrabold">{streak.longest}</Txt>
-                <Txt size={9} weight="bold" color={C.inkFaint}>LONGEST STREAK</Txt>
-              </View>
-            </View>
-          </Card>
+            <Divider />
+          </>
         );
       })()}
 
-      <Card style={{ gap: 12 }}>
-        <SectionTitle>Volume · weekly ({settings.unit})</SectionTitle>
+      <View style={{ gap: 10 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Volume · weekly ({settings.unit})</Eyebrow>
         <ProBars bars={weeks.map((w) => ({ label: w.label, value: w.volume, highlight: w.highlight }))} />
-      </Card>
+      </View>
 
-      <Card style={{ gap: 12 }}>
-        <SectionTitle>Workouts · weekly</SectionTitle>
+      <View style={{ gap: 10 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Workouts · weekly</Eyebrow>
         <ProBars
           height={80}
           bars={weeks.map((w) => ({ label: w.label, value: w.count, highlight: w.highlight }))}
           formatValue={(v) => String(v)}
         />
-      </Card>
+      </View>
 
       {splitRows.length > 0 ? (
-        <Card style={{ gap: 12 }}>
-          <SectionTitle>Muscle breakdown</SectionTitle>
+        <View style={{ gap: 10 }}>
+          <Eyebrow style={{ marginTop: 0 }}>Muscle breakdown</Eyebrow>
           <MuscleBreakdown rows={splitRows} caption={`Working-set volume · ${MONTHS[currentMonth]} ${currentYear} (${settings.unit})`} />
-        </Card>
+        </View>
       ) : null}
 
       {weightPoints.length > 0 ? (
-        <Card style={{ gap: 12 }}>
-          <SectionTitle>Body weight ({settings.unit})</SectionTitle>
+        <View style={{ gap: 10 }}>
+          <Eyebrow style={{ marginTop: 0 }}>Body weight ({settings.unit})</Eyebrow>
           <TrendLine
             points={weightPoints}
             unit={settings.unit}
@@ -267,11 +282,12 @@ export function Stats() {
             formatValue={(v) => `${Math.round(v * 10) / 10}`}
           />
           <Txt size={10} color={C.inkFaint}>Hold a point to inspect it.</Txt>
-        </Card>
+        </View>
       ) : null}
 
-      <SectionTitle>Log a measurement</SectionTitle>
-      <Card style={{ gap: 10 }}>
+      <Divider />
+      <View style={{ gap: 10 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Log a measurement</Eyebrow>
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
           {KINDS.map((k) => (
             <Pressable
@@ -296,18 +312,16 @@ export function Stats() {
             <PrimaryButton label="Save" onPress={submit} disabled={!Number(value)} />
           </View>
         </View>
-      </Card>
+      </View>
 
-      <SectionTitle>Measurement log</SectionTitle>
-      {sortedM.length === 0 ? (
-        <Card>
+      <View style={{ gap: 2 }}>
+        <Eyebrow style={{ marginTop: 6 }}>Measurement log</Eyebrow>
+        {sortedM.length === 0 ? (
           <Txt size={13} color={C.inkFaint}>No measurements yet.</Txt>
-        </Card>
-      ) : (
-        <Card style={{ gap: 0, paddingVertical: 6 }}>
-          {sortedM.map((m, i) => (
+        ) : (
+          sortedM.map((m, i) => (
             <View key={m.id}>
-              {i > 0 ? <View style={{ height: 1, backgroundColor: C.hair }} /> : null}
+              {i > 0 ? <Divider /> : null}
               <View
                 style={{
                   flexDirection: "row",
@@ -330,9 +344,9 @@ export function Stats() {
                 </View>
               </View>
             </View>
-          ))}
-        </Card>
-      )}
+          ))
+        )}
+      </View>
     </ScrollView>
 
       {confirming ? (

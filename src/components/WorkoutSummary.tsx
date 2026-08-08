@@ -16,7 +16,7 @@ import { BackHandler, Pressable, ScrollView, Share, View } from "react-native";
 import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
-import { Card, Divider, Txt } from "./ui";
+import { Divider, Txt } from "./ui";
 import { CenterDialog, ConfirmDialog, MenuRow } from "./Dialog";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
@@ -172,7 +172,7 @@ export function WorkoutSummary({
           <StatItem icon="Trophy" text={`${prs.total} PR${prs.total === 1 ? "" : "s"}`} />
         </View>
 
-        <Card style={{ gap: 8 }}>
+        <View style={{ gap: 8 }}>
           {workout.entries.map((entry, ei) => {
             let normalCount = 0;
             const highlighted = entry.exerciseId === highlightExerciseId;
@@ -243,7 +243,7 @@ export function WorkoutSummary({
               </View>
             );
           })}
-        </Card>
+        </View>
       </ScrollView>
 
       {menuOpen ? (

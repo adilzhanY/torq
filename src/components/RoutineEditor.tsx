@@ -12,7 +12,7 @@ import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp, Squish } from "./anim";
-import { Card, NumberField, Txt } from "./ui";
+import { NumberField, Txt } from "./ui";
 import { CenterDialog, MenuRow } from "./Dialog";
 import { ExercisePicker } from "./ExercisePicker";
 import { useStore } from "../lib/store";
@@ -134,7 +134,7 @@ export function RoutineEditor({
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
         {entries.map((entry, ei) => (
-          <Card key={`${entry.exerciseId}-${ei}`} style={{ gap: 8 }}>
+          <View key={`${entry.exerciseId}-${ei}`} style={{ gap: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
               <Txt size={15} weight="bold" style={{ flex: 1 }} numberOfLines={1}>
                 {name(entry.exerciseId)}
@@ -196,7 +196,7 @@ export function RoutineEditor({
               <Icon name="Plus" size={14} color={C.inkSoft} />
               <Txt size={13} weight="bold" color={C.inkSoft}>Add set</Txt>
             </Pressable>
-          </Card>
+          </View>
         ))}
 
         <Squish

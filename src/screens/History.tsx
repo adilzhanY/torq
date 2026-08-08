@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { C, TOP_BAR_SPACE } from "../theme";
-import { Card, Txt } from "../components/ui";
+import { Divider, Txt } from "../components/ui";
 import { ConfirmDialog } from "../components/Dialog";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
@@ -48,23 +48,21 @@ export function History() {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={22} weight="extrabold">History</Txt>
+      <Txt size={26} weight="extrabold">History</Txt>
 
       {sorted.length === 0 ? (
-        <Card>
-          <Txt size={13} color={C.inkFaint}>
-            Nothing here yet — finish your first workout and it lands in the log.
-          </Txt>
-        </Card>
+        <Txt size={13} color={C.inkFaint}>
+          Nothing here yet — finish your first workout and it lands in the log.
+        </Txt>
       ) : (
         monthSections(sorted).map((section) => (
-          <View key={section.title} style={{ gap: 14 }}>
+          <View key={section.title} style={{ gap: 2 }}>
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "baseline",
                 justifyContent: "space-between",
-                marginTop: 4,
+                marginTop: 10,
               }}
             >
               <Txt size={18} weight="extrabold">{section.title}</Txt>
@@ -72,13 +70,16 @@ export function History() {
                 {section.workouts.length} workout{section.workouts.length === 1 ? "" : "s"}
               </Txt>
             </View>
-            {section.workouts.map((w) => (
-              <WorkoutCard
-                key={w.id}
-                workout={w}
-                onPress={() => setSelected(w)}
-                onDelete={() => setConfirming(w)}
-              />
+            {/* CARDLESS: entries are separated by hairlines, not boxes. */}
+            {section.workouts.map((w, i) => (
+              <View key={w.id}>
+                {i > 0 ? <Divider /> : null}
+                <WorkoutCard
+                  workout={w}
+                  onPress={() => setSelected(w)}
+                  onDelete={() => setConfirming(w)}
+                />
+              </View>
             ))}
           </View>
         ))
