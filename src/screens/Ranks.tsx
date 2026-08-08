@@ -12,6 +12,7 @@ import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { ShareRankCard } from "../components/ShareCard";
+import { Arena } from "./Arena";
 import { Friends } from "./Friends";
 import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
@@ -25,7 +26,7 @@ export function Ranks() {
   /** Library id of the lift opened as a full rank page. */
   const [info, setInfo] = useState<string | null>(null);
   /** You (own ladder) vs Friends (the circle's ranks). */
-  const [view, setView] = useState<"you" | "friends">("you");
+  const [view, setView] = useState<"you" | "friends" | "arena">("you");
   /** Share-card overlay (the rank as a story image). */
   const [sharing, setSharing] = useState(false);
   const profile = bodyProfileAt(settings, measurements, Date.now());
@@ -123,13 +124,13 @@ export function Ranks() {
 
   return (
     <View style={{ flex: 1 }}>
-      {view === "friends" ? (
-        // Friends owns its own scroll root so its overlays (compare,
-        // confirm) can position against the WINDOW, not scroll content.
+      {view !== "you" ? (
+        // Friends/Arena own their scroll roots so their overlays (compare,
+        // confirm) position against the WINDOW, not scroll content.
         <View style={{ flex: 1 }}>
           <View style={{ paddingHorizontal: 16, paddingTop: TOP_BAR_SPACE + 16 }}>{head}</View>
           <View style={{ flex: 1, paddingHorizontal: 16 }}>
-            <Friends />
+            {view === "friends" ? <Friends /> : <Arena />}
           </View>
         </View>
       ) : (

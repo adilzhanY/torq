@@ -327,3 +327,132 @@ $fn$;
 
 revoke all on function public.delete_my_account() from public;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ── The Arena: opt-in global leaderboards (PATH.md Phase 4) ───────────────
+-- Appended 2026-08-08.
+--
+-- The Liftoff lesson, restated: an anonymous global board is the easiest
+-- thing in the app to poison, so this is built to be UNTRUSTWORTHY BY
+-- DEFAULT and to say so:
+--   * appearing is a SEPARATE opt-in (`arena`), not implied by having a
+--     public profile — friends-first stays the default;
+--   * every published snapshot has already passed the client-side
+--     plausibility cap (src/lib/plausibility.ts), which drops anything over
+--     the world record for the lifter's class;
+--   * `verified` marks a lifter whose numbers a human has checked. Nothing
+--     sets it yet — video verification is a later feature — but the column
+--     exists so the board can be filtered to verified-only from day one
+--     rather than retrofitting trust later.
+-- Identity exposed is exactly what search already exposes: a handle and a
+-- display name. No bodyweight, no logs, no user ids.
+alter table public.profiles
+  add column if not exists arena boolean not null default false;
+alter table public.profiles
+  add column if not exists verified boolean not null default false;
+
+/**
+ * Top of the board. `p_lift` is null for the overall ranking, or a lift
+ * name to rank a single movement out of the snapshot's stored top-5.
+ */
+create or replace function public.arena_top(
+  p_lift text default null,
+  p_verified_only boolean default false,
+  p_limit int default 50
+)
+returns table (
+  rank_no bigint,
+  handle citext,
+  display_name text,
+  verified boolean,
+  points numeric,
+  tier text,
+  is_me boolean
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with eligible as (
+    select
+      pr.handle,
+      pr.display_name,
+      pr.verified,
+      pr.user_id,
+      case
+        when p_lift is null then s.points
+        else (
+          -- Per-lift board: pull the matching entry out of the snapshot's
+          -- stored lifts. Case-insensitive, since catalog names vary.
+          select max((l->>'points')::numeric)
+          from jsonb_array_elements(s.lifts) l
+          where lower(l->>'name') = lower(p_lift)
+        )
+      end as points,
+      case
+        when p_lift is null then s.tier
+        else (
+          select (l->>'tier')
+          from jsonb_array_elements(s.lifts) l
+          where lower(l->>'name') = lower(p_lift)
+          order by (l->>'points')::numeric desc
+          limit 1
+        )
+      end as tier
+    from public.rank_snapshots s
+    join public.profiles pr on pr.user_id = s.user_id
+    where pr.arena
+      and (not p_verified_only or pr.verified)
+  )
+  select
+    row_number() over (order by e.points desc, e.handle) as rank_no,
+    e.handle,
+    e.display_name,
+    e.verified,
+    round(e.points, 1) as points,
+    e.tier,
+    e.user_id = auth.uid() as is_me
+  from eligible e
+  where e.points is not null and e.points > 0
+  order by e.points desc, e.handle
+  limit least(greatest(p_limit, 1), 200);
+$$;
+
+revoke all on function public.arena_top(text, boolean, int) from public;
+grant execute on function public.arena_top(text, boolean, int) to authenticated;
+
+/** Where the caller sits, so someone outside the top N still sees a number. */
+create or replace function public.arena_my_rank(p_lift text default null)
+returns table (rank_no bigint, total bigint, points numeric)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with eligible as (
+    select
+      s.user_id,
+      case
+        when p_lift is null then s.points
+        else (
+          select max((l->>'points')::numeric)
+          from jsonb_array_elements(s.lifts) l
+          where lower(l->>'name') = lower(p_lift)
+        )
+      end as points
+    from public.rank_snapshots s
+    join public.profiles pr on pr.user_id = s.user_id
+    where pr.arena
+  ),
+  ranked as (
+    select user_id, points, row_number() over (order by points desc) as rank_no
+    from eligible
+    where points is not null and points > 0
+  )
+  select r.rank_no, (select count(*) from ranked), round(r.points, 1)
+  from ranked r
+  where r.user_id = auth.uid();
+$$;
+
+revoke all on function public.arena_my_rank(text) from public;
+grant execute on function public.arena_my_rank(text) to authenticated;

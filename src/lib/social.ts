@@ -21,6 +21,27 @@ export interface Profile {
   handle: string;
   displayName: string;
   visible: boolean;
+  /** Opted in to the global leaderboard (separate from `visible`). */
+  arena?: boolean;
+  /** Numbers checked by a human. Nothing sets this yet — see social.sql. */
+  verified?: boolean;
+}
+
+/** One row of the global board. */
+export interface ArenaRow {
+  rank: number;
+  handle: string;
+  displayName: string;
+  verified: boolean;
+  points: number;
+  tier: string;
+  isMe: boolean;
+}
+
+export interface ArenaStanding {
+  rank: number;
+  total: number;
+  points: number;
 }
 
 export interface RankSnapshot {
@@ -126,7 +147,7 @@ export async function myProfile(): Promise<Result<Profile | null>> {
   if (!auth.user) return fail("Sign in first.");
   const { data, error } = await sb
     .from("profiles")
-    .select("user_id, handle, display_name, visible")
+    .select("user_id, handle, display_name, visible, arena, verified")
     .eq("user_id", auth.user.id)
     .maybeSingle();
   if (error) return fail(friendly(error.message));
@@ -137,6 +158,8 @@ export async function myProfile(): Promise<Result<Profile | null>> {
           handle: data.handle,
           displayName: data.display_name,
           visible: data.visible,
+          arena: data.arena ?? false,
+          verified: data.verified ?? false,
         }
       : null,
     error: null,
@@ -379,6 +402,73 @@ export async function loadFeed(limit = 20): Promise<Result<RankEvent[]>> {
         isMe: r.user_id === auth.user!.id,
       };
     }),
+    error: null,
+  };
+}
+
+// ── arena (global leaderboards) ────────────────────────────────────────────
+
+/** Join or leave the global board. Separate from having a public profile. */
+export async function setArenaOptIn(on: boolean): Promise<Result<true>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const { data: auth } = await sb.auth.getUser();
+  if (!auth.user) return fail("Sign in first.");
+  const { error } = await sb.from("profiles").update({ arena: on }).eq("user_id", auth.user.id);
+  if (error) return fail(friendly(error.message));
+  return { data: true, error: null };
+}
+
+/**
+ * Top of the board. `lift` null = overall; otherwise an exercise name,
+ * matched case-insensitively against each snapshot's stored top-5.
+ */
+export async function arenaTop(
+  lift: string | null = null,
+  verifiedOnly = false,
+  limit = 50,
+): Promise<Result<ArenaRow[]>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const { data, error } = await sb.rpc("arena_top", {
+    p_lift: lift,
+    p_verified_only: verifiedOnly,
+    p_limit: limit,
+  });
+  if (error) return fail(friendly(error.message));
+  return {
+    data: (data ?? []).map(
+      (r: {
+        rank_no: number;
+        handle: string;
+        display_name: string;
+        verified: boolean;
+        points: number;
+        tier: string;
+        is_me: boolean;
+      }) => ({
+        rank: Number(r.rank_no),
+        handle: r.handle,
+        displayName: r.display_name || r.handle,
+        verified: r.verified,
+        points: Number(r.points),
+        tier: r.tier,
+        isMe: r.is_me,
+      }),
+    ),
+    error: null,
+  };
+}
+
+/** The caller's own standing, so being outside the top N still shows a number. */
+export async function arenaMyRank(lift: string | null = null): Promise<Result<ArenaStanding | null>> {
+  const sb = supabase();
+  if (!sb) return fail(OFFLINE);
+  const { data, error } = await sb.rpc("arena_my_rank", { p_lift: lift });
+  if (error) return fail(friendly(error.message));
+  const row = Array.isArray(data) ? data[0] : data;
+  return {
+    data: row ? { rank: Number(row.rank_no), total: Number(row.total), points: Number(row.points) } : null,
     error: null,
   };
 }

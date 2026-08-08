@@ -182,9 +182,23 @@ graph, none of which a Strong clone has.
   (WorkoutSummary ⋯ → "Share as image", PRs first, falling back to the
   exercise list when the session set no records).
 
-### Phase 4 - Arena + launch
-- Global/regional leaderboards with the anti-cheat stack (plausibility caps,
-  verified badge).
+### Phase 4 - Arena + launch (IN PROGRESS)
+- Global leaderboards with the anti-cheat stack. **SHIPPED 2026-08-08**:
+  `arena_top()` / `arena_my_rank()` RPCs + `profiles.arena` / `.verified`
+  in supabase/social.sql, `src/screens/Arena.tsx` behind a third segment of
+  the Ranks tab (You / Friends / Arena). Overall plus per-lift boards for
+  squat/bench/deadlift, ranked on DOTS points so every bodyweight competes
+  on equal terms — which is the only thing that makes a global board
+  defensible here. Anti-cheat, per the Liftoff lesson: joining is a
+  SEPARATE opt-in from having a public profile (friends-first stays the
+  default, nobody is entered silently); published snapshots have already
+  passed the plausibility cap; a "Verified lifters only" filter ships from
+  day one so trust can tighten without a retrofit; and the footer states
+  outright that entries are self-reported and the friends board is the
+  honest one. REGIONAL boards are still TODO — they need a country on the
+  profile, which nothing collects yet.
+- `verified` is a column nobody sets: video verification is a later feature.
+  The flag exists so the filter is real the day verification lands.
 - Launch playbook: Google Play **pre-registration** (the Android equivalent
   of Apple pre-orders: auto-installs on launch day), short-form content
   streak leading up to it, closed test (12 testers / 14 days rule for new

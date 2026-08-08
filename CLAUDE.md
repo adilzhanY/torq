@@ -350,6 +350,25 @@ countdown + "go" at zero, and finishing (the PR flourish when the session
 set records, otherwise the plain one). `Settings.sound` toggles it in
 Profile; undefined counts as ON so existing installs get sound.
 
+## The Arena (global leaderboards)
+
+`src/screens/Arena.tsx`, third segment of the Ranks tab. Backed by
+`arena_top(lift, verifiedOnly, limit)` and `arena_my_rank(lift)` in
+supabase/social.sql, over `rank_snapshots` joined to profiles that opted in.
+
+The design is defensive on purpose (PATH.md's "Liftoff lesson"):
+- `profiles.arena` is a SEPARATE opt-in from `visible`. Having a public
+  profile must never silently enter someone into a global ranking.
+- Ranked on DOTS points, not kilos — a global board mixing bodyweights is
+  only fair because of the normalization.
+- `profiles.verified` exists but NOTHING sets it yet; the "Verified lifters
+  only" filter ships anyway so tightening trust later is a data change, not
+  a UI retrofit.
+- The board exposes exactly what search already does: handle + display name.
+  No bodyweight, no logs, no user ids.
+- The footer says entries are self-reported and points at the friends board
+  as the trustworthy one. Do not remove that.
+
 ## Account deletion + export (Play requirement)
 
 Google Play REQUIRES in-app account deletion from any app that offers
@@ -1313,3 +1332,6 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   lift has no record". `weightClassOf()` added to records.ts for that
   message. Filling it properly is a manual task against the official IPF
   database.
+- 2026-08-08 (later): The Arena shipped (PATH.md Phase 4) — see the section
+  above. Re-run supabase/social.sql: it gained profiles.arena/.verified and
+  the two arena RPCs. Regional boards remain TODO (no country is collected).
