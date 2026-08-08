@@ -479,6 +479,20 @@ Note both data modules now use `import x from "*.json"` rather than
 `require()` — Metro supports both, but vitest is ESM and `require` is not
 defined there.
 
+## Launch docs
+
+`docs/launch/` holds the Play release pack: `PRIVACY.md`, `DATA_SAFETY.md`,
+`STORE_LISTING.md`, `LAUNCH.md`.
+
+`DATA_SAFETY.md` was written against the real schema, not from memory —
+Google audits Data Safety answers against observed network traffic and pulls
+releases that misdeclare. Two things there are easy to get wrong and are
+called out in the file: bodyweight/sex ARE collected (the rank engine
+normalizes on them) even though other users never see them, and publishing a
+rank to another torq user is NOT third-party "sharing" under Play's
+definition. Re-check the whole sheet when analytics, billing or regional
+boards land.
+
 ## Commands
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
@@ -1388,3 +1402,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-08 (later): Play launch pack written (docs/launch/) — privacy
+  policy, a data-safety answer sheet verified against the schema, store
+  listing copy, and the ordered launch playbook. Key scheduling finding:
+  the 12-tester/14-day closed test and pre-registration both have hard
+  waiting periods, so they gate the date more than the code does.

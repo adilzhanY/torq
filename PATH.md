@@ -214,6 +214,14 @@ graph, none of which a Strong clone has.
   of Apple pre-orders: auto-installs on launch day), short-form content
   streak leading up to it, closed test (12 testers / 14 days rule for new
   personal Play accounts) run well in advance.
+  **WRITTEN 2026-08-08** in `docs/launch/`: `PRIVACY.md` (required before
+  Play will accept a release), `DATA_SAFETY.md` (an answer sheet checked
+  against the actual schema — Google audits these against observed traffic,
+  and a wrong one gets releases pulled), `STORE_LISTING.md` (name, both
+  descriptions, screenshot order, pre-publish checklist) and `LAUNCH.md`
+  (the ordered playbook). The sequencing note that matters: the closed test
+  and pre-registration both have hard waiting periods, so start them before
+  the app feels finished.
 - Monetization: freemium; core logging free, ranks/social/insights behind a
   cheap subscription or lifetime unlock (price BELOW the iOS incumbents).
   Play Billing takes 15% on the first $1M/yr.
