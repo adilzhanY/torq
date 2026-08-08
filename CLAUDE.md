@@ -208,8 +208,28 @@ second edge in the opposite direction.
 `src/screens/Friends.tsx` renders inside the Ranks tab behind a You/Friends
 switch, with three states: guest → offer the account; no profile → claim a
 handle (the opt-in); otherwise incoming requests, add-by-handle, friends
-sorted by points (badge · name · @handle · top lift · pts, hold to remove),
-then outgoing requests.
+sorted by points (badge · name · @handle · top lift · pts; tap to compare,
+hold to remove), then outgoing requests. It owns its OWN ScrollView and
+Ranks renders it OUTSIDE the You-view ScrollView — an absolute overlay
+inside a ScrollView positions against the scroll content, not the window,
+so the compare and confirm overlays would scroll away otherwise.
+
+`src/components/FriendCompare.tsx` is the head-to-head: two badge columns,
+the points lead, and a lift-by-lift table keyed on a name slug. It compares
+DOTS POINTS, not kilos — comparing raw weight between a 60 kg and a 95 kg
+lifter would undo the normalization the whole app is built on. A friend's
+snapshot only carries their top 5, so a blank cell means "not in their top
+five", which the caption says out loud.
+
+`src/components/ShareRankCard.tsx` turns a rank into a 4:5 story image:
+react-native-view-shot `captureRef` + `expo-sharing` (both in Expo Go,
+checked against the SDK 57 docs). The card is the VISIBLE overlay, not an
+off-screen view — off-screen views can capture blank on Android, and the
+user should see what they are about to post. captureRef sizes in logical
+points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
+(the trick the Expo docs spell out). `expo-sharing`'s config plugin got
+auto-added to app.json by `npx expo install`; it is a no-op here (its
+options default to disabled) because we only SEND shares.
 
 ## Commands
 
@@ -1009,3 +1029,13 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   tables now answer 200 on the REST API. social.sql still needs the same
   paste; it has NOT been executed, so the Friends view will error until it
   is. tsc + android export clean; NOT yet eyeballed on the emulator.
+- 2026-08-08 (later): Phase 3 continued — social.sql applied by Adilzhan
+  (profiles/friendships/rank_snapshots + find_profile all answer on the REST
+  API). Added the friends head-to-head compare and the rank share card; see
+  the "Social" section above for both. Structural fix along the way: Friends
+  had been rendering inside the Ranks ScrollView, which would have made its
+  overlays position against scroll content — Ranks now branches, giving the
+  Friends view its own scroll root. Deps added: react-native-view-shot 5.1.0
+  + expo-sharing (via `npx expo install`, so SDK-matched). tsc + android
+  export clean; NOT yet eyeballed on the emulator — the share capture in
+  particular is the one thing I cannot verify without running it.

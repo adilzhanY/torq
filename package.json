@@ -12,6 +12,7 @@
     "expo-font": "^57.0.0",
     "expo-image": "~57.0.0",
     "expo-linear-gradient": "~57.0.0",
+    "expo-sharing": "~57.0.10",
     "expo-splash-screen": "~57.0.5",
     "expo-status-bar": "~57.0.0",
     "lottie-react-native": "~7.3.8",
@@ -24,6 +25,7 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-svg": "15.15.4",
     "react-native-url-polyfill": "^3.0.0",
+    "react-native-view-shot": "5.1.0",
     "tailwind-merge": "^3.6.0",
     "tailwindcss": "^4.3.2"
   },

@@ -11,6 +11,7 @@ import { Divider, Eyebrow, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { ExerciseInfo } from "../components/ExerciseInfo";
+import { ShareRankCard } from "../components/ShareRankCard";
 import { Friends } from "./Friends";
 import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
@@ -24,6 +25,8 @@ export function Ranks() {
   const [info, setInfo] = useState<string | null>(null);
   /** You (own ladder) vs Friends (the circle's ranks). */
   const [view, setView] = useState<"you" | "friends">("you");
+  /** Share-card overlay (the rank as a story image). */
+  const [sharing, setSharing] = useState(false);
   const profile = bodyProfileAt(settings, measurements, Date.now());
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
@@ -32,55 +35,87 @@ export function Ranks() {
 
   const opened = info ? exercises.find((e) => e.id === info) : undefined;
 
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120 }}
-      >
-        {/* Header: mark + title + body class */}
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Logo size={30} />
-          <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Ranks</Txt>
-          <Txt size={13} color={C.inkSoft}>
-            {Math.round(profile.weightKg)} kg · {profile.sex === "male" ? "M" : "F"}
-          </Txt>
-        </View>
-
-        {/* You / Friends */}
-        <View
+  /** Title row + the You/Friends switch, shared by both views. */
+  const head = (
+    <>
+    {/* Header: mark + title + body class */}
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <Logo size={30} />
+      <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Ranks</Txt>
+      <Txt size={13} color={C.inkSoft}>
+        {Math.round(profile.weightKg)} kg · {profile.sex === "male" ? "M" : "F"}
+      </Txt>
+      {lifts.length > 0 ? (
+        <Pressable
+          hitSlop={8}
+          onPress={() => setSharing(true)}
           style={{
-            flexDirection: "row",
+            width: 34,
+            height: 34,
+            borderRadius: R.ctrl,
             backgroundColor: C.page2,
-            borderRadius: R.md,
             borderWidth: 1,
             borderColor: C.line,
-            padding: 4,
-            gap: 4,
-            marginTop: 14,
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {([["you", "You"], ["friends", "Friends"]] as const).map(([v, label]) => (
-            <Pressable
-              key={v}
-              onPress={() => setView(v)}
-              style={{
-                flex: 1,
-                borderRadius: R.sm,
-                paddingVertical: 9,
-                alignItems: "center",
-                backgroundColor: view === v ? C.accent : "transparent",
-              }}
-            >
-              <Txt size={13} weight="bold" color={view === v ? C.accentInk : C.inkSoft}>
-                {label}
-              </Txt>
-            </Pressable>
-          ))}
-        </View>
+          <Icon name="Share2" size={16} color={C.ink} />
+        </Pressable>
+      ) : null}
+    </View>
 
-        {view === "friends" ? (
-          <Friends />
-        ) : lifts.length === 0 ? (
+    {/* You / Friends */}
+    <View
+      style={{
+        flexDirection: "row",
+        backgroundColor: C.page2,
+        borderRadius: R.md,
+        borderWidth: 1,
+        borderColor: C.line,
+        padding: 4,
+        gap: 4,
+        marginTop: 14,
+      }}
+    >
+      {([["you", "You"], ["friends", "Friends"]] as const).map(([v, label]) => (
+        <Pressable
+          key={v}
+          onPress={() => setView(v)}
+          style={{
+            flex: 1,
+            borderRadius: R.sm,
+            paddingVertical: 9,
+            alignItems: "center",
+            backgroundColor: view === v ? C.accent : "transparent",
+          }}
+        >
+          <Txt size={13} weight="bold" color={view === v ? C.accentInk : C.inkSoft}>
+            {label}
+          </Txt>
+        </Pressable>
+      ))}
+    </View>
+    </>
+  );
+
+  return (
+    <View style={{ flex: 1 }}>
+      {view === "friends" ? (
+        // Friends owns its own scroll root so its overlays (compare,
+        // confirm) can position against the WINDOW, not scroll content.
+        <View style={{ flex: 1 }}>
+          <View style={{ paddingHorizontal: 16, paddingTop: TOP_BAR_SPACE + 16 }}>{head}</View>
+          <View style={{ flex: 1, paddingHorizontal: 16 }}>
+            <Friends />
+          </View>
+        </View>
+      ) : (
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120 }}
+        >
+          {head}
+        {lifts.length === 0 ? (
           <View>
             <Eyebrow>Overall</Eyebrow>
             <Txt size={13} color={C.inkFaint}>
@@ -156,7 +191,25 @@ export function Ranks() {
             </Txt>
           </>
         )}
-      </ScrollView>
+        </ScrollView>
+      )}
+
+
+      {sharing ? (
+        <ShareRankCard
+          state={s}
+          stage={stageOf(s.progress)}
+          displayName={settings.name?.trim() || "Athlete"}
+          bodyweightKg={profile.weightKg}
+          sex={profile.sex}
+          lifts={lifts.slice(0, 3).map((l) => ({
+            name: name(l.exerciseId),
+            e1RM: l.e1RM,
+            unit: settings.unit,
+          }))}
+          onClose={() => setSharing(false)}
+        />
+      ) : null}
 
       {opened ? (
         <ExerciseInfo

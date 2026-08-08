@@ -129,13 +129,16 @@ graph, none of which a Strong clone has.
   handle, a display name and a COMPUTED rank snapshot ever leave the
   device — never workout logs. Discovery is exact-handle only: no listing,
   no prefix search, nothing to enumerate.
-- Friends compare: ranks and PRs side by side; feed of friends' rank-ups.
-  TODO — the list shows each friend's tier badge, points and top lift; a
-  real side-by-side compare screen and a rank-up feed are next.
-- Share cards: rank card and PR card as images for stories/reels (this is
-  the marketing engine, treat it as a first-class feature). TODO — check
-  the Expo SDK 57 docs for the current screenshot API before picking a
-  library (AGENTS.md).
+- Friends compare: **SHIPPED 2026-08-08** — tapping a friend opens
+  `FriendCompare`: two badge columns, the points lead, then a lift-by-lift
+  table. Compared on DOTS POINTS, never raw kilos (comparing kilos would
+  undo the whole normalization). Feed of friends' rank-ups: TODO — needs a
+  `rank_events` table plus a retention/dedup rule for what counts as a
+  rank-up, so it wants a design pass before more SQL.
+- Share cards: **rank card SHIPPED 2026-08-08** (`ShareRankCard`, share
+  button in the Ranks header) — 1080×1350 PNG via react-native-view-shot
+  `captureRef` + `expo-sharing`, both confirmed in Expo Go against the SDK
+  57 docs. PR card: TODO, same machinery off WorkoutSummary.
 
 ### Phase 4 - Arena + launch
 - Global/regional leaderboards with the anti-cheat stack (plausibility caps,

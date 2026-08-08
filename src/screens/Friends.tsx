@@ -12,12 +12,13 @@
  * snapshot, so a friend list is never more than a session stale.
  */
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from "react-native";
 import { C, FONT, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { PopIn } from "../components/anim";
 import { ConfirmDialog } from "../components/Dialog";
+import { FriendCompare } from "../components/FriendCompare";
 import { Divider, Eyebrow, PrimaryButton, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { useStore } from "../lib/store";
@@ -131,6 +132,8 @@ export function Friends() {
   // Add-friend form.
   const [search, setSearch] = useState("");
   const [unfriending, setUnfriending] = useState<Friend | null>(null);
+  /** Friend opened in the head-to-head compare overlay. */
+  const [comparing, setComparing] = useState<Friend | null>(null);
 
   /** Republish own rank so friends never see a stale badge. */
   const publishMine = useCallback(
@@ -246,152 +249,161 @@ export function Friends() {
   const outgoing = requests.filter((r) => r.direction === "out");
 
   return (
-    <View style={{ gap: 4 }}>
-      {/* Who you are to other people */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 8 }}>
-        <Icon name="UserCircle" size={16} color={C.inkFaint} />
-        <Txt size={13} weight="bold" color={C.inkSoft} style={{ flex: 1 }}>
-          @{profile.handle}
-        </Txt>
-        <Pressable
-          hitSlop={8}
-          onPress={() => void refresh()}
-          style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
-        >
-          <Icon name="Repeat" size={14} color={C.inkFaint} />
-          <Txt size={12} weight="bold" color={C.inkFaint}>Refresh</Txt>
-        </Pressable>
-      </View>
-
-      {/* Add someone */}
-      <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-        <HandleInput
-          value={search}
-          onChange={setSearch}
-          placeholder="add by handle"
-          onSubmit={add}
-        />
-        <Pressable
-          onPress={add}
-          disabled={!handleOk(search) || busy}
-          style={{
-            borderRadius: R.ctrl,
-            backgroundColor: handleOk(search) && !busy ? C.accent : C.page2,
-            paddingHorizontal: 18,
-            justifyContent: "center",
-          }}
-        >
-          <Txt size={13} weight="extrabold" color={handleOk(search) && !busy ? C.accentInk : C.inkFaint}>
-            Add
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} keyboardShouldPersistTaps="handled">
+        {/* Who you are to other people */}
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 8 }}>
+          <Icon name="UserCircle" size={16} color={C.inkFaint} />
+          <Txt size={13} weight="bold" color={C.inkSoft} style={{ flex: 1 }}>
+            @{profile.handle}
           </Txt>
-        </Pressable>
-      </View>
+          <Pressable
+            hitSlop={8}
+            onPress={() => void refresh()}
+            style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+          >
+            <Icon name="Repeat" size={14} color={C.inkFaint} />
+            <Txt size={12} weight="bold" color={C.inkFaint}>Refresh</Txt>
+          </Pressable>
+        </View>
 
-      {error ? <View style={{ marginTop: 10 }}><Banner text={error} /></View> : null}
-      {notice ? <View style={{ marginTop: 10 }}><Banner text={notice} tone="good" /></View> : null}
+        {/* Add someone */}
+        <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+          <HandleInput
+            value={search}
+            onChange={setSearch}
+            placeholder="add by handle"
+            onSubmit={add}
+          />
+          <Pressable
+            onPress={add}
+            disabled={!handleOk(search) || busy}
+            style={{
+              borderRadius: R.ctrl,
+              backgroundColor: handleOk(search) && !busy ? C.accent : C.page2,
+              paddingHorizontal: 18,
+              justifyContent: "center",
+            }}
+          >
+            <Txt size={13} weight="extrabold" color={handleOk(search) && !busy ? C.accentInk : C.inkFaint}>
+              Add
+            </Txt>
+          </Pressable>
+        </View>
 
-      {/* Requests waiting on you */}
-      {incoming.length > 0 ? (
-        <>
-          <Eyebrow>Requests ({incoming.length})</Eyebrow>
-          {incoming.map((r, i) => (
-            <View key={r.edgeId}>
-              {i > 0 ? <Divider /> : null}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 }}>
-                <View style={{ flex: 1, gap: 1 }}>
-                  <Txt size={15} weight="bold" numberOfLines={1}>{r.displayName}</Txt>
-                  <Txt size={12} color={C.inkFaint}>@{r.handle}</Txt>
+        {error ? <View style={{ marginTop: 10 }}><Banner text={error} /></View> : null}
+        {notice ? <View style={{ marginTop: 10 }}><Banner text={notice} tone="good" /></View> : null}
+
+        {/* Requests waiting on you */}
+        {incoming.length > 0 ? (
+          <>
+            <Eyebrow>Requests ({incoming.length})</Eyebrow>
+            {incoming.map((r, i) => (
+              <View key={r.edgeId}>
+                {i > 0 ? <Divider /> : null}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 }}>
+                  <View style={{ flex: 1, gap: 1 }}>
+                    <Txt size={15} weight="bold" numberOfLines={1}>{r.displayName}</Txt>
+                    <Txt size={12} color={C.inkFaint}>@{r.handle}</Txt>
+                  </View>
+                  <Pressable
+                    onPress={() => void act(() => acceptRequest(r.edgeId))}
+                    disabled={busy}
+                    style={{
+                      borderRadius: R.ctrl,
+                      backgroundColor: C.accent,
+                      paddingHorizontal: 14,
+                      paddingVertical: 8,
+                    }}
+                  >
+                    <Txt size={12.5} weight="extrabold" color={C.accentInk}>Accept</Txt>
+                  </Pressable>
+                  <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
+                    <Icon name="X" size={18} color={C.inkFaint} />
+                  </Pressable>
                 </View>
+              </View>
+            ))}
+          </>
+        ) : null}
+
+        {/* Friends, strongest first */}
+        <Eyebrow>Friends ({friends.length})</Eyebrow>
+        {friends.length === 0 ? (
+          <Txt size={13} color={C.inkFaint}>
+            No friends yet — add someone by their handle and compare where you
+            both stand.
+          </Txt>
+        ) : (
+          friends.map((f, i) => {
+            const s = f.snapshot;
+            const top = s?.lifts?.[0];
+            return (
+              <View key={f.edgeId}>
+                {i > 0 ? <Divider /> : null}
                 <Pressable
-                  onPress={() => void act(() => acceptRequest(r.edgeId))}
-                  disabled={busy}
-                  style={{
-                    borderRadius: R.ctrl,
-                    backgroundColor: C.accent,
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                  }}
+                  onPress={() => setComparing(f)}
+                  onLongPress={() => setUnfriending(f)}
+                  delayLongPress={400}
+                  style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}
                 >
-                  <Txt size={12.5} weight="extrabold" color={C.accentInk}>Accept</Txt>
-                </Pressable>
-                <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
-                  <Icon name="X" size={18} color={C.inkFaint} />
-                </Pressable>
-              </View>
-            </View>
-          ))}
-        </>
-      ) : null}
-
-      {/* Friends, strongest first */}
-      <Eyebrow>Friends ({friends.length})</Eyebrow>
-      {friends.length === 0 ? (
-        <Txt size={13} color={C.inkFaint}>
-          No friends yet — add someone by their handle and compare where you
-          both stand.
-        </Txt>
-      ) : (
-        friends.map((f, i) => {
-          const s = f.snapshot;
-          const top = s?.lifts?.[0];
-          return (
-            <View key={f.edgeId}>
-              {i > 0 ? <Divider /> : null}
-              <Pressable
-                onLongPress={() => setUnfriending(f)}
-                delayLongPress={400}
-                style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}
-              >
-                <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={48} />
-                <View style={{ flex: 1, gap: 1 }}>
-                  <Txt size={15} weight="bold" numberOfLines={1}>{f.displayName}</Txt>
-                  <Txt size={12} color={C.inkSoft} numberOfLines={1}>
-                    @{f.handle}
-                    {s ? ` · ${s.tier}` : " · no rank yet"}
-                  </Txt>
-                  {top ? (
-                    <Txt size={11} color={C.inkFaint} numberOfLines={1}>
-                      Best: {top.name} {top.e1RM} {top.unit}
+                  <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={48} />
+                  <View style={{ flex: 1, gap: 1 }}>
+                    <Txt size={15} weight="bold" numberOfLines={1}>{f.displayName}</Txt>
+                    <Txt size={12} color={C.inkSoft} numberOfLines={1}>
+                      @{f.handle}
+                      {s ? ` · ${s.tier}` : " · no rank yet"}
                     </Txt>
-                  ) : null}
-                </View>
-                <View style={{ alignItems: "flex-end", gap: 1 }}>
-                  <Txt size={16} weight="extrabold" color={s ? TIER_COLORS[asTier(s.tier)] : C.inkFaint}>
-                    {s ? Math.round(s.points) : "—"}
-                  </Txt>
-                  <Txt size={9} weight="bold" color={C.inkFaint}>PTS</Txt>
-                </View>
-              </Pressable>
-            </View>
-          );
-        })
-      )}
-      {friends.length > 0 ? (
-        <Txt size={10} color={C.inkFaint} style={{ marginTop: 4 }}>
-          Hold a friend to remove them. Only ranks are shared — never your
-          workout logs.
-        </Txt>
-      ) : null}
-
-      {/* Requests you sent */}
-      {outgoing.length > 0 ? (
-        <>
-          <Eyebrow>Sent ({outgoing.length})</Eyebrow>
-          {outgoing.map((r, i) => (
-            <View key={r.edgeId}>
-              {i > 0 ? <Divider /> : null}
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 }}>
-                <View style={{ flex: 1 }}>
-                  <Txt size={13} weight="semibold" color={C.inkSoft}>@{r.handle}</Txt>
-                </View>
-                <Txt size={11} weight="bold" color={C.inkFaint}>Waiting</Txt>
-                <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
-                  <Icon name="X" size={16} color={C.inkFaint} />
+                    {top ? (
+                      <Txt size={11} color={C.inkFaint} numberOfLines={1}>
+                        Best: {top.name} {top.e1RM} {top.unit}
+                      </Txt>
+                    ) : null}
+                  </View>
+                  <View style={{ alignItems: "flex-end", gap: 1 }}>
+                    <Txt size={16} weight="extrabold" color={s ? TIER_COLORS[asTier(s.tier)] : C.inkFaint}>
+                      {s ? Math.round(s.points) : "—"}
+                    </Txt>
+                    <Txt size={9} weight="bold" color={C.inkFaint}>PTS</Txt>
+                  </View>
+                  <Icon name="ChevronRight" size={16} color={C.inkFaint} />
                 </Pressable>
               </View>
-            </View>
-          ))}
-        </>
+            );
+          })
+        )}
+        {friends.length > 0 ? (
+          <Txt size={10} color={C.inkFaint} style={{ marginTop: 4 }}>
+            Tap a friend to compare lift by lift, hold to remove them. Only
+            ranks are shared — never your workout logs.
+          </Txt>
+        ) : null}
+
+        {/* Requests you sent */}
+        {outgoing.length > 0 ? (
+          <>
+            <Eyebrow>Sent ({outgoing.length})</Eyebrow>
+            {outgoing.map((r, i) => (
+              <View key={r.edgeId}>
+                {i > 0 ? <Divider /> : null}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 }}>
+                  <View style={{ flex: 1 }}>
+                    <Txt size={13} weight="semibold" color={C.inkSoft}>@{r.handle}</Txt>
+                  </View>
+                  <Txt size={11} weight="bold" color={C.inkFaint}>Waiting</Txt>
+                  <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
+                    <Icon name="X" size={16} color={C.inkFaint} />
+                  </Pressable>
+                </View>
+              </View>
+            ))}
+          </>
+        ) : null}
+
+      </ScrollView>
+
+      {comparing ? (
+        <FriendCompare friend={comparing} onClose={() => setComparing(null)} />
       ) : null}
 
       {unfriending ? (
