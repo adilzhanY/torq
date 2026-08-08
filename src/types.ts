@@ -140,6 +140,9 @@ export interface Settings {
   /** Day (local midnight ms) whose streak celebration was already shown —
    *  the Home modal auto-pops once per trained day. */
   streakCelebratedDay?: number;
+  /** Sound effects on set-done / rest countdown / finish. Default ON
+   *  (undefined counts as on, so existing installs get them). */
+  sound?: boolean;
   updatedAt: number;
 }
 

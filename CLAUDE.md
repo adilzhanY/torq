@@ -286,6 +286,28 @@ points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
 auto-added to app.json by `npx expo install`; it is a no-op here (its
 options default to disabled) because we only SEND shares.
 
+## Sound
+
+`assets/sounds/*.m4a` are SYNTHESIZED by `scripts/build-sounds.sh` (ffmpeg,
+plucked sine tones in A minor pentatonic, ~3–14 KB each), not sampled from a
+stock library. Reasons, in order: no licence to honour in a paid app, tiny
+files, and they actually match the design — dark and sharp rather than the
+cinematic whoosh every free SFX pack is full of. Pitch rises with
+significance: rest tick (A4, quietest — it repeats) < set done (E5+A5 blip)
+< go (A5+E6) < workout done (A4-C5-E5-A5 run) < PR (E5-G5-C6-E6). Tweak a
+number in the script and re-run it; don't hand-edit the m4a.
+
+`src/lib/sounds.ts` (expo-audio, in Expo Go) enforces two rules:
+NEVER interrupt the user's music — the audio mode is `mixWithOthers` with
+`playsInSilentMode`, because people lift to Spotify and an app that pauses
+it to go "ding" gets uninstalled — and players are created ONCE and reused
+(one per set would leak native players across a long session). `play()`
+never throws and is silent when muted; audio is a garnish, not something
+logging a set can fail on. Wired to: ticking a set, the 3-2-1 rest
+countdown + "go" at zero, and finishing (the PR flourish when the session
+set records, otherwise the plain one). `Settings.sound` toggles it in
+Profile; undefined counts as ON so existing installs get sound.
+
 ## Commands
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
@@ -1127,3 +1149,4 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   stacked under it (was a 92px thumbnail in a row), the Ranks tab overall
   shield is 170px centred, and per-lift rows, Home momentum, Friends rows
   and compare columns all scaled up.
+  (4) Sounds shipped — see the "Sound" section above.

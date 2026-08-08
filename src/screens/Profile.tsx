@@ -448,6 +448,43 @@ export function Profile({
       </View>
 
       <Divider />
+      <Eyebrow>Sound</Eyebrow>
+      <View style={{ gap: 10 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ flex: 1 }}>
+            <Txt size={13} weight="semibold">Sound effects</Txt>
+            <Txt size={11} color={C.inkFaint}>
+              Set ticks, the 3-2-1 rest countdown and the finish chime. They
+              layer over your music instead of pausing it.
+            </Txt>
+          </View>
+          <Pressable
+            onPress={() => updateSettings({ sound: settings.sound === false })}
+            style={{
+              width: 52,
+              height: 30,
+              borderRadius: R.pill,
+              padding: 3,
+              backgroundColor: settings.sound === false ? C.page2 : C.accent,
+              borderWidth: 1,
+              borderColor: settings.sound === false ? C.line : C.accent,
+              alignItems: settings.sound === false ? "flex-start" : "flex-end",
+              justifyContent: "center",
+            }}
+          >
+            <View
+              style={{
+                width: 22,
+                height: 22,
+                borderRadius: R.pill,
+                backgroundColor: settings.sound === false ? C.inkFaint : C.accentInk,
+              }}
+            />
+          </Pressable>
+        </View>
+      </View>
+
+      <Divider />
       <Eyebrow>Body profile</Eyebrow>
       <BodyProfileCard settings={settings} updateSettings={updateSettings} />
 

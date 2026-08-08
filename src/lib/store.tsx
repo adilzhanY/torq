@@ -20,6 +20,7 @@ import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
 import { publishRankFromData } from "./social";
+import { setSoundEnabled } from "./sounds";
 import {
   uid,
   type Exercise,
@@ -100,6 +101,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         void saveDB(db);
       }
       dbRef.current = db;
+      setSoundEnabled(db.settings.sound !== false);
       setReady(true);
       setVersion((v) => v + 1);
     });
@@ -472,6 +474,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     updateSettings: (patch) => {
       dbRef.current.settings = stamp({ ...dbRef.current.settings, ...patch });
+      if (patch.sound !== undefined) setSoundEnabled(patch.sound);
       commit();
     },
     syncNow,

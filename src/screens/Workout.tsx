@@ -20,7 +20,7 @@ import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
-import { lastSetsFor } from "../lib/stats";
+import { computePRs, lastSetsFor } from "../lib/stats";
 import { targetRepsOf } from "../lib/suggest";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { ExerciseInfo } from "../components/ExerciseInfo";
@@ -38,6 +38,7 @@ import {
 import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
 import { CenterDialog, ConfirmDialog, MenuRow } from "../components/Dialog";
 import { useStore } from "../lib/store";
+import { countdown, play, resetCountdown } from "../lib/sounds";
 import {
   workoutSets,
   workoutVolume,
@@ -437,13 +438,18 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const weightRefs = useRef<Record<string, TextInput | null>>({});
   const now = useNow(!!activeWorkout);
 
-  // Buzz and clear when the rest countdown runs out.
+  // Count 3-2-1 out loud, then buzz + "go" when the rest runs out.
   useEffect(() => {
-    if (rest && !rest.paused && now >= rest.endsAt) {
+    if (!rest || rest.paused) return;
+    if (now >= rest.endsAt) {
       Vibration.vibrate(600);
+      play("restGo");
+      resetCountdown();
       setRest(null);
       setPad(false);
+      return;
     }
+    countdown(Math.ceil((rest.endsAt - now) / 1000));
   }, [now, rest]);
 
   if (!activeWorkout) return null;
@@ -508,6 +514,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
     patchSet(ei, si, { done });
     const key = `${ei}-${si}`;
     if (done) {
+      play("setDone");
+      resetCountdown();
       setRest({ key, endsAt: Date.now() + restFor(set) * 1000, paused: false, pausedMs: 0 });
     } else if (rest?.key === key) {
       setRest(null);
@@ -827,7 +835,11 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         color={C.accentInk}
         onPress={() => {
           const finished = finishWorkout();
-          if (finished) onFinished(finished);
+          if (finished) {
+            // A session that set records earns the brighter flourish.
+            play(computePRs(finished, workouts).total > 0 ? "pr" : "workoutDone");
+            onFinished(finished);
+          }
         }}
         disabled={workoutSets(w) === 0}
       />
