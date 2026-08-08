@@ -182,6 +182,7 @@ export function ShareRankCard({
   bodyweightKg,
   sex,
   lifts,
+  percentile,
   onClose,
 }: {
   state: TierState;
@@ -191,6 +192,9 @@ export function ShareRankCard({
   bodyweightKg: number;
   sex: "male" | "female";
   lifts: ShareLift[];
+  /** Optional "Top 8% · Bench Press" line. Only the competition lifts have
+   *  a real distribution behind them, so this is often absent. */
+  percentile?: { text: string; lift: string };
   onClose: () => void;
 }) {
   return (
@@ -210,6 +214,23 @@ export function ShareRankCard({
           {handle ? `@${handle}` : displayName}
         </Txt>
       </View>
+
+      {percentile ? (
+        <View
+          style={{
+            marginTop: 10,
+            alignSelf: "center",
+            borderRadius: R.pill,
+            backgroundColor: "rgba(200,254,35,0.14)",
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+          }}
+        >
+          <Txt size={11} weight="extrabold" color={C.accent}>
+            {percentile.text} of competitive lifters · {percentile.lift}
+          </Txt>
+        </View>
+      ) : null}
 
       <View style={{ marginTop: 12, gap: 5 }}>
         {lifts.slice(0, 3).map((l) => (

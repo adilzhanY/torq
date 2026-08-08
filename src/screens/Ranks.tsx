@@ -17,6 +17,7 @@ import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
 import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
+import { percentileForExercise, percentileLabel } from "../lib/percentile";
 import { useStore } from "../lib/store";
 
 export function Ranks() {
@@ -31,9 +32,30 @@ export function Ranks() {
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
+  /** Percentile line for the three competition lifts; null for the rest. */
+  const pctOf = (exerciseId: string, points: number) => {
+    const ex = exercises.find((e) => e.id === exerciseId);
+    if (!ex) return null;
+    const p = percentileForExercise(ex.name, ex.equipment, profile.sex, points);
+    return p ? percentileLabel(p) : null;
+  };
   const s = overall.state;
 
   const opened = info ? exercises.find((e) => e.id === info) : undefined;
+
+  /** Strongest percentile across the ranked competition lifts — the single
+   *  line most worth putting on a share card. */
+  const bestPercentile = (() => {
+    let best: { text: string; lift: string; pct: number } | null = null;
+    for (const l of lifts) {
+      const ex = exercises.find((e) => e.id === l.exerciseId);
+      if (!ex) continue;
+      const p = percentileForExercise(ex.name, ex.equipment, profile.sex, l.points);
+      if (p && (!best || p.percent > best.pct))
+        best = { text: percentileLabel(p), lift: ex.name, pct: p.percent };
+    }
+    return best ? { text: best.text, lift: best.lift } : undefined;
+  })();
 
   /** Title row + the You/Friends switch, shared by both views. */
   const head = (
@@ -176,6 +198,12 @@ export function Ranks() {
                       <Txt size={12} color={C.inkSoft}>
                         {l.e1RM} {settings.unit} e1RM · {tierLabel(l.tier)}
                       </Txt>
+                      {(() => {
+                        const p = pctOf(l.exerciseId, l.points);
+                        return p ? (
+                          <Txt size={11} weight="bold" color={C.accent}>{p}</Txt>
+                        ) : null;
+                      })()}
                     </View>
                     <Txt size={14} weight="extrabold" color={C.inkSoft}>
                       {Math.round(l.points)}
@@ -207,6 +235,7 @@ export function Ranks() {
             e1RM: l.e1RM,
             unit: settings.unit,
           }))}
+          percentile={bestPercentile}
           onClose={() => setSharing(false)}
         />
       ) : null}

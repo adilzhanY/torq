@@ -111,6 +111,15 @@ graph, none of which a Strong clone has.
   (that source's women's-squat table is a duplicate of its bench table), so
   those users see no squat record line — fill them from the official IPF
   database, and re-check the whole table before public release.
+  VERIFIED 2026-08-08 against the OpenPowerlifting dump: all 41 curated
+  values sit at or below the best IPF-raw result ever recorded in that class
+  (0 impossible values), so the transcription is sound.
+  REJECTED as a fix for the missing cells: deriving records from the dump
+  directly. "Best result ever recorded" is not "ratified world record" — the
+  dump's per-class maxima run well above the published records (men's 120+
+  bench 330 vs 291.5) because they include every division, unratified
+  lifts, and the odd mislabelled entry. Filling an IPF-record table from it
+  would make the numbers less trustworthy, not more. Don't retry this.
 - **The OpenPowerlifting percentile tables SHIPPED 2026-08-08** — the hybrid
   engine is now whole. `scripts/build-percentiles.py` streams the official
   dump (2026-08-08: 4.0M meet results → 2.2M per-lifter bests, raw only,

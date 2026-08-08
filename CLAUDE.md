@@ -1084,3 +1084,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   competitive raw benchers, world records clamp at 99%, and the curve is
   monotonic across 20–300 kg. tsc + android export clean; NOT yet eyeballed
   on the emulator.
+- 2026-08-08 (later): Percentiles surfaced beyond the Rank tab — each
+  ranked competition lift on the Ranks tab now carries its "Stronger than
+  N%" / "Top N%" line, and the rank share card gets a lime percentile chip
+  for the user's strongest one (the single most postable line on it).
+  Also verified the bundled IPF record table against the OpenPowerlifting
+  dump: all 41 curated values are at or below the best IPF-raw result ever
+  recorded in their class, 0 impossible entries. Deriving the records FROM
+  the dump was tried and rejected — see PATH.md for why, so nobody repeats
+  it. tsc + android export clean; NOT yet eyeballed on the emulator.
