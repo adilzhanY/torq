@@ -286,6 +286,32 @@ points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
 auto-added to app.json by `npx expo install`; it is a no-op here (its
 options default to disabled) because we only SEND shares.
 
+## Keyboard — RULE FOR EVERY NEW INPUT
+
+**Any screen or overlay that gains a `TextInput` must keep that input
+visible when the keyboard opens.** Adilzhan hit this on the device: tapping
+a field near the bottom put the keyboard right on top of it, so he couldn't
+see what he was typing. Do not add a bare `ScrollView` around an input
+again.
+
+- **Scrollable screen** → use `KeyboardAwareScrollView` from
+  `src/components/KeyboardAware.tsx` instead of `ScrollView`. Drop-in, same
+  props; pass `bottomOffset` when a pinned footer sits under the fields.
+- **Bottom-anchored sheet / absolutely-positioned panel** (no scroll to
+  give) → take `useKeyboardHeight()` from the same file and set
+  `bottom: keyboard`, so the whole panel rides above the keys. See the
+  new-exercise sheet in `ExerciseBrowser.tsx`.
+- **Centred dialog** → nothing to do, it is already above the keyboard.
+
+Why it is hand-rolled: `react-native-keyboard-controller` is the polished
+answer but is NOT in Expo Go (SDK 57 keyboard guide), and adopting it would
+cost the `run_android.sh` emulator loop. The implementation is deliberately
+MEASUREMENT-based rather than layout-based: Android under edge-to-edge may
+resize the window, pan it, or do neither depending on version, so instead of
+assuming, it measures where the focused input actually landed once the
+keyboard is up and scrolls only if it is genuinely covered. If the OS
+already handled it, the correction is zero and nothing fights anything.
+
 ## Sound
 
 `assets/sounds/*.m4a` are SYNTHESIZED by `scripts/build-sounds.sh` (ffmpeg,
@@ -1150,3 +1176,10 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   shield is 170px centred, and per-lift rows, Home momentum, Friends rows
   and compare columns all scaled up.
   (4) Sounds shipped — see the "Sound" section above.
+- 2026-08-08 (later): Keyboard handling — see the "Keyboard" rule above.
+  `KeyboardAwareScrollView` + `useKeyboardHeight()` added and wired into
+  every screen that holds an input: live session (KG/REPS + the rest
+  editor), Auth (replacing its hand-rolled KeyboardAvoidingView), Profile,
+  Stats, Friends, RoutineEditor, Onboarding's about-you step, and the
+  new-exercise bottom sheet in ExerciseBrowser. tsc + android export clean;
+  NOT yet eyeballed on a device.

@@ -10,6 +10,7 @@
  */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
+import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
 import { Divider, Eyebrow, NumberField, Pill, PrimaryButton, Txt } from "../components/ui";
@@ -204,7 +205,7 @@ export function Stats() {
 
   return (
     <View style={{ flex: 1 }}>
-    <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
+    <KeyboardAwareScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
       {/* Header: title + month stepper, all on the bare page. */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Stats</Txt>
@@ -347,7 +348,7 @@ export function Stats() {
           ))
         )}
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
 
       {confirming ? (
         <ConfirmDialog

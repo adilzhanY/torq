@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, TextInput, View } from "react-native";
+import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, FONT, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
@@ -267,7 +268,7 @@ export function Friends() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 140 }} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView contentContainerStyle={{ paddingBottom: 140 }} keyboardShouldPersistTaps="handled">
         {/* Who you are to other people */}
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 8 }}>
           <Icon name="UserCircle" size={16} color={C.inkFaint} />
@@ -443,7 +444,7 @@ export function Friends() {
           </>
         ) : null}
 
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {comparing ? (
         <FriendCompare friend={comparing} onClose={() => setComparing(null)} />

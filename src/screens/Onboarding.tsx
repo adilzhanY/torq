@@ -20,6 +20,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, FONT, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { Logo } from "../components/Logo";
@@ -422,7 +423,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
       {step === 2 ? (
         <StepSlide key={2} dir={dir.current}>
-          <ScrollView contentContainerStyle={{ padding: 24, gap: 18 }} keyboardShouldPersistTaps="handled">
+          <KeyboardAwareScrollView contentContainerStyle={{ padding: 24, gap: 18 }}>
             <StepTitle title="About you" sub="Powers your personal calorie estimates." />
             <View style={{ flexDirection: "row", gap: 10 }}>
               {/* Squish styles its INNER view — flex:1 must live on a wrapper
@@ -466,7 +467,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <View style={{ marginTop: 12 }}>
               <BigButton label="Continue" onPress={() => setStep(3)} disabled={!aboutValid} />
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </StepSlide>
       ) : null}
 

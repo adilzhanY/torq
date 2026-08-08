@@ -19,13 +19,11 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   BackHandler,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   TextInput,
   View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, FONT, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SpinningLogo } from "../components/Logo";
@@ -258,13 +256,9 @@ export function Auth() {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: C.page }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-    >
-      <ScrollView
+    <View style={{ flex: 1, backgroundColor: C.page }}>
+      <KeyboardAwareScrollView
         contentContainerStyle={{ padding: 24, paddingTop: 48, paddingBottom: 48, gap: 18 }}
-        keyboardShouldPersistTaps="handled"
       >
         {/* Brand */}
         <View style={{ alignItems: "center", gap: 14 }}>
@@ -419,7 +413,7 @@ export function Auth() {
           An account backs your workouts up and syncs them across devices.
           Without one, everything stays on this phone.
         </Txt>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

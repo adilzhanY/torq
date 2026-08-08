@@ -9,6 +9,7 @@
  */
 import { useEffect, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAwareScrollView } from "./KeyboardAware";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp, Squish } from "./anim";
@@ -132,7 +133,7 @@ export function RoutineEditor({
         </Squish>
       </View>
 
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
+      <KeyboardAwareScrollView contentContainerStyle={{ padding: 16, paddingBottom: 140, gap: 12 }}>
         {entries.map((entry, ei) => (
           <View key={`${entry.exerciseId}-${ei}`} style={{ gap: 8 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
@@ -216,7 +217,7 @@ export function RoutineEditor({
         >
           <Txt size={14} weight="bold">Add exercises</Txt>
         </Squish>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       {menuFor != null ? (
         <CenterDialog onClose={() => setMenuFor(null)}>

@@ -2,6 +2,7 @@
  * tab: opens as a full-screen overlay from the avatar button in the top bar. */
 import { useEffect, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
+import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
@@ -402,7 +403,7 @@ export function Profile({
         backgroundColor: C.page,
       }}
     >
-    <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
+    <KeyboardAwareScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120, gap: 14 }}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
         <Pressable hitSlop={8} onPress={onClose}>
           <Icon name="ChevronLeft" size={24} color={C.ink} />
@@ -538,7 +539,7 @@ export function Profile({
           removal only deletes seeded workouts.
         </Txt>
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
     </SlideUp>
   );
 }

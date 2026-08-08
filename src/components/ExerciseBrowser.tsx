@@ -15,6 +15,7 @@ import { Icon } from "./Icon";
 import { PopIn, SlideUp, Squish } from "./anim";
 import { CenterDialog } from "./Dialog";
 import { Divider, SectionTitle, TextField, Txt } from "./ui";
+import { useKeyboardHeight } from "./KeyboardAware";
 import { useStore } from "../lib/store";
 import { matches } from "../lib/search";
 import {
@@ -172,6 +173,7 @@ export function ExerciseBrowser({
   footer?: React.ReactNode;
 }) {
   const { exercises, workouts, addExercise } = useStore();
+  const keyboard = useKeyboardHeight();
   const [q, setQ] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState<Sort>("name");
@@ -488,7 +490,9 @@ export function ExerciseBrowser({
             }}
             onPress={() => setCreating(false)}
           />
-          <SlideUp style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}>
+          {/* Bottom-anchored, so the keyboard would sit right on top of the
+              name field. Lift the whole sheet by the keyboard height. */}
+          <SlideUp style={{ position: "absolute", left: 0, right: 0, bottom: keyboard }}>
             <View
               style={[
                 {
@@ -496,7 +500,7 @@ export function ExerciseBrowser({
                   borderTopLeftRadius: R.lg,
                   borderTopRightRadius: R.lg,
                   padding: 16,
-                  paddingBottom: 96,
+                  paddingBottom: keyboard > 0 ? 20 : 96,
                   gap: 12,
                 },
                 clay(),
