@@ -71,7 +71,7 @@ function useNow(active: boolean): number {
 }
 
 /** Width of the KG / REPS value fields in the live set logger. */
-const FIELD_W = 50;
+const FIELD_W = 54;
 
 /**
  * KG / REPS cell: an input while the set is open; once the set is done it
@@ -98,7 +98,17 @@ function SetNumInput({
       <Pressable
         onPress={() => setEditing(true)}
         hitSlop={4}
-        style={{ width: FIELD_W, paddingVertical: 7, alignItems: "center" }}
+        style={{
+          width: FIELD_W,
+          // Same box metrics as NumberField(compact) so ticking a set
+          // doesn't jump the row height.
+          paddingVertical: 5,
+          alignItems: "center",
+          backgroundColor: C.page2,
+          borderRadius: R.sm,
+          borderWidth: 1,
+          borderColor: C.line,
+        }}
       >
         <Txt size={14} weight="bold">{value || "0"}</Txt>
       </Pressable>
@@ -121,10 +131,45 @@ function SetNumInput({
   );
 }
 
+/** Height of the running rest bar (sharp-10 live-session look). */
+const BAR_H = 30;
+
+/** The centered "1:24" (with a pause glyph when frozen), drawn twice by
+ *  RestCountdownBar — once lime on the track, once dark inside the fill. */
+function RestLabel({
+  remaining,
+  paused,
+  color,
+}: {
+  remaining: number;
+  paused: boolean;
+  color: string;
+}) {
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+      }}
+    >
+      {paused ? <Icon name="Pause" size={13} color={color} /> : null}
+      <Txt size={15} weight="extrabold" color={color}>{fmtClock(remaining)}</Txt>
+    </View>
+  );
+}
+
 /**
- * Strong-style rest countdown: a tall bar that starts full and drains to
- * the left in one continuous animation, remaining time centered on top.
- * Freezes while paused. Tap to open the rest control pad.
+ * Strong-style rest countdown: a bar that starts full and drains to the
+ * left in one continuous animation, remaining time centered on it — dark
+ * over the lime fill, lime over the spent track. Freezes while paused.
+ * Tap to open the rest control pad.
  */
 function RestCountdownBar({
   endsAt,
@@ -140,6 +185,9 @@ function RestCountdownBar({
   onPress: () => void;
 }) {
   const fill = useRef(new Animated.Value(0)).current;
+  /** Measured bar width — the clipped label copy needs it to stay centered
+   *  on the WHOLE bar while its own container shrinks with the fill. */
+  const [barW, setBarW] = useState(0);
   useEffect(() => {
     if (paused) {
       fill.stopAnimation();
@@ -162,20 +210,26 @@ function RestCountdownBar({
     <PopIn>
       <Pressable onPress={onPress}>
         <View
+          onLayout={(e) => setBarW(e.nativeEvent.layout.width)}
           style={{
-            height: 40,
-            borderRadius: R.sm,
-            backgroundColor: C.page2,
+            height: BAR_H,
+            borderRadius: R.ctrl,
+            backgroundColor: C.restTrack,
             overflow: "hidden",
             justifyContent: "center",
           }}
         >
+          {/* Label on the empty track: lime on dark. */}
+          <RestLabel remaining={remaining} paused={paused} color={C.accent} />
+          {/* The draining lime fill, with the SAME label clipped inside it so
+              the digits flip to dark exactly where the fill ends. */}
           <Animated.View
             style={{
               position: "absolute",
               left: 0,
               top: 0,
               bottom: 0,
+              overflow: "hidden",
               backgroundColor: C.accent,
               width: fill.interpolate({
                 inputRange: [0, 1],
@@ -183,11 +237,11 @@ function RestCountdownBar({
                 extrapolate: "clamp",
               }),
             }}
-          />
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6 }}>
-            {paused ? <Icon name="Pause" size={14} color={C.accentInk} /> : null}
-            <Txt size={16} weight="extrabold" color={C.accentInk}>{fmtClock(remaining)}</Txt>
-          </View>
+          >
+            <View style={{ width: barW, height: "100%" }}>
+              <RestLabel remaining={remaining} paused={paused} color={C.accentInk} />
+            </View>
+          </Animated.View>
         </View>
       </Pressable>
     </PopIn>
@@ -547,7 +601,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               onPress={() => setInfo(entry.exerciseId)}
               style={{ flex: 1, alignItems: "flex-start" }}
             >
-              <Txt size={16} weight="bold" color={C.ink} numberOfLines={1}>
+              <Txt size={18} weight="extrabold" color={C.ink} numberOfLines={1}>
                 {name(entry.exerciseId)}
               </Txt>
             </Pressable>
@@ -653,7 +707,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   style={{ width: 28 }}
                 >
                   {set.type === "normal" ? (
-                    <Txt size={14} weight="bold" color={C.inkFaint}>
+                    /* A done set's number turns lime — the row's completion
+                       marker in the sharp-10 mock. */
+                    <Txt size={14} weight="bold" color={set.done ? C.accent : C.inkFaint}>
                       {entry.sets.slice(0, si + 1).filter((s) => s.type === "normal").length}
                     </Txt>
                   ) : (
@@ -662,7 +718,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     </Txt>
                   )}
                 </Pressable>
-                <Txt size={12} weight="semibold" color={C.inkFaint} style={{ flex: 1 }} numberOfLines={1}>
+                <Txt size={12.5} weight="semibold" color={C.inkSoft} style={{ flex: 1 }} numberOfLines={1}>
                   {prevSets ? (prev ? `${prev.weight} ${settings.unit} × ${prev.reps}` : "—") : ""}
                 </Txt>
                 <View>
@@ -766,6 +822,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       />
       <PrimaryButton
         label="Finish workout"
+        large
         background={C.accent}
         color={C.accentInk}
         onPress={() => {

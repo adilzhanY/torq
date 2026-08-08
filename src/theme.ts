@@ -28,6 +28,8 @@ export const C = {
   accent: "#C8FE23",
   /** Text/icon color on top of the (light) lime accent. */
   accentInk: "#1A1B1A",
+  /** Spent half of the live-session rest bar — lime burned down to embers. */
+  restTrack: "#26320C",
 
   goodSurf: "#152A22",
   goodAcc: "#5AC8A0",

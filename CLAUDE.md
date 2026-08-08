@@ -870,3 +870,19 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   PrPill, StreakPill), true circles (avatar, week-strip dots, calendar days,
   streak halo, chart legend dots) and thin progress bars. tsc + android
   export clean; NOT yet eyeballed on the emulator.
+- 2026-08-08 (later): Live-session visual pass to the sharp-10 mock
+  (Adilzhan liked the preview phone in `.lavish/torq-radius.html` and asked
+  for the live screen to match; scope confirmed as a restyle, not new
+  controls). `NumberField` gained a hairline `C.line` border so every input
+  reads as a box on the bare page; a DONE set's KG/REPS keep that box
+  instead of collapsing to bare text (same padding metrics, so ticking a set
+  no longer jumps the row height) and its set number turns lime; FIELD_W
+  50 → 54; PREVIOUS moved inkFaint → inkSoft 12.5; exercise names 16/bold →
+  18/extrabold. `RestCountdownBar` rebuilt: 30px tall, R.ctrl corners, new
+  `C.restTrack` (#26320C) for the spent side, and the "1:24" label drawn
+  TWICE — lime on the track, dark inside an overflow-hidden copy of the
+  draining fill (the fill's inner View is pinned to the measured bar width
+  via onLayout, so the clipped label stays centered on the whole bar while
+  its container shrinks). `PrimaryButton` gained `large` (15px padding,
+  15.5px extrabold), used by Finish workout. tsc + android export clean;
+  NOT yet eyeballed on the emulator.

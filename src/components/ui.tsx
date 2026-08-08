@@ -169,12 +169,15 @@ export function PrimaryButton({
   disabled,
   background = C.accent,
   color = C.accentInk,
+  large,
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
   background?: string;
   color?: string;
+  /** Chunky primary CTA (Finish workout) — taller with bigger type. */
+  large?: boolean;
 }) {
   return (
     <Squish
@@ -185,14 +188,14 @@ export function PrimaryButton({
           backgroundColor: background,
           borderRadius: R.ctrl,
           paddingHorizontal: 20,
-          paddingVertical: 11,
+          paddingVertical: large ? 15 : 11,
           opacity: disabled ? 0.4 : 1,
           alignItems: "center",
         },
         claySm(),
       ]}
     >
-      <Txt weight="bold" color={color}>
+      <Txt size={large ? 15.5 : undefined} weight={large ? "extrabold" : "bold"} color={color}>
         {label}
       </Txt>
     </Squish>
@@ -246,6 +249,10 @@ export const NumberField = React.forwardRef<
           gap: 4,
           backgroundColor: C.page2,
           borderRadius: R.sm,
+          // Hairline border so a field reads as a box on the bare page
+          // (the live-session KG/REPS cells in the sharp-10 mock).
+          borderWidth: 1,
+          borderColor: C.line,
           paddingHorizontal: center ? 6 : 12,
           paddingVertical: compact ? 5 : 8,
         }}
