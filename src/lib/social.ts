@@ -12,6 +12,8 @@
 import { supabase } from "./supabase";
 import { bodyProfileAt } from "./calories";
 import { overallRank, rankLifts, stageOf, TIER_NAMES, type BestLift } from "./rank";
+import { checkLift } from "./plausibility";
+import { LB_TO_KG } from "./units";
 import type { Exercise, Measurement, Settings, Workout } from "../types";
 
 export interface Profile {
@@ -79,6 +81,9 @@ export interface RankEvent {
 export type Result<T> = { data: T | null; error: string | null };
 
 const OFFLINE: string = "No connection — friends need the internet.";
+
+/** How long a rank-up stays in the feed. */
+const EVENT_TTL_DAYS = 90;
 
 function fail<T>(message: string): Result<T> {
   return { data: null, error: message };
@@ -245,7 +250,17 @@ export async function publishRankFromData(source: {
 
   const { workouts, exercises, measurements, settings } = source;
   const body = bodyProfileAt(settings, measurements, Date.now());
-  const lifts = rankLifts(workouts, settings.unit, body.weightKg, body.sex);
+  const toKg = settings.unit === "lb" ? LB_TO_KG : 1;
+  const all = rankLifts(workouts, settings.unit, body.weightKg, body.sex);
+
+  // Plausibility gate on the way OUT only: a mistyped 1000 kg squat stays in
+  // your own logs and your own Ranks screen, but it is not something we
+  // publish to other people (PATH.md's "Liftoff lesson").
+  const lifts = all.filter((l) => {
+    const ex = exercises.find((e) => e.id === l.exerciseId);
+    if (!ex) return false;
+    return checkLift(ex.name, ex.equipment, l.e1RM * toKg, body.weightKg, body.sex).ok;
+  });
   if (lifts.length === 0) return;
   const overall = overallRank(lifts);
   const named = lifts.slice(0, 5).map((l) => ({
@@ -323,6 +338,13 @@ export async function publishRankFromData(source: {
   // Tier changes are rare and the diff is against the stored row, so running
   // this on every publish stays idempotent — no duplicate events.
   if (events.length > 0) await sb.from("rank_events").insert(events);
+
+  // Retention: nobody needs to see a rank-up from last spring, and the row
+  // only exists to be read by friends. Each device prunes its OWN old rows
+  // (the delete policy allows exactly that), so the table stays bounded
+  // without a cron job.
+  const cutoff = new Date(Date.now() - EVENT_TTL_DAYS * 86400000).toISOString();
+  await sb.from("rank_events").delete().eq("user_id", auth.user.id).lt("created_at", cutoff);
 }
 
 /** Friends' (and your own) recent tier changes, newest first. */

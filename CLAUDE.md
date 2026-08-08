@@ -177,6 +177,30 @@ create an account" button that calls `exitGuest()`, and signing out clears
 the flag so the gate returns. Profile no longer contains a sign-in form:
 one screen validates passwords.
 
+## Percentiles + plausibility
+
+`src/data/percentiles.json` (2 KB, committed) holds DOTS-point
+distributions per sex per competition lift, built by
+`scripts/build-percentiles.py` from the OpenPowerlifting dump (168 MB zip,
+NOT committed — re-download when refreshing). 2026-08-08 build: 4.0M meet
+results → 2.2M per-lifter bests, raw only, best result per LIFTER.
+Distributions are over POINTS rather than kilos because DOTS already
+normalizes sex and bodyweight, so one curve per (sex, lift) serves every
+weight class. `src/lib/percentile.ts` interpolates between the stored
+breakpoints and returns 1–99 (clamped at the tails).
+
+NEVER phrase these as "top N% of people". The population is people who
+entered a sanctioned meet — a much stronger crowd than the gym floor — so
+every surface says "of competitive lifters" and names the sample size.
+
+`src/lib/plausibility.ts` gates what LEAVES the device: a lift above the
+world record for the user's class (or over `MAX_DOTS` = 200 for movements
+with no official record) is dropped from the published snapshot and from
+the overall points. It is not dropped from the user's own logs, charts or
+Ranks screen — the cap is about what other people are shown, and in
+practice it catches decimal-point typos far more often than cheats. The
+exercise Rank tab shows the reason inline when a lift is gated.
+
 ## Social (PATH.md Phase 3)
 
 `supabase/social.sql` is the SECOND schema file (run it in the SQL editor
@@ -1051,3 +1075,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   + expo-sharing (via `npx expo install`, so SDK-matched). tsc + android
   export clean; NOT yet eyeballed on the emulator — the share capture in
   particular is the one thing I cannot verify without running it.
+- 2026-08-08 (later): Percentiles shipped — the hybrid rank engine is now
+  whole (see "Percentiles + plausibility" above). Also added: plausibility
+  caps on published snapshots, `rank_events` retention (each device prunes
+  its own rows older than 90 days on publish — no cron job needed), and the
+  rank-up feed section in Friends. Spot-checked the percentile curve: a
+  125 kg bench at 83 kg bodyweight lands at the 49th percentile of
+  competitive raw benchers, world records clamp at 99%, and the curve is
+  monotonic across 20–300 kg. tsc + android export clean; NOT yet eyeballed
+  on the emulator.

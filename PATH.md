@@ -84,7 +84,7 @@ graph, none of which a Strong clone has.
 
 ## Phases
 
-### Phase 1 - Rank engine (APPROVED, in progress)
+### Phase 1 - Rank engine (COMPLETE except the women's-squat record cells)
 - Curate + bundle the standards dataset (percentiles per sex/weight class for
   the core lifts; formula calibration for the rest; records data).
 - Pure rank math module: points, tier, percentile, "N pts to next tier".
@@ -111,8 +111,19 @@ graph, none of which a Strong clone has.
   (that source's women's-squat table is a duplicate of its bench table), so
   those users see no squat record line — fill them from the official IPF
   database, and re-check the whole table before public release.
-- OPEN: the OpenPowerlifting percentile tables (the other half of the
-  hybrid engine) are still not curated or bundled.
+- **The OpenPowerlifting percentile tables SHIPPED 2026-08-08** — the hybrid
+  engine is now whole. `scripts/build-percentiles.py` streams the official
+  dump (2026-08-08: 4.0M meet results → 2.2M per-lifter bests, raw only,
+  best result per LIFTER so frequent competitors don't count ten times) into
+  `src/data/percentiles.json` (2 KB). Distributions are over DOTS POINTS,
+  not kilos, because DOTS already normalizes sex and bodyweight — one curve
+  per (sex, lift) covers every weight class and plugs straight into the
+  points rank.ts already computes. `src/lib/percentile.ts` interpolates.
+  HONESTY CONSTRAINT, non-negotiable: the population is people who entered a
+  sanctioned meet, so every surface must say "of competitive lifters", never
+  "of people" — beating 50% of competitors is a far bigger deal than beating
+  50% of the gym floor. Shown on the exercise Rank tab for squat/bench/
+  deadlift; the long tail stays points-and-tiers only.
 
 ### Phase 2 - Full rebrand
 - New visual system (palette to be finalized around the sharp tau + lime on

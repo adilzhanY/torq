@@ -37,6 +37,8 @@ import {
   recordShare,
   worldRecord,
 } from "../lib/records";
+import { percentileForExercise, percentileLabel, PERCENTILE_SOURCE } from "../lib/percentile";
+import { checkLift } from "../lib/plausibility";
 import { LB_TO_KG } from "../lib/units";
 import { fmtShort } from "./charts";
 import {
@@ -208,6 +210,29 @@ export function ExerciseInfo({
       : 0;
     return { best, at, points, tier, toGo };
   }, [log, toKg, profile.weightKg, profile.sex]);
+
+  /** Typo / too-good-to-publish guard (the same gate the snapshot uses). */
+  const plausible = useMemo(() => {
+    if (!rank) return null;
+    return checkLift(
+      libRow?.name ?? exercise.name,
+      libRow?.equipment ?? exercise.equipment,
+      rank.best * toKg,
+      profile.weightKg,
+      profile.sex,
+    );
+  }, [rank, libRow, exercise.name, exercise.equipment, toKg, profile.weightKg, profile.sex]);
+
+  /** Where this lift sits among competitive raw lifters (3 lifts only). */
+  const pct = useMemo(() => {
+    if (!rank) return null;
+    return percentileForExercise(
+      libRow?.name ?? exercise.name,
+      libRow?.equipment ?? exercise.equipment,
+      profile.sex,
+      rank.points,
+    );
+  }, [rank, libRow, exercise.name, exercise.equipment, profile.sex]);
 
   /** World-record mention — only the three plain barbell competition lifts. */
   const wr = useMemo(() => {
@@ -399,6 +424,66 @@ export function ExerciseInfo({
                     } ${u} more on your best set.`
                   : "Top of the ladder."}
               </Txt>
+
+              {plausible && !plausible.ok ? (
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-start",
+                    gap: 8,
+                    backgroundColor: C.warnSurf,
+                    borderRadius: R.sm,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    marginTop: 4,
+                  }}
+                >
+                  <Icon name="TriangleAlert" size={15} color={C.warnAcc} />
+                  <Txt size={12} weight="semibold" color={C.warnAcc} style={{ flex: 1 }}>
+                    {plausible.reason} It still counts in your own log and
+                    charts, but it isn't shared with friends.
+                  </Txt>
+                </View>
+              ) : null}
+
+              {pct ? (
+                <View style={{ gap: 8, marginTop: 6 }}>
+                  <Divider />
+                  <Eyebrow>Where you stand</Eyebrow>
+                  <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                    <Txt size={26} weight="extrabold" color={C.accent}>
+                      {percentileLabel(pct)}
+                    </Txt>
+                  </View>
+                  <View
+                    style={{
+                      height: 5,
+                      borderRadius: 99,
+                      backgroundColor: C.page2,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: `${Math.max(2, pct.percent)}%`,
+                        height: "100%",
+                        borderRadius: 99,
+                        backgroundColor: C.accent,
+                      }}
+                    />
+                  </View>
+                  <Txt size={12} color={C.inkSoft}>
+                    of {pct.sampleSize.toLocaleString()} people who have
+                    competed in a raw powerlifting meet
+                    {pct.capped === "high" ? " (the curve stops at 99%)" : ""}.
+                  </Txt>
+                  <Txt size={10} color={C.inkFaint}>
+                    {PERCENTILE_SOURCE} · that population is stronger than the
+                    average gym floor, so this is a tougher crowd than "all
+                    lifters".
+                  </Txt>
+                </View>
+              ) : null}
 
               {wr ? (
                 (() => {
