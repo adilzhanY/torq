@@ -12,7 +12,6 @@
  */
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUi, type Tab } from "../lib/ui";
 import { C, R, clay } from "../theme";
 import { Icon } from "./Icon";
@@ -116,7 +115,6 @@ function NavItem({
 
 export function BottomNav({ onProfile }: { onProfile: () => void }) {
   const { tab, setTab } = useUi();
-  const insets = useSafeAreaInsets();
   return (
     <View
       style={[
@@ -124,7 +122,9 @@ export function BottomNav({ onProfile }: { onProfile: () => void }) {
           position: "absolute",
           left: 14,
           right: 14,
-          bottom: Math.max(insets.bottom, 8) + 8,
+          // The root SafeAreaView already reserves the navigation-bar
+          // inset, so this is a plain visual gap, not a safe-area dodge.
+          bottom: 16,
           height: 62,
           borderRadius: R.lg,
           backgroundColor: C.primary,

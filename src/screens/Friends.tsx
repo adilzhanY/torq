@@ -390,7 +390,7 @@ export function Friends() {
                   delayLongPress={400}
                   style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}
                 >
-                  <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={48} />
+                  <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={62} />
                   <View style={{ flex: 1, gap: 1 }}>
                     <Txt size={15} weight="bold" numberOfLines={1}>{f.displayName}</Txt>
                     <Txt size={12} color={C.inkSoft} numberOfLines={1}>

@@ -139,6 +139,25 @@ the store). `startRecommended` in the store imports any missing catalog
 exercises into the library, then opens a session with sets prefilled at the
 template's target reps.
 
+## Building (EAS)
+
+Adilzhan builds with **EAS**, not locally: `eas build -p android --profile
+preview` produces an installable APK (`android.buildType: apk` on the
+development/preview profiles; production stays an AAB for Play).
+
+CRITICAL GOTCHA, and the cause of "I can't create an account": **`.env` is
+gitignored, so EAS never uploads it.** A build with no
+`EXPO_PUBLIC_SUPABASE_*` has `supabaseConfigured() === false`, which made
+the auth gate silently skip itself and left Friends dead. The values now
+live in each build profile's `env` block in `eas.json` — safe to commit,
+since `EXPO_PUBLIC_*` is inlined into every APK anyway and the publishable
+key is public by design (RLS is the protection). `.env` stays for local
+Metro. Change a key → change it in BOTH places.
+
+The app now fails loudly instead: with sync unconfigured, an amber banner
+sits at the top of the screen and explains the fix when tapped. If you ever
+see it in a real build, fix eas.json, not the app.
+
 ## Auth + secrets
 
 `.env` (gitignored, chmod 600) holds the Supabase config; `.env.example` is
@@ -1093,3 +1112,18 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   recorded in their class, 0 impossible entries. Deriving the records FROM
   the dump was tried and rejected — see PATH.md for why, so nobody repeats
   it. tsc + android export clean; NOT yet eyeballed on the emulator.
+- 2026-08-08 (later): Device-testing round on Adilzhan's phone. Four fixes.
+  (1) The Android navigation bar was drawing over the app: only BottomNav
+  compensated for the inset, so every OTHER bottom-anchored control — the
+  rest-timer pad, the picker's "Add N exercises" footer, the new-exercise
+  sheet — sat underneath it and couldn't be tapped. The root SafeAreaView
+  now reserves `edges={["top","bottom"]}`, so nothing in the app can draw
+  under the bar and every hardcoded paddingBottom stays correct; BottomNav
+  dropped its own inset maths (it would have double-counted).
+  (2) Accounts were unreachable in the EAS build — see the "Building (EAS)"
+  section above for the .env/eas.json cause and the new loud banner.
+  (3) Rank badges were far too small for the app's headline feature: the
+  exercise Rank tab is now a centred 190px shield with the tier and points
+  stacked under it (was a 92px thumbnail in a row), the Ranks tab overall
+  shield is 170px centred, and per-lift rows, Home momentum, Friends rows
+  and compare columns all scaled up.

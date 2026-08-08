@@ -273,7 +273,7 @@ export function ExerciseInfo({
         </Txt>
         {rank ? (
           <Pressable hitSlop={6} onPress={() => setTab("rank")}>
-            <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={38} />
+            <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={46} />
           </Pressable>
         ) : null}
       </View>
@@ -380,24 +380,23 @@ export function ExerciseInfo({
             </Txt>
           ) : (
             <>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={92} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Txt size={15} weight="extrabold" color={TIER_COLORS[rank.tier.tier]}>
-                    {tierLabel(rank.tier)}
+              {/* The badge is the headline of this page — centred and big,
+                  with the numbers stacked under it rather than squeezed
+                  into a row beside a thumbnail-sized shield. */}
+              <View style={{ alignItems: "center", gap: 2, paddingTop: 4 }}>
+                <RankBadge tier={rank.tier.tier} stage={stageOf(rank.tier.progress)} size={190} />
+                <Txt size={22} weight="extrabold" color={TIER_COLORS[rank.tier.tier]}>
+                  {tierLabel(rank.tier)}
+                </Txt>
+                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 2 }}>
+                  <Txt size={46} weight="extrabold" color={C.accent}>
+                    {Math.round(rank.points)}
                   </Txt>
-                  <View style={{ flexDirection: "row", alignItems: "baseline", gap: 5 }}>
-                    <Txt size={30} weight="extrabold" color={C.accent}>
-                      {Math.round(rank.points)}
-                    </Txt>
-                    <Txt size={13} weight="extrabold" color={C.accent}>
-                      pts
-                    </Txt>
-                  </View>
-                  <Txt size={12} color={C.inkSoft}>
-                    {rank.best} {u} e1RM · {fmtDay(rank.at)}
-                  </Txt>
+                  <Txt size={16} weight="extrabold" color={C.accent}>pts</Txt>
                 </View>
+                <Txt size={13} color={C.inkSoft}>
+                  {rank.best} {u} e1RM · {fmtDay(rank.at)}
+                </Txt>
               </View>
 
               <View

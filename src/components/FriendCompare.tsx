@@ -149,7 +149,7 @@ export function FriendCompare({ friend, onClose }: { friend: Friend; onClose: ()
 
   const Column = ({ side }: { side: Side }) => (
     <View style={{ flex: 1, alignItems: "center", gap: 6 }}>
-      <RankBadge tier={side.tier} stage={side.stage} size={72} />
+      <RankBadge tier={side.tier} stage={side.stage} size={104} />
       <Txt size={14} weight="extrabold" numberOfLines={1} style={{ maxWidth: 130 }}>
         {side.label}
       </Txt>

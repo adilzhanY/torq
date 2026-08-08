@@ -407,7 +407,7 @@ export function Home() {
               <RankBadge
                 tier={overall.state.tier}
                 stage={stageOf(overall.state.progress)}
-                size={54}
+                size={72}
               />
               <View style={{ flex: 1, gap: 1 }}>
                 <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>

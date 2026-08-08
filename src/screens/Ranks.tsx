@@ -150,18 +150,16 @@ export function Ranks() {
           <>
             {/* Overall */}
             <Eyebrow>Overall</Eyebrow>
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={64} />
-              <View style={{ flex: 1, gap: 1 }}>
-                <View style={{ flexDirection: "row", alignItems: "baseline", gap: 5 }}>
-                  <Txt size={32} weight="extrabold" color={C.accent}>{Math.round(s.points)}</Txt>
-                  <Txt size={13} weight="extrabold" color={C.accent}>pts</Txt>
-                </View>
-                <Txt size={12.5} color={C.inkSoft}>
-                  {tierLabel(s)}
-                  {s.next ? ` · ${Math.ceil(s.toNext)} pts to ${s.next}` : " · top of the ladder"}
-                </Txt>
+            <View style={{ alignItems: "center", gap: 2 }}>
+              <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={170} />
+              <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
+                <Txt size={44} weight="extrabold" color={C.accent}>{Math.round(s.points)}</Txt>
+                <Txt size={16} weight="extrabold" color={C.accent}>pts</Txt>
               </View>
+              <Txt size={13.5} color={C.inkSoft}>
+                {tierLabel(s)}
+                {s.next ? ` · ${Math.ceil(s.toNext)} pts to ${s.next}` : " · top of the ladder"}
+              </Txt>
             </View>
             <View
               style={{
@@ -192,7 +190,7 @@ export function Ranks() {
                     onPress={() => setInfo(l.exerciseId)}
                     style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 }}
                   >
-                    <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={48} />
+                    <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={62} />
                     <View style={{ flex: 1, gap: 1 }}>
                       <Txt size={15} weight="bold" numberOfLines={1}>{name(l.exerciseId)}</Txt>
                       <Txt size={12} color={C.inkSoft}>
