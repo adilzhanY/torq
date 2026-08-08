@@ -16,6 +16,8 @@ import {
   Diff,
   Dumbbell,
   Ellipsis,
+  Eye,
+  EyeOff,
   FileText,
   Filter,
   Flame,
@@ -24,6 +26,9 @@ import {
   List,
   ListChecks,
   ListPlus,
+  Lock,
+  LockKeyhole,
+  Mail,
   Medal,
   Minus,
   Moon,
@@ -44,6 +49,7 @@ import {
   TrendingDown,
   TrendingUp,
   Trash2,
+  TriangleAlert,
   Trophy,
   Undo2,
   UserCircle,
@@ -55,8 +61,8 @@ import { C } from "../theme";
 
 const MAP: Record<string, LucideIcon> = {
   Archive, ArchiveRestore, ArrowUpDown, BicepsFlexed, CalendarDays, ChartColumn, Check, CheckCheck, ChevronDown, ChevronLeft, ChevronRight, Clock, Copy, Diff, Dumbbell,
-  Ellipsis, FileText, Filter, Flame, History, House, List, ListChecks, ListPlus, Medal, Minus, Moon, Pause, Pencil, Pin, Play, Plus, Repeat, Ruler,
-  Save, Scale, Search, Share2, SlidersVertical, Sparkles, Timer, TrendingDown, TrendingUp, Trash2, Trophy, Undo2, UserCircle, Waypoints, X,
+  Ellipsis, Eye, EyeOff, FileText, Filter, Flame, History, House, List, ListChecks, ListPlus, Lock, LockKeyhole, Mail, Medal, Minus, Moon, Pause, Pencil, Pin, Play, Plus, Repeat, Ruler,
+  Save, Scale, Search, Share2, SlidersVertical, Sparkles, Timer, TrendingDown, TrendingUp, Trash2, TriangleAlert, Trophy, Undo2, UserCircle, Waypoints, X,
 };
 
 export function Icon({

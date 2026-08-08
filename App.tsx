@@ -10,12 +10,13 @@ import {
   SpaceGrotesk_600SemiBold,
   SpaceGrotesk_700Bold,
 } from "@expo-google-fonts/space-grotesk";
-import { AuthProvider } from "./src/lib/auth";
+import { AuthProvider, useAuth } from "./src/lib/auth";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
 import { C } from "./src/theme";
-import { Logo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
+import { Logo, SpinningLogo, LOGO_BG, LOGO_FG } from "./src/components/Logo";
 import { BottomNav } from "./src/components/BottomNav";
+import { Auth } from "./src/screens/Auth";
 import { Home } from "./src/screens/Home";
 import { Ranks } from "./src/screens/Ranks";
 import { Onboarding } from "./src/screens/Onboarding";
@@ -28,15 +29,25 @@ import { Profile } from "./src/screens/Profile";
 function Root() {
   const { tab, planWizard, openPlanWizard, closePlanWizard } = useUi();
   const { ready, settings } = useStore();
+  const auth = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
 
-  if (!ready) {
+  // Restoring the session and reading the local DB both gate the first
+  // frame — one splash covers both so the app never flashes the auth screen
+  // at someone who is already signed in.
+  if (!ready || (auth.enabled && auth.loading)) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 24, backgroundColor: C.page }}>
-        <Logo size={96} />
+        <SpinningLogo size={96} period={2.2} />
         <ActivityIndicator color={C.accent} />
       </View>
     );
+  }
+
+  // The gate: only when cloud sync is actually configured, and never for a
+  // user who chose to stay local.
+  if (auth.enabled && !auth.user && !auth.guest) {
+    return <Auth />;
   }
 
   if (!settings.onboarded || planWizard) {

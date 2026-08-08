@@ -156,13 +156,15 @@ function RankCard() {
   );
 }
 
+/**
+ * Account section. The sign-in FORM lives on the auth gate now
+ * (src/screens/Auth.tsx) — here a guest just gets a button back to it, so
+ * there is exactly one place in the app that validates a password.
+ */
 function Account() {
-  const { enabled, user, signIn, signUp, signOut } = useAuth();
+  const { enabled, user, signOut, exitGuest } = useAuth();
   const { syncNow } = useStore();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   if (!enabled) {
     return (
@@ -180,35 +182,29 @@ function Account() {
     return (
       <View style={{ gap: 10 }}>
         <Txt size={13} weight="semibold">Signed in as {user.email}</Txt>
-        <PrimaryButton label="Sync now" onPress={() => void syncNow()} />
+        <Txt size={11} color={C.inkFaint}>
+          Workouts, routines and settings sync to your account automatically.
+        </Txt>
+        <PrimaryButton
+          label={syncing ? "Syncing…" : "Sync now"}
+          disabled={syncing}
+          onPress={() => {
+            setSyncing(true);
+            void syncNow().finally(() => setSyncing(false));
+          }}
+        />
         <PrimaryButton label="Sign out" background={C.page2} color={C.ink} onPress={() => void signOut()} />
       </View>
     );
   }
 
-  const go = async (fn: typeof signIn) => {
-    setBusy(true);
-    setError(null);
-    const { error } = await fn(email, password);
-    setError(error);
-    setBusy(false);
-  };
-
   return (
     <View style={{ gap: 10 }}>
-      <TextField value={email} onChange={setEmail} placeholder="Email" />
-      <TextField value={password} onChange={setPassword} placeholder="Password" />
-      {error ? (
-        <Txt size={12} weight="semibold" color={C.badAcc}>{error}</Txt>
-      ) : null}
-      <PrimaryButton label="Sign in" onPress={() => void go(signIn)} disabled={busy} />
-      <PrimaryButton
-        label="Create account"
-        background={C.page2}
-        color={C.ink}
-        onPress={() => void go(signUp)}
-        disabled={busy}
-      />
+      <Txt size={13} color={C.inkFaint}>
+        You are using torq offline — everything lives on this phone only.
+        Sign in to back it up and sync across devices.
+      </Txt>
+      <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
     </View>
   );
 }

@@ -5,7 +5,8 @@
  * (potrace emits math-axis coordinates). Rendered with react-native-svg; the
  * dark background is a rounded View so the mark scales cleanly at any size.
  */
-import { View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, Easing, View } from "react-native";
 import Svg, { G, Path } from "react-native-svg";
 
 export const LOGO_BG = "#0E0F0E";
@@ -33,5 +34,54 @@ export function Logo({ size = 32 }: { size?: number }) {
         </G>
       </Svg>
     </View>
+  );
+}
+
+/**
+ * The mark, spinning — torque made literal. Used on the auth gate and any
+ * "working" state. One linear loop on the native driver, so it keeps turning
+ * smoothly while JS is busy signing in.
+ */
+export function SpinningLogo({
+  size = 96,
+  /** Seconds per full turn. */
+  period = 3.6,
+  spinning = true,
+}: {
+  size?: number;
+  period?: number;
+  spinning?: boolean;
+}) {
+  const turn = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!spinning) {
+      turn.stopAnimation();
+      return;
+    }
+    turn.setValue(0);
+    const loop = Animated.loop(
+      Animated.timing(turn, {
+        toValue: 1,
+        duration: period * 1000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [turn, period, spinning]);
+
+  return (
+    <Animated.View
+      style={{
+        transform: [
+          {
+            rotate: turn.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] }),
+          },
+        ],
+      }}
+    >
+      <Logo size={size} />
+    </Animated.View>
   );
 }

@@ -139,6 +139,44 @@ the store). `startRecommended` in the store imports any missing catalog
 exercises into the library, then opens a session with sets prefilled at the
 template's target reps.
 
+## Auth + secrets
+
+`.env` (gitignored, chmod 600) holds the Supabase config; `.env.example` is
+the committed template. Two CLASSES of value live there and must not be
+confused:
+
+- `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` —
+  Expo INLINES every `EXPO_PUBLIC_*` into the app bundle, so these are
+  public by definition. That is fine: the publishable key can do nothing on
+  its own, RLS is what protects the data. Verified by grepping the exported
+  Hermes bundle.
+- `SUPABASE_DB_URL` — the direct Postgres superuser connection, for running
+  `supabase/schema.sql` from a terminal. NEVER prefix it `EXPO_PUBLIC_` and
+  never reference it from `src/`, or the app would ship DB credentials.
+
+GOTCHA: Metro caches the bundle, and `.env` values are baked in at bundle
+time — after editing `.env` you must restart Metro with `--clear` (an
+`expo export` without it happily reuses a bundle that still has the old
+values, which is exactly how a "the key isn't loading" hour gets spent).
+
+The auth gate (`src/screens/Auth.tsx`) is the first screen on a cold start
+when sync is configured and nobody is signed in: spinning vortex
+(`SpinningLogo` in Logo.tsx), Sign in / Create account switch, email +
+password + confirm, no OTP (Adilzhan's call, 2026-08-08). The password
+policy lives in `src/lib/password.ts` (≥10 chars, mixed case, digit,
+symbol, plus a banned/sequential/repeated/contains-your-email check) and is
+shown as a LIVE checklist and 4-segment meter while typing; submit is
+disabled until the form can actually succeed. This project has
+`mailer_autoconfirm: false`, so sign-up returns no session and the screen
+switches to a "Confirm your email" state.
+
+torq is local-first, so the gate always offers **Continue without an
+account** — it persists as `torq.guest.v1` in AsyncStorage
+(`useAuth().guest`), Profile's Account section turns into a "Sign in or
+create an account" button that calls `exitGuest()`, and signing out clears
+the flag so the gate returns. Profile no longer contains a sign-in form:
+one screen validates passwords.
+
 ## Commands
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
@@ -913,3 +951,19 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   stays for Workout.tsx's live-session exercise block, whose set rows
   full-bleed with marginHorizontal -16 against its padding. tsc + android
   export clean; NOT yet eyeballed on the emulator.
+- 2026-08-08 (later): Authentication gate shipped (Adilzhan supplied the
+  live Supabase project + keys). See the new "Auth + secrets" section above
+  for the .env split, the Metro cache gotcha and the guest escape hatch.
+  New files: `src/lib/password.ts` (policy + strength meter, spot-checked
+  against a 12-case table), `src/screens/Auth.tsx` (the gate),
+  `SpinningLogo` in Logo.tsx (native-driver linear loop; spins fast while a
+  request is in flight). `src/lib/auth.tsx` rewritten: guest mode persisted
+  in AsyncStorage, `signUp` reports `needsConfirmation` when Supabase
+  returns no session, more friendly error mappings. App.tsx holds one
+  splash for "DB not ready OR session still restoring" so a signed-in user
+  never sees the gate flash. Icon gained Eye/EyeOff/Lock/LockKeyhole/Mail/
+  TriangleAlert. NOT DONE: `supabase/schema.sql` has NOT been applied — all
+  six mirror tables 404 on the REST API, so sync will fail until Adilzhan
+  pastes it into the SQL editor. This machine cannot reach the DB directly
+  (db.<ref>.supabase.co resolves IPv6-only, "Network is unreachable") and
+  the pooler host needs the project's region.
