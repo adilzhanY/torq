@@ -66,6 +66,11 @@ export interface WorldRecord {
   className: string;
 }
 
+/** The weight-class label for a lifter, whether or not a record exists. */
+export function weightClassOf(sex: "male" | "female", bodyweightKg: number): string {
+  return classFor(sex, bodyweightKg).label;
+}
+
 /**
  * The record for this lift in the user's sex + weight class, or null when
  * that cell isn't curated yet (no line beats a wrong line).

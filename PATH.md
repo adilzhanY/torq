@@ -109,8 +109,17 @@ graph, none of which a Strong clone has.
   garagegymreviews record tables, women's 84 kg squat from the 2026
   Sheffield reports. OPEN: the other seven women's SQUAT classes are `null`
   (that source's women's-squat table is a duplicate of its bench table), so
-  those users see no squat record line — fill them from the official IPF
-  database, and re-check the whole table before public release.
+  those users see no squat record line. TWO fill attempts have now failed
+  and both are recorded as dead ends: the OpenPowerlifting dump (best-ever
+  recorded is not a ratified record) and secondary aggregator tables (the
+  most complete-looking one declares its own numbers "approximate", with no
+  holders or dates). This needs the official IPF database, which is not
+  machine-readable from here — it is a manual data task, not a coding one.
+  Meanwhile the app now SAYS the record is missing for that class instead of
+  rendering nothing, so the gap reads as our gap.
+  ALSO OPEN: the whole table is a dated snapshot and records have already
+  moved past it (2025/2026 records exist that the source predates), so
+  re-verify every value before public release.
   VERIFIED 2026-08-08 against the OpenPowerlifting dump: all 41 curated
   values sit at or below the best IPF-raw result ever recorded in that class
   (0 impossible values), so the transcription is sound.

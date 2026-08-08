@@ -5,15 +5,30 @@
  * and weight class, in kilograms. Bundled and versioned — never
  * live-scraped (locked decision).
  *
+ * FRESHNESS WARNING: records move. Searching in 2026-08 turned up several
+ * 2025/2026 records that postdate the source below (e.g. a 47 kg women's
+ * squat of 166 kg), so treat every value here as a dated SNAPSHOT and
+ * re-verify against the official IPF database before a public release.
+ *
  * PROVENANCE: transcribed 2026-08-08 from the published record tables at
  * garagegymreviews.com/powerlifting-records (men: all three lifts; women:
  * bench and deadlift), plus the women's 84 kg squat from the 2026 SBD
  * Sheffield reports of Amanda Lawrence's 250.5 kg. That source's women's
  * squat table is a duplicate of its bench table, so the remaining women's
- * squat classes are `null` — the app shows NO record line rather than a
- * wrong one. Fill them in from the official IPF database
- * (https://www.powerlifting.sport/records) when curating properly, and
- * re-check the whole table before a public release: records break.
+ * squat classes are `null`.
+ *
+ * TWO ATTEMPTS TO FILL THEM HAVE FAILED, both rejected on purpose:
+ *  1. The OpenPowerlifting dump — "best result ever recorded" is not a
+ *     ratified record (its per-class maxima run well above published
+ *     records because they include every division and unratified lifts).
+ *  2. Secondary aggregator pages — the one that looked like a complete
+ *     table states outright that its values are "approximate", with no
+ *     holders and no dates.
+ * Filling these needs the official IPF record database
+ * (https://www.powerlifting.sport/records), which is not machine-readable
+ * from here. Until then the app SAYS the record is missing rather than
+ * showing nothing, so the gap reads as our gap and not as "this lift has
+ * no record".
  */
 
 export type RecordLift = "squat" | "bench" | "deadlift";

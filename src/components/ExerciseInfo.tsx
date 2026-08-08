@@ -35,6 +35,7 @@ import {
   RECORDS_SOURCE,
   recordLiftOf,
   recordShare,
+  weightClassOf,
   worldRecord,
 } from "../lib/records";
 import { percentileForExercise, percentileLabel, PERCENTILE_SOURCE } from "../lib/percentile";
@@ -239,7 +240,12 @@ export function ExerciseInfo({
     const name = libRow?.name ?? exercise.name;
     const equipment = libRow?.equipment ?? exercise.equipment;
     const lift = recordLiftOf(name, equipment);
-    return lift ? worldRecord(lift, profile.sex, profile.weightKg) : null;
+    if (!lift) return null;
+    const record = worldRecord(lift, profile.sex, profile.weightKg);
+    // A competition lift with NO curated record for this class is a gap in
+    // our data, not "this lift has no record". Say which, or the silence
+    // reads as the latter.
+    return { lift, record, className: weightClassOf(profile.sex, profile.weightKg) };
   }, [libRow, exercise.name, exercise.equipment, profile.sex, profile.weightKg]);
 
   return (
@@ -484,10 +490,28 @@ export function ExerciseInfo({
                 </View>
               ) : null}
 
-              {wr ? (
+              {wr && !wr.record ? (
+                <View style={{ gap: 6, marginTop: 6 }}>
+                  <Divider />
+                  <Eyebrow>World record</Eyebrow>
+                  <Txt size={12} color={C.inkSoft}>
+                    torq doesn't have a verified {RECORDS_SOURCE.toLowerCase()}{" "}
+                    for the {wr.className}{" "}
+                    {profile.sex === "male" ? "men's" : "women's"}{" "}
+                    {LIFT_LABEL[wr.lift].toLowerCase()} yet.
+                  </Txt>
+                  <Txt size={10} color={C.inkFaint}>
+                    Rather than show a number we can't stand behind, this one
+                    is left blank until it's confirmed against the official
+                    federation database.
+                  </Txt>
+                </View>
+              ) : null}
+
+              {wr?.record ? (
                 (() => {
-                  const recordDisp = Math.round((wr.kg / toKg) * 10) / 10;
-                  const share = recordShare(rank.best * toKg, wr.kg);
+                  const recordDisp = Math.round((wr.record!.kg / toKg) * 10) / 10;
+                  const share = recordShare(rank.best * toKg, wr.record!.kg);
                   return (
                     <View style={{ gap: 8, marginTop: 6 }}>
                       <Divider />
@@ -522,7 +546,7 @@ export function ExerciseInfo({
                         {profile.sex === "male" ? "men" : "women"} · {recordDisp} {u}
                       </Txt>
                       <Txt size={12} weight="bold" color={C.ink}>
-                        {wr.holder}
+                        {wr.record!.holder}
                       </Txt>
                       <Txt size={10} color={C.inkFaint}>
                         {RECORDS_SOURCE}, bundled snapshot checked{" "}

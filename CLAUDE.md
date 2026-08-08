@@ -1304,3 +1304,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   catalog went 17.3 ms → 1.1 ms. (3) The list was ALREADY virtualized (a
   SectionList with tuned windowing), so nothing was needed there — worth
   recording so nobody "optimizes" it again.
+- 2026-08-08 (later): Women's squat record gap — searched again for an
+  authoritative per-class source and found none that meets the bar (one
+  aggregator declares its numbers "approximate" with no holders or dates;
+  the OpenPowerlifting route was already rejected). Rather than invent
+  numbers, the Rank tab now states explicitly when torq has no verified
+  record for that class, so the blank reads as our data gap instead of "this
+  lift has no record". `weightClassOf()` added to records.ts for that
+  message. Filling it properly is a manual task against the official IPF
+  database.
