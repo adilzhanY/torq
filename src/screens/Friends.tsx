@@ -1,0 +1,411 @@
+/**
+ * Friends (PATH.md Phase 3, friends-first): your circle's ranks side by
+ * side. Lives inside the Ranks tab behind the You / Friends switch.
+ *
+ * Three states, in order of how far along the user is:
+ *  1. guest — nothing to sync with, offer the account;
+ *  2. no public profile — claim a handle (this is the opt-in);
+ *  3. the list — pending requests first, then friends by points.
+ *
+ * Discovery is exact-handle only (see find_profile in supabase/social.sql):
+ * no browsing, no enumeration. Opening the screen also republishes YOUR
+ * snapshot, so a friend list is never more than a session stale.
+ */
+import { useCallback, useEffect, useState } from "react";
+import { ActivityIndicator, Pressable, TextInput, View } from "react-native";
+import { C, FONT, R } from "../theme";
+import { Icon } from "../components/Icon";
+import { RankBadge } from "../components/RankBadge";
+import { PopIn } from "../components/anim";
+import { ConfirmDialog } from "../components/Dialog";
+import { Divider, Eyebrow, PrimaryButton, Txt } from "../components/ui";
+import { useAuth } from "../lib/auth";
+import { useStore } from "../lib/store";
+import { TIER_COLORS, TIER_NAMES, type TierName } from "../lib/rank";
+import {
+  acceptRequest,
+  findProfile,
+  handleOk,
+  loadFriends,
+  myProfile,
+  publishRankFromData,
+  removeEdge,
+  saveProfile,
+  sendRequest,
+  suggestHandle,
+  type Friend,
+  type FriendRequest,
+  type Profile,
+} from "../lib/social";
+
+/** Snapshot tiers arrive as plain strings — keep the badge total. */
+function asTier(name: string): TierName {
+  return (TIER_NAMES as readonly string[]).includes(name) ? (name as TierName) : "Rust";
+}
+
+function Banner({ text, tone = "bad" }: { text: string; tone?: "bad" | "good" }) {
+  const color = tone === "bad" ? C.badAcc : C.goodAcc;
+  const bg = tone === "bad" ? C.badSurf : C.goodSurf;
+  return (
+    <PopIn>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 8,
+          backgroundColor: bg,
+          borderRadius: R.sm,
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+        }}
+      >
+        <Icon name={tone === "bad" ? "TriangleAlert" : "Check"} size={15} color={color} />
+        <Txt size={12.5} weight="semibold" color={color} style={{ flex: 1 }}>
+          {text}
+        </Txt>
+      </View>
+    </PopIn>
+  );
+}
+
+/** Bare input row used by both the handle claim and the add-friend field. */
+function HandleInput({
+  value,
+  onChange,
+  placeholder,
+  onSubmit,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  onSubmit?: () => void;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        flex: 1,
+        backgroundColor: C.page2,
+        borderRadius: R.sm,
+        borderWidth: 1,
+        borderColor: focused ? C.accent : C.line,
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+      }}
+    >
+      <Txt size={15} weight="bold" color={C.inkFaint}>@</Txt>
+      <TextInput
+        value={value}
+        onChangeText={(v) => onChange(v.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+        placeholder={placeholder}
+        placeholderTextColor={C.inkFaint}
+        autoCapitalize="none"
+        autoCorrect={false}
+        returnKeyType="go"
+        onSubmitEditing={onSubmit}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        style={{ flex: 1, fontFamily: FONT.semibold, fontSize: 15, color: C.ink, padding: 0 }}
+      />
+    </View>
+  );
+}
+
+export function Friends() {
+  const { user, exitGuest } = useAuth();
+  const { workouts, exercises, measurements, settings } = useStore();
+
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [requests, setRequests] = useState<FriendRequest[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  // Profile claim form.
+  const [handle, setHandle] = useState("");
+  // Add-friend form.
+  const [search, setSearch] = useState("");
+  const [unfriending, setUnfriending] = useState<Friend | null>(null);
+
+  /** Republish own rank so friends never see a stale badge. */
+  const publishMine = useCallback(
+    () => publishRankFromData({ workouts, exercises, measurements, settings }),
+    [workouts, exercises, measurements, settings],
+  );
+
+  const refresh = useCallback(async () => {
+    setError(null);
+    const p = await myProfile();
+    if (p.error) {
+      setError(p.error);
+      setLoading(false);
+      return;
+    }
+    setProfile(p.data);
+    if (!p.data) {
+      setHandle(suggestHandle(settings.name || ""));
+      setLoading(false);
+      return;
+    }
+    await publishMine();
+    const list = await loadFriends();
+    if (list.error) setError(list.error);
+    if (list.data) {
+      setFriends(list.data.friends);
+      setRequests(list.data.requests);
+    }
+    setLoading(false);
+  }, [publishMine, settings.name]);
+
+  useEffect(() => {
+    if (user) void refresh();
+    else setLoading(false);
+  }, [user, refresh]);
+
+  const act = async (fn: () => Promise<{ error: string | null }>, ok?: string) => {
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    const res = await fn();
+    if (res.error) setError(res.error);
+    else {
+      if (ok) setNotice(ok);
+      await refresh();
+    }
+    setBusy(false);
+  };
+
+  const claim = () =>
+    void act(
+      () => saveProfile(handle, settings.name || handle, true),
+      "Profile published — friends can find you by your handle.",
+    );
+
+  const add = () =>
+    void act(async () => {
+      const found = await findProfile(search);
+      if (found.error) return { error: found.error };
+      if (!found.data) return { error: `No one is using @${search.trim().toLowerCase()}.` };
+      const sent = await sendRequest(found.data.userId);
+      if (!sent.error) setSearch("");
+      return sent;
+    }, "Request sent.");
+
+  // ── states ───────────────────────────────────────────────────────────────
+  if (!user) {
+    return (
+      <View style={{ gap: 12, paddingTop: 8 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Friends</Eyebrow>
+        <Txt size={13} color={C.inkFaint}>
+          Friends need an account — that's how ranks reach each other. Your
+          workouts stay private either way; only your rank is shared.
+        </Txt>
+        <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
+      </View>
+    );
+  }
+
+  if (loading) {
+    return (
+      <View style={{ paddingVertical: 40, alignItems: "center" }}>
+        <ActivityIndicator color={C.accent} />
+      </View>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <View style={{ gap: 12, paddingTop: 8 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Claim your handle</Eyebrow>
+        <Txt size={13} color={C.inkSoft}>
+          Pick a handle so friends can find you. Nothing is published until
+          you do, and only your rank ever leaves this phone — never your
+          workouts.
+        </Txt>
+        <HandleInput value={handle} onChange={setHandle} placeholder="yourname" onSubmit={claim} />
+        <Txt size={11} color={C.inkFaint}>
+          3–20 characters: lowercase letters, numbers and _.
+        </Txt>
+        {error ? <Banner text={error} /> : null}
+        <PrimaryButton
+          label={busy ? "Publishing…" : "Publish my profile"}
+          large
+          disabled={!handleOk(handle) || busy}
+          onPress={claim}
+        />
+      </View>
+    );
+  }
+
+  const incoming = requests.filter((r) => r.direction === "in");
+  const outgoing = requests.filter((r) => r.direction === "out");
+
+  return (
+    <View style={{ gap: 4 }}>
+      {/* Who you are to other people */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8, paddingTop: 8 }}>
+        <Icon name="UserCircle" size={16} color={C.inkFaint} />
+        <Txt size={13} weight="bold" color={C.inkSoft} style={{ flex: 1 }}>
+          @{profile.handle}
+        </Txt>
+        <Pressable
+          hitSlop={8}
+          onPress={() => void refresh()}
+          style={{ flexDirection: "row", alignItems: "center", gap: 5 }}
+        >
+          <Icon name="Repeat" size={14} color={C.inkFaint} />
+          <Txt size={12} weight="bold" color={C.inkFaint}>Refresh</Txt>
+        </Pressable>
+      </View>
+
+      {/* Add someone */}
+      <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
+        <HandleInput
+          value={search}
+          onChange={setSearch}
+          placeholder="add by handle"
+          onSubmit={add}
+        />
+        <Pressable
+          onPress={add}
+          disabled={!handleOk(search) || busy}
+          style={{
+            borderRadius: R.ctrl,
+            backgroundColor: handleOk(search) && !busy ? C.accent : C.page2,
+            paddingHorizontal: 18,
+            justifyContent: "center",
+          }}
+        >
+          <Txt size={13} weight="extrabold" color={handleOk(search) && !busy ? C.accentInk : C.inkFaint}>
+            Add
+          </Txt>
+        </Pressable>
+      </View>
+
+      {error ? <View style={{ marginTop: 10 }}><Banner text={error} /></View> : null}
+      {notice ? <View style={{ marginTop: 10 }}><Banner text={notice} tone="good" /></View> : null}
+
+      {/* Requests waiting on you */}
+      {incoming.length > 0 ? (
+        <>
+          <Eyebrow>Requests ({incoming.length})</Eyebrow>
+          {incoming.map((r, i) => (
+            <View key={r.edgeId}>
+              {i > 0 ? <Divider /> : null}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 10 }}>
+                <View style={{ flex: 1, gap: 1 }}>
+                  <Txt size={15} weight="bold" numberOfLines={1}>{r.displayName}</Txt>
+                  <Txt size={12} color={C.inkFaint}>@{r.handle}</Txt>
+                </View>
+                <Pressable
+                  onPress={() => void act(() => acceptRequest(r.edgeId))}
+                  disabled={busy}
+                  style={{
+                    borderRadius: R.ctrl,
+                    backgroundColor: C.accent,
+                    paddingHorizontal: 14,
+                    paddingVertical: 8,
+                  }}
+                >
+                  <Txt size={12.5} weight="extrabold" color={C.accentInk}>Accept</Txt>
+                </Pressable>
+                <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
+                  <Icon name="X" size={18} color={C.inkFaint} />
+                </Pressable>
+              </View>
+            </View>
+          ))}
+        </>
+      ) : null}
+
+      {/* Friends, strongest first */}
+      <Eyebrow>Friends ({friends.length})</Eyebrow>
+      {friends.length === 0 ? (
+        <Txt size={13} color={C.inkFaint}>
+          No friends yet — add someone by their handle and compare where you
+          both stand.
+        </Txt>
+      ) : (
+        friends.map((f, i) => {
+          const s = f.snapshot;
+          const top = s?.lifts?.[0];
+          return (
+            <View key={f.edgeId}>
+              {i > 0 ? <Divider /> : null}
+              <Pressable
+                onLongPress={() => setUnfriending(f)}
+                delayLongPress={400}
+                style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}
+              >
+                <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={48} />
+                <View style={{ flex: 1, gap: 1 }}>
+                  <Txt size={15} weight="bold" numberOfLines={1}>{f.displayName}</Txt>
+                  <Txt size={12} color={C.inkSoft} numberOfLines={1}>
+                    @{f.handle}
+                    {s ? ` · ${s.tier}` : " · no rank yet"}
+                  </Txt>
+                  {top ? (
+                    <Txt size={11} color={C.inkFaint} numberOfLines={1}>
+                      Best: {top.name} {top.e1RM} {top.unit}
+                    </Txt>
+                  ) : null}
+                </View>
+                <View style={{ alignItems: "flex-end", gap: 1 }}>
+                  <Txt size={16} weight="extrabold" color={s ? TIER_COLORS[asTier(s.tier)] : C.inkFaint}>
+                    {s ? Math.round(s.points) : "—"}
+                  </Txt>
+                  <Txt size={9} weight="bold" color={C.inkFaint}>PTS</Txt>
+                </View>
+              </Pressable>
+            </View>
+          );
+        })
+      )}
+      {friends.length > 0 ? (
+        <Txt size={10} color={C.inkFaint} style={{ marginTop: 4 }}>
+          Hold a friend to remove them. Only ranks are shared — never your
+          workout logs.
+        </Txt>
+      ) : null}
+
+      {/* Requests you sent */}
+      {outgoing.length > 0 ? (
+        <>
+          <Eyebrow>Sent ({outgoing.length})</Eyebrow>
+          {outgoing.map((r, i) => (
+            <View key={r.edgeId}>
+              {i > 0 ? <Divider /> : null}
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 9 }}>
+                <View style={{ flex: 1 }}>
+                  <Txt size={13} weight="semibold" color={C.inkSoft}>@{r.handle}</Txt>
+                </View>
+                <Txt size={11} weight="bold" color={C.inkFaint}>Waiting</Txt>
+                <Pressable hitSlop={8} onPress={() => void act(() => removeEdge(r.edgeId))} disabled={busy}>
+                  <Icon name="X" size={16} color={C.inkFaint} />
+                </Pressable>
+              </View>
+            </View>
+          ))}
+        </>
+      ) : null}
+
+      {unfriending ? (
+        <ConfirmDialog
+          title="Remove friend?"
+          message={`@${unfriending.handle} will no longer see your rank, and you won't see theirs.`}
+          onConfirm={() => {
+            const id = unfriending.edgeId;
+            setUnfriending(null);
+            void act(() => removeEdge(id));
+          }}
+          onClose={() => setUnfriending(null)}
+        />
+      ) : null}
+    </View>
+  );
+}

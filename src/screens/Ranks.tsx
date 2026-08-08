@@ -6,11 +6,12 @@
  */
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
-import { C, TOP_BAR_SPACE } from "../theme";
+import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Divider, Eyebrow, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { ExerciseInfo } from "../components/ExerciseInfo";
+import { Friends } from "./Friends";
 import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
 import { bodyProfileAt } from "../lib/calories";
@@ -21,6 +22,8 @@ export function Ranks() {
   const { workouts, exercises, measurements, settings } = useStore();
   /** Library id of the lift opened as a full rank page. */
   const [info, setInfo] = useState<string | null>(null);
+  /** You (own ladder) vs Friends (the circle's ranks). */
+  const [view, setView] = useState<"you" | "friends">("you");
   const profile = bodyProfileAt(settings, measurements, Date.now());
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
@@ -43,7 +46,41 @@ export function Ranks() {
           </Txt>
         </View>
 
-        {lifts.length === 0 ? (
+        {/* You / Friends */}
+        <View
+          style={{
+            flexDirection: "row",
+            backgroundColor: C.page2,
+            borderRadius: R.md,
+            borderWidth: 1,
+            borderColor: C.line,
+            padding: 4,
+            gap: 4,
+            marginTop: 14,
+          }}
+        >
+          {([["you", "You"], ["friends", "Friends"]] as const).map(([v, label]) => (
+            <Pressable
+              key={v}
+              onPress={() => setView(v)}
+              style={{
+                flex: 1,
+                borderRadius: R.sm,
+                paddingVertical: 9,
+                alignItems: "center",
+                backgroundColor: view === v ? C.accent : "transparent",
+              }}
+            >
+              <Txt size={13} weight="bold" color={view === v ? C.accentInk : C.inkSoft}>
+                {label}
+              </Txt>
+            </Pressable>
+          ))}
+        </View>
+
+        {view === "friends" ? (
+          <Friends />
+        ) : lifts.length === 0 ? (
           <View>
             <Eyebrow>Overall</Eyebrow>
             <Txt size={13} color={C.inkFaint}>

@@ -19,6 +19,7 @@ import { suggestWeight, targetRepsOf } from "./suggest";
 import type { RecommendedRoutine } from "./recommended";
 import { sync } from "./sync";
 import { useAuth } from "./auth";
+import { publishRankFromData } from "./social";
 import {
   uid,
   type Exercise,
@@ -344,6 +345,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       dbRef.current.activeWorkout = null;
       bury("active", w.id);
       commit();
+      // A finished session is the only thing that can move a rank — push the
+      // new snapshot so friends see it without waiting for anyone to open
+      // the Friends tab. Fire-and-forget: signed-out and offline are normal.
+      void publishRankFromData(dbRef.current).catch(() => {});
       return finished;
     },
     discardWorkout: () => {

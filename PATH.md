@@ -120,11 +120,22 @@ graph, none of which a Strong clone has.
   Ranks surfaces, then Home, live session, and the rest.
 - New app icon, splash, and the rank-badge family derived from the tau.
 
-### Phase 3 - Social
-- Public profile (opt-in), friend requests, friends list.
+### Phase 3 - Social (IN PROGRESS)
+- Public profile (opt-in), friend requests, friends list. **SHIPPED
+  2026-08-08**: `supabase/social.sql` (profiles / friendships /
+  rank_snapshots, friend-scoped RLS, `are_friends()` +
+  `find_profile()` / `handle_taken()` RPCs), `src/lib/social.ts`, and the
+  Friends view behind the You/Friends switch in the Ranks tab. Only a
+  handle, a display name and a COMPUTED rank snapshot ever leave the
+  device — never workout logs. Discovery is exact-handle only: no listing,
+  no prefix search, nothing to enumerate.
 - Friends compare: ranks and PRs side by side; feed of friends' rank-ups.
+  TODO — the list shows each friend's tier badge, points and top lift; a
+  real side-by-side compare screen and a rank-up feed are next.
 - Share cards: rank card and PR card as images for stories/reels (this is
-  the marketing engine, treat it as a first-class feature).
+  the marketing engine, treat it as a first-class feature). TODO — check
+  the Expo SDK 57 docs for the current screenshot API before picking a
+  library (AGENTS.md).
 
 ### Phase 4 - Arena + launch
 - Global/regional leaderboards with the anti-cheat stack (plausibility caps,

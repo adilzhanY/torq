@@ -177,6 +177,40 @@ create an account" button that calls `exitGuest()`, and signing out clears
 the flag so the gate returns. Profile no longer contains a sign-in form:
 one screen validates passwords.
 
+## Social (PATH.md Phase 3)
+
+`supabase/social.sql` is the SECOND schema file (run it in the SQL editor
+like schema.sql; re-running is safe). It is deliberately separate from the
+private mirror tables: those hold raw logs and never leave their owner.
+
+- `profiles` — user_id, unique citext `handle` (3–20 of `[a-z0-9_]`),
+  display_name, `visible` (opt-in, default false).
+- `friendships` — requester/addressee/status (pending·accepted·blocked),
+  unique on the ordered pair. RLS splits the verbs on purpose: you INSERT
+  only rows where you are the requester, UPDATE only rows addressed TO you
+  (so nobody accepts on your behalf), DELETE any row you are part of
+  (decline = cancel = unfriend = "remove the edge").
+- `rank_snapshots` — the published half of the rank engine: points, tier,
+  stage, top-5 lifts as jsonb. Readable by you and accepted friends via the
+  SECURITY DEFINER `are_friends()` helper.
+- `find_profile(handle)` / `handle_taken(handle)` — SECURITY DEFINER RPCs,
+  execute granted to `authenticated` only. Exact-handle match is the ONLY
+  discovery path (friends-first: no browsing, no enumeration).
+
+`src/lib/social.ts` wraps all of it, every call returning
+`{ data, error }` with an already-friendly message. `publishRankFromData()`
+computes the rank locally and upserts the snapshot; it runs after every
+`finishWorkout()` (fire-and-forget — signed out and offline are normal) and
+whenever the Friends view opens. `sendRequest()` handles the crossing case:
+if they already asked you, adding them back accepts instead of creating a
+second edge in the opposite direction.
+
+`src/screens/Friends.tsx` renders inside the Ranks tab behind a You/Friends
+switch, with three states: guest → offer the account; no profile → claim a
+handle (the opt-in); otherwise incoming requests, add-by-handle, friends
+sorted by points (badge · name · @handle · top lift · pts, hold to remove),
+then outgoing requests.
+
 ## Commands
 
 - `./run_android.sh [avd]` — one-shot run: boots the named AVD (default
@@ -967,3 +1001,11 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   pastes it into the SQL editor. This machine cannot reach the DB directly
   (db.<ref>.supabase.co resolves IPv6-only, "Network is unreachable") and
   the pooler host needs the project's region.
+- 2026-08-08 (later): Phase 3 kickoff — social foundation shipped (see the
+  "Social" section above): supabase/social.sql, src/lib/social.ts,
+  src/screens/Friends.tsx, the You/Friends switch in Ranks, and a
+  fire-and-forget snapshot publish inside the store's finishWorkout. The
+  private mirror schema (schema.sql) was applied by Adilzhan — all six
+  tables now answer 200 on the REST API. social.sql still needs the same
+  paste; it has NOT been executed, so the Friends view will error until it
+  is. tsc + android export clean; NOT yet eyeballed on the emulator.
