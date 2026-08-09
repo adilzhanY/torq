@@ -125,10 +125,14 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
-Five tabs: Home (default) · History · Workout · Exercises · Stats. Profile
-is NOT a tab — it opens as a full-screen overlay from the UserCircle
-button at the dock's far right (the floating top bar was REMOVED
-2026-08-06; TOP_BAR_SPACE is 0). Stats (replaced Measure; tab id "stats", ChartColumn
+FOUR dock tabs plus the profile slot (2026-08-09 "Five, spelled out"):
+Home (default) · Workout · Ranks · Stats, then "You" — the user's AVATAR,
+which opens Profile as a full-screen overlay rather than switching tabs
+(the floating top bar was REMOVED 2026-08-06; TOP_BAR_SPACE is 0).
+History and Exercises are still full screens with their own Tab ids, but
+they are SUB-PAGES now: History opens from Home's "Recent workouts · See
+all", Exercises from the Workout tab's "Exercise library" row, and each
+keeps its parent tab lit while open. Stats (replaced Measure; tab id "stats", ChartColumn
 icon) is the analytics home: lifetime overview cards, weekly volume +
 workout-count BarCharts (8 weeks, current week lime), muscle-split HBars
 (30-day working-set volume by body part), body-weight LineChart, and the
