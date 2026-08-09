@@ -186,9 +186,19 @@ confused:
   public by definition. That is fine: the publishable key can do nothing on
   its own, RLS is what protects the data. Verified by grepping the exported
   Hermes bundle.
-- `SUPABASE_DB_URL` — the direct Postgres superuser connection, for running
-  `supabase/schema.sql` from a terminal. NEVER prefix it `EXPO_PUBLIC_` and
+- `SUPABASE_DB_URL` — the Postgres superuser connection, for running
+  `supabase/*.sql` from a terminal. NEVER prefix it `EXPO_PUBLIC_` and
   never reference it from `src/`, or the app would ship DB credentials.
+
+  It must be the **session pooler** host, not `db.<ref>.supabase.co`:
+  the direct host is IPv6-ONLY and this machine has no IPv6 route, so psql
+  dies with "Network is unreachable" before authenticating. The pooler is
+  IPv4 and free. Shape (project region resolved 2026-08-09 by probing, since
+  it is not in any local file):
+  `postgresql://postgres.<ref>:<pw>@aws-1-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require`
+  Port 5432 = session mode (DDL + transactions work); 6543 = transaction
+  mode, which cannot run migrations. So migrations ARE runnable from here:
+  `psql "$SUPABASE_DB_URL" -f supabase/social.sql`.
 
 GOTCHA: Metro caches the bundle, and `.env` values are baked in at bundle
 time — after editing `.env` you must restart Metro with `--clear` (an
@@ -1430,10 +1440,12 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   impossible "4 of 3 done" (it now says "4 done · 1 above plan" once you
   pass the target). Verified on the emulator: Home, Ranks and the new
   Profile all render, and the five-tab dock behaves.
-  STILL OUTSTANDING: `supabase/social.sql` has not been re-run, so every
-  social read fails with "column profiles.avatar_url does not exist" —
-  visible as a red banner on the Friends view. Paste the file into the SQL
-  editor.
+  `supabase/social.sql` was then applied from this machine over the session
+  pooler (see "Auth + secrets") and verified: `profiles.avatar_url` exists,
+  the public `avatars` bucket and its four folder-scoped storage policies are
+  in place, and `handle_taken` is granted to `anon`. The Friends view's
+  "column profiles.avatar_url does not exist" banner is gone and it reads the
+  handle again.
 - 2026-08-09 (later): PROFILE split into an ATHLETE CARD + a SETTINGS HUB
   (Adilzhan picked "idea 1 with a settings page built like idea 2" from the
   lavish review `.lavish/torq-profile.html`). The old page was four screens
