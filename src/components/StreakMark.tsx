@@ -2,9 +2,9 @@
  * StreakMark — torq's own streak icon (Adilzhan picked concept A, "Cut
  * flame", from the lavish review `.lavish/torq-streak.html`, 2026-08-09).
  *
- * It replaces lucide's `Flame`, which was a stroked outline on a screen
- * where every other mark is solid, and the same flame that ships in a few
- * thousand other apps. This one is drawn in the app's own geometry: a solid
+ * It replaces the icon pack's `Flame`, which was a stroked outline on a
+ * screen where every other mark is solid, and the same flame that ships in a
+ * few thousand other apps. This one is drawn in the app's own geometry: a solid
  * flame silhouette with two tapered BLADES cut out of it, curving the way
  * the vortex logo's blades curve. The silhouette stays legible at 14 px —
  * every candidate was rasterised at icon sizes before it was proposed,
@@ -15,9 +15,9 @@
  * same tapered-blade function the concept sheet used, so re-deriving them
  * is a script run rather than a bezier-nudging session.
  *
- * NOT for calories. Kcal keeps lucide's stroked Flame, which is now a
- * deliberate distinction rather than a collision: solid mark = your streak,
- * outline = energy burnt.
+ * NOT for calories. Kcal keeps the icon pack's stroked Flame (Tabler's,
+ * since 2026-08-09), which is a deliberate distinction rather than a
+ * collision: solid mark = your streak, outline = energy burnt.
  */
 import { useEffect, useRef } from "react";
 import { Animated, Easing, View } from "react-native";

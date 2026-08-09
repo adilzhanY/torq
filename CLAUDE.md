@@ -20,7 +20,8 @@ feature work.
   `overrides` (1.32 breaks CSS deserialization in the nativewind metro
   transformer).
 - Supabase for auth + cloud sync (optional; app is fully offline-capable)
-- lucide-react-native icons, Space Grotesk font
+- @tabler/icons-react-native icons (DEEP imports only — see Icon.tsx),
+  Space Grotesk font
   (@expo-google-fonts/space-grotesk; weights 400/500/600/700 — the family has
   no 800, so `FONT.extrabold` maps to 700 Bold)
 - No router: single-screen shell with a tab switcher (`src/lib/ui.tsx`),
@@ -1435,6 +1436,32 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): ICON PACK SWAPPED, lucide -> TABLER (Adilzhan picked
+  it from the lavish review `.lavish/torq-icons.html`, which drew the dock
+  in four packs using each one's REAL published geometry, fetched from the
+  Iconify API rather than redrawn).
+  Why Tabler: same 2 px outline idiom on the same 24-unit box, so the swap
+  is one map and nothing else, but drawn on a squarer grid — lucide's
+  rounded terminals sat oddly against SHARP-10 and a logo made of blades.
+  ~6 200 glyphs vs lucide's ~1 600; MIT; official RN package.
+  THE BIG SURPRISE, and the reusable lesson: the Android bundle went
+  6.00 MB -> 4.23 MB. That 1.78 MB is NOT the pack — it is the IMPORT
+  STYLE. The old `import { Archive, ... } from "lucide-react-native"` is a
+  BARREL, and Metro does not tree-shake, so the app shipped all ~1 600
+  lucide icons to use 57. Icon.tsx now deep-imports
+  (`@tabler/icons-react-native/IconHome`), one module per icon. Do not
+  "tidy" those 57 lines into one import.
+  The MAP KEYS are still the old lucide names, on purpose: ~60 call sites
+  say `<Icon name="Dumbbell" />` and renaming them across 20 files would be
+  churn. Icon.tsx is the one place the two vocabularies meet.
+  `src/types/tabler-icons.d.ts` exists because the package's `exports` map
+  points subpath types at `dist/icons/*.d.ts` while they actually live at
+  `dist/icons/icons/*.d.ts` — a packaging bug in 3.46.0. Delete the file if
+  a later version fixes it.
+  One glyph has no equivalent: lucide's BicepsFlexed became
+  `IconStretching`. Everything else mapped on first choice, verified against
+  the package's 6 243 exports rather than guessed.
+  `lucide-react-native` is uninstalled; nothing imports it.
 - 2026-08-09 (later): TAB SWITCHES MADE FAST — measured, not guessed.
   Adilzhan: "when i change pages it feels too slow". Instrumented first
   (stamp the moment setTab fires, log on the new screen's mount effect) and

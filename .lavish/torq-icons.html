@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>torq · icon packs — three docks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--page:#0E0F0E;--page2:#1B1E1A;--surface:#151714;--ink:#F2F4EE;--inkSoft:#9AA294;
+--inkFaint:#5C6356;--line:#262A24;--hair:#22261F;--accent:#C8FE23;--accentInk:#1A1B1A;
+--primary:#1A1B1A;--warn:#F0A742;--bad:#E06A5A;--r-lg:16px;--r-md:12px;--r-ctrl:10px;--r-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+:where(.grid,.flex)>*{min-width:0}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+-webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 22px 120px}
+h1,h2,h3{margin:0;line-height:1.15;letter-spacing:-.02em}
+p{margin:0}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--inkFaint)}
+.lede{color:var(--inkSoft);font-size:15px;max-width:66ch}
+.hair{height:1px;background:var(--hair);border:0;margin:40px 0}
+.accent{color:var(--accent)}.soft{color:var(--inkSoft)}.faint{color:var(--inkFaint)}
+.opt{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:920px){.opt{grid-template-columns:minmax(0,1fr)}}
+.opt-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;
+border-radius:999px;background:var(--page2);color:var(--inkSoft);border:1px solid var(--line)}
+.tag.rec{background:rgba(200,254,35,.12);color:var(--accent);border-color:rgba(200,254,35,.32)}
+.thesis{font-size:15.5px;color:var(--inkSoft);margin-top:8px;max-width:58ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px;margin-top:22px}
+.cols h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.win h4{color:var(--accent)}.cost h4{color:var(--warn)}
+ul{margin:0;padding-left:0;list-style:none}
+li{font-size:13.5px;color:var(--inkSoft);padding-left:16px;position:relative;margin-bottom:7px}
+li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--inkFaint)}
+.win li::before{background:var(--accent)}.cost li::before{background:var(--warn)}
+li b{color:var(--ink);font-weight:600}
+
+/* the real dock: 360 dp wide, 6 slots, 64 tall */
+.phone{width:392px;max-width:100%;border:1px solid var(--line);border-radius:26px;background:var(--page);
+padding:14px;box-shadow:0 16px 40px rgba(0,0,0,.5)}
+.dock{display:flex;height:64px;border-radius:var(--r-lg);background:var(--primary);
+border:1px solid var(--line);padding:0 4px;overflow:hidden}
+.slot{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+gap:4px;position:relative}
+.rail{position:absolute;top:0;width:24px;height:3px;border-radius:0 0 3px 3px;background:var(--accent)}
+.lab{font-size:10px;font-weight:700;line-height:1;white-space:nowrap}
+.av{width:23px;height:23px;border-radius:999px;background:var(--accent);color:var(--accentInk);
+display:grid;place-items:center;font-size:11px;font-weight:700}
+.glyphs{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.g{display:flex;flex-direction:column;align-items:center;gap:7px}
+.gl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--inkFaint)}
+.caption{font-size:11.5px;color:var(--inkFaint);margin-top:10px;text-align:center}
+.stage{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:20px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{text-align:left;padding:13px 16px;font-size:13px;border-bottom:1px solid var(--hair);vertical-align:top}
+th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--inkFaint);font-weight:700;background:var(--surface)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:var(--inkSoft);font-weight:600}
+.yes{color:var(--accent);font-weight:700}.no{color:var(--bad);font-weight:700}.mid{color:var(--warn);font-weight:700}
+.pick{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:24px;margin-top:14px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0 14px}
+.pick label{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);
+border-radius:var(--r-ctrl);background:var(--page);cursor:pointer;transition:border-color .15s}
+.pick label:hover{border-color:var(--inkFaint)}
+.pick label:has(input:checked){border-color:var(--accent);background:rgba(200,254,35,.06)}
+.pick input[type=radio]{accent-color:var(--accent);margin-top:3px;flex:none;width:16px;height:16px}
+.pick .nm{font-size:13.5px;font-weight:700}.pick .ds{font-size:11.5px;color:var(--inkSoft);margin-top:2px}
+.pick textarea{width:100%;background:var(--page);border:1px solid var(--line);border-radius:var(--r-sm);
+color:var(--ink);font-family:inherit;font-size:13px;padding:11px 12px;resize:vertical;min-height:74px}
+.pick .send{margin-top:14px;background:var(--accent);color:var(--accentInk);border:0;border-radius:var(--r-ctrl);
+font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:pointer}
+.note{font-size:11.5px;color:var(--inkFaint);margin-top:10px}
+</style></head><body><div class="wrap">
+<header style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+  <div style="width:44px;height:44px;border-radius:var(--r-md);background:#1A1B1A;display:grid;
+              place-items:center;border:1px solid var(--line);flex:none">
+    <svg viewBox="0 0 24 24" width="26" height="26"><path fill="#C8FE23"
+      d="M12 2.2 14 9l6.8-2-4.9 5 4.9 5L14 15l-2 6.8L10 15l-6.8 2 4.9-5-4.9-5L10 9z"/></svg>
+  </div>
+  <div style="flex:1;min-width:260px">
+    <p class="eyebrow">torq · icon pack</p>
+    <h1 style="font-size:36px;margin-top:6px">The dock in three icon packs</h1>
+    <p class="lede" style="margin-top:12px">
+      Every dock below is drawn with the <b class="accent">real geometry</b> of that pack, pulled from
+      its published SVGs — not redrawn or approximated. All three are free for commercial use, all three
+      ship a React&nbsp;Native package, and all three are at least as complete as lucide.
+    </p>
+  </div>
+</header>
+
+<hr class="hair"/>
+<p class="eyebrow">Today</p>
+<h2 style="font-size:22px;margin-top:6px">lucide, what you ship now</h2>
+<div class="opt" style="margin-top:20px">
+  <div>
+    <div class="phone"><div class="dock"><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g></svg><span class="lab" style="color:rgba(255,255,255,.6)">Home</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829zM2.5 21.5l1.4-1.4M20.1 3.9l1.4-1.4M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829zM9.6 14.4l4.8-4.8"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Workout</span></div><div class="slot"><i class=rail></i><svg viewBox="0 0 24 24" width="21" height="21" style="color:var(--accent);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5m4-1v5l4 2"/></g></svg><span class="lab" style="color:var(--accent)">History</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7.21 15L2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15M11 12L5.12 2.2M13 12l5.88-9.8M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></g></svg><span class="lab" style="color:rgba(255,255,255,.6)">Ranks</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v16a2 2 0 0 0 2 2h16m-3-4V9m-5 8V5M8 17v-3"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Stats</span></div><div class="slot"><span class="av">Q</span><span class="lab" style="color:rgba(255,255,255,.6)">You</span></div></div></div>
+    <div class="stage" style="margin-top:14px">
+      <div class="eyebrow" style="text-align:center">Every dock glyph, 26 px</div>
+      <div class="glyphs"><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></g></svg><span class="gl">Home</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829zM2.5 21.5l1.4-1.4M20.1 3.9l1.4-1.4M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829zM9.6 14.4l4.8-4.8"/></svg><span class="gl">Workout</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9a9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5m4-1v5l4 2"/></g></svg><span class="gl">History</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7.21 15L2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15M11 12L5.12 2.2M13 12l5.88-9.8M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></g></svg><span class="gl">Ranks</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v16a2 2 0 0 0 2 2h16m-3-4V9m-5 8V5M8 17v-3"/></svg><span class="gl">Stats</span></div></div>
+    </div>
+  </div>
+  <div>
+    <p class="thesis" style="margin-top:0">
+      1&nbsp;600 icons, ISC licence, 2&nbsp;px rounded strokes. It is a good pack — the reason to look
+      elsewhere is not quality, it is that <b>lucide is everywhere</b>, and torq has spent this week
+      buying its own geometry: the eight-blade vortex, the shield badges, a hand-drawn streak mark.
+      A rounded-terminal outline set is the least torq-like thing left on the screen.
+    </p>
+    <div class="cols">
+      <div class="cost"><h4>Where it sits wrong</h4><ul>
+        <li><b>Round terminals and round joins</b> against a SHARP-10 radius system and a logo made of blades.</li>
+        <li><b>Outline only.</b> No filled weight, so an active tab can only change colour — the dock's
+        selected state has to be carried entirely by the lime and the rail.</li>
+        <li>The dumbbell is its most recognisable glyph and it reads as two blobs at 21&nbsp;px.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="dock"><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 12H3l9-9l9 9h-2M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></g></svg><span class="lab" style="color:rgba(255,255,255,.6)">Home</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h1m3-4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2m0-9v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1m3 5h6m0-5v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1m3 1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2m4-4h-1"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Workout</span></div><div class="slot"><i class=rail></i><svg viewBox="0 0 24 24" width="21" height="21" style="color:var(--accent);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 8v4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></g></svg><span class="lab" style="color:var(--accent)">History</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v3M8 4v6m8-6v6m-4 8.5L9 20l.5-3.5l-2-2l3-.5l1.5-3l1.5 3l3 .5l-2 2L15 20z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Ranks</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zm12-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zM9 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zM4 20h14"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Stats</span></div><div class="slot"><span class="av">Q</span><span class="lab" style="color:rgba(255,255,255,.6)">You</span></div></div></div>
+    <div class="stage" style="margin-top:14px">
+      <div class="eyebrow" style="text-align:center">Every dock glyph, 26 px</div>
+      <div class="glyphs"><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 12H3l9-9l9 9h-2M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/><path d="M9 21v-6a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v6"/></g></svg><span class="gl">Home</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h1m3-4H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2m0-9v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1m3 5h6m0-5v10a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1a1 1 0 0 0-1 1m3 1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2m4-4h-1"/></svg><span class="gl">Workout</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 8v4l2 2"/><path d="M3.05 11a9 9 0 1 1 .5 4m-.5 5v-5h5"/></g></svg><span class="gl">History</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v3M8 4v6m8-6v6m-4 8.5L9 20l.5-3.5l-2-2l3-.5l1.5-3l1.5 3l3 .5l-2 2L15 20z"/></svg><span class="gl">Ranks</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zm12-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zM9 5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1zM4 20h14"/></svg><span class="gl">Stats</span></div></div>
+    </div>
+    <p class="caption">Sharper corners, same weight. The safe upgrade.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Pack 1</p><span class="tag rec">Recommended</span><span class="tag">5 900 icons</span><span class="tag">MIT</span></div>
+    <h2 style="font-size:26px">Tabler</h2>
+    <p class="thesis">The closest thing to a sharper lucide. Same 2&nbsp;px outline language so nothing else in the app has to change, but the corners are <b class="accent">squarer and the geometry more constructed</b> — it looks drawn on a grid, which is exactly what SHARP-10 and the blade logo are doing.</p>
+    <div class="cols">
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Drop-in.</b> Same stroke width, same 24-unit box, same outline idiom — the swap is a rename in Icon.tsx, not a redesign.</li><li><b>5 900 icons</b>, nearly four times lucide, so nothing you reach for later is missing.</li><li>Squarer terminals sit with the sharp radii instead of arguing with them.</li><li>Official <code>@tabler/icons-react-native</code>; MIT.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>It is still an outline set.</b> If you want a filled active tab you have to reach for the separate <code>-filled</code> variants, which exist for only part of the library.</li><li>The change is subtle — from a metre away this dock and the current one look alike.</li><li>Its barbell is more literal than lucide's, which some will read as clip-art.</li></ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="dock"><div class="slot"><svg viewBox="0 0 256 256" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="m219.31 108.68l-80-80a16 16 0 0 0-22.62 0l-80 80A15.87 15.87 0 0 0 32 120v96a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-56h32v56a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-96a15.87 15.87 0 0 0-4.69-11.32M208 208h-48v-56a8 8 0 0 0-8-8h-48a8 8 0 0 0-8 8v56H48v-88l80-80l80 80Z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Home</span></div><div class="slot"><svg viewBox="0 0 256 256" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M248 120h-8V88a16 16 0 0 0-16-16h-16v-8a16 16 0 0 0-16-16h-24a16 16 0 0 0-16 16v56h-48V64a16 16 0 0 0-16-16H64a16 16 0 0 0-16 16v8H32a16 16 0 0 0-16 16v32H8a8 8 0 0 0 0 16h8v32a16 16 0 0 0 16 16h16v8a16 16 0 0 0 16 16h24a16 16 0 0 0 16-16v-56h48v56a16 16 0 0 0 16 16h24a16 16 0 0 0 16-16v-8h16a16 16 0 0 0 16-16v-32h8a8 8 0 0 0 0-16M32 168V88h16v80Zm56 24H64V64h24zm104 0h-24V64h24zm32-24h-16V88h16Z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Workout</span></div><div class="slot"><i class=rail></i><svg viewBox="0 0 256 256" width="21" height="21" style="color:var(--accent);display:block;flex:none"><path fill="currentColor" d="M224 128a96 96 0 0 1-161.89 69.82a8 8 0 1 1 11-11.64a80 80 0 1 0-1.68-114.75A439 439 0 0 0 61.35 82l16.31 16.34A8 8 0 0 1 72 112H32a8 8 0 0 1-8-8V64a8 8 0 0 1 13.66-5.66L50 70.7c3.22-3.49 6.54-7 10.06-10.55A96 96 0 0 1 224 128m-96-56a8 8 0 0 0-8 8v48a8 8 0 0 0 3.88 6.86l40 24a8 8 0 1 0 8.24-13.72L136 123.47V80a8 8 0 0 0-8-8"/></svg><span class="lab" style="color:var(--accent)">History</span></div><div class="slot"><svg viewBox="0 0 256 256" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M216 96a88 88 0 1 0-144 67.83V240a8 8 0 0 0 11.58 7.16L128 225l44.43 22.21a8.1 8.1 0 0 0 3.57.79a8 8 0 0 0 8-8v-76.17A87.85 87.85 0 0 0 216 96M56 96a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72m112 131.06l-36.43-18.21a8 8 0 0 0-7.16 0L88 227.06v-52.69a87.89 87.89 0 0 0 80 0ZM128 152a56 56 0 1 0-56-56a56.06 56.06 0 0 0 56 56m0-96a40 40 0 1 1-40 40a40 40 0 0 1 40-40"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Ranks</span></div><div class="slot"><svg viewBox="0 0 256 256" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M224 200h-8V40a8 8 0 0 0-8-8h-56a8 8 0 0 0-8 8v40H96a8 8 0 0 0-8 8v40H48a8 8 0 0 0-8 8v64h-8a8 8 0 0 0 0 16h192a8 8 0 0 0 0-16M160 48h40v152h-40Zm-56 48h40v104h-40Zm-48 48h32v56H56Z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Stats</span></div><div class="slot"><span class="av">Q</span><span class="lab" style="color:rgba(255,255,255,.6)">You</span></div></div></div>
+    <div class="stage" style="margin-top:14px">
+      <div class="eyebrow" style="text-align:center">Every dock glyph, 26 px</div>
+      <div class="glyphs"><div class="g"><svg viewBox="0 0 256 256" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="m219.31 108.68l-80-80a16 16 0 0 0-22.62 0l-80 80A15.87 15.87 0 0 0 32 120v96a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-56h32v56a8 8 0 0 0 8 8h64a8 8 0 0 0 8-8v-96a15.87 15.87 0 0 0-4.69-11.32M208 208h-48v-56a8 8 0 0 0-8-8h-48a8 8 0 0 0-8 8v56H48v-88l80-80l80 80Z"/></svg><span class="gl">Home</span></div><div class="g"><svg viewBox="0 0 256 256" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M248 120h-8V88a16 16 0 0 0-16-16h-16v-8a16 16 0 0 0-16-16h-24a16 16 0 0 0-16 16v56h-48V64a16 16 0 0 0-16-16H64a16 16 0 0 0-16 16v8H32a16 16 0 0 0-16 16v32H8a8 8 0 0 0 0 16h8v32a16 16 0 0 0 16 16h16v8a16 16 0 0 0 16 16h24a16 16 0 0 0 16-16v-56h48v56a16 16 0 0 0 16 16h24a16 16 0 0 0 16-16v-8h16a16 16 0 0 0 16-16v-32h8a8 8 0 0 0 0-16M32 168V88h16v80Zm56 24H64V64h24zm104 0h-24V64h24zm32-24h-16V88h16Z"/></svg><span class="gl">Workout</span></div><div class="g"><svg viewBox="0 0 256 256" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M136 80v43.47l36.12 21.67a8 8 0 0 1-8.24 13.72l-40-24A8 8 0 0 1 120 128V80a8 8 0 0 1 16 0m-8-48a95.44 95.44 0 0 0-67.92 28.15C52.81 67.51 46.35 74.59 40 82V64a8 8 0 0 0-16 0v40a8 8 0 0 0 8 8h40a8 8 0 0 0 0-16H49c7.15-8.42 14.27-16.35 22.39-24.57a80 80 0 1 1 1.66 114.75a8 8 0 1 0-11 11.64A96 96 0 1 0 128 32"/></svg><span class="gl">History</span></div><div class="g"><svg viewBox="0 0 256 256" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M216 96a88 88 0 1 0-144 67.83V240a8 8 0 0 0 11.58 7.16L128 225l44.43 22.21a8.1 8.1 0 0 0 3.57.79a8 8 0 0 0 8-8v-76.17A87.85 87.85 0 0 0 216 96M56 96a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72m112 131.06l-36.43-18.21a8 8 0 0 0-7.16 0L88 227.06v-52.69a87.89 87.89 0 0 0 80 0ZM128 152a56 56 0 1 0-56-56a56.06 56.06 0 0 0 56 56m0-96a40 40 0 1 1-40 40a40 40 0 0 1 40-40"/></svg><span class="gl">Ranks</span></div><div class="g"><svg viewBox="0 0 256 256" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M224 200h-8V40a8 8 0 0 0-8-8h-56a8 8 0 0 0-8 8v40H96a8 8 0 0 0-8 8v40H48a8 8 0 0 0-8 8v64h-8a8 8 0 0 0 0 16h192a8 8 0 0 0 0-16M160 48h40v152h-40Zm-56 48h40v104h-40Zm-48 48h32v56H56Z"/></svg><span class="gl">Stats</span></div></div>
+    </div>
+    <p class="caption">Idle is outline, active is filled. Swipe your eye to Ranks.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Pack 2</p><span class="tag">Boldest</span><span class="tag">6 weights</span><span class="tag">MIT</span></div>
+    <h2 style="font-size:26px">Phosphor</h2>
+    <p class="thesis">Six weights of the same 1&nbsp;512 glyphs — and the one that matters here is <b class="accent">Fill</b>. The active tab in this dock is not just lime, it is <b>solid</b>, which is the pattern the app already adopted when the streak mark went from a stroked flame to a filled one.</p>
+    <div class="cols">
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Fill on the active tab</b> — the strongest selected state of the three, and it matches the solid streak mark and solid rank shields.</li><li>Six weights (thin → bold → fill → duotone) means one family covers every density you will ever need without mixing packs.</li><li>Geometric, slightly severe, with a distinct personality — nobody will mistake it for the default.</li><li>Official <code>phosphor-react-native</code>; MIT.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>1 512 unique glyphs — fewer than lucide's 1 600.</b> With six weights it is 9 000 files, but if you count distinct concepts, this is the only option here that does not beat what you have. Worth checking the few you rely on before committing.</li><li>Two weights in the dock means two icon lookups per slot and a slightly heavier component.</li><li>Its house and medal are noticeably rounder than Tabler's — less angular than the brand.</li></ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="dock"><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M13 19h6V9.978l-7-5.444l-7 5.444V19h6v-6h2zm8 1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.49a1 1 0 0 1 .386-.79l8-6.223a1 1 0 0 1 1.228 0l8 6.223a1 1 0 0 1 .386.79z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Home</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M16.5 2A5.5 5.5 0 0 1 22 7.5V10a3 3 0 0 1-1 2.235V17a3 3 0 0 1-2 2.829V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.17A3 3 0 0 1 3 17V6a4 4 0 0 1 4-4zm-7 9H5v6a1 1 0 0 0 .883.993L6 18h12a1 1 0 0 0 .993-.883L19 17v-4h-6.036A3.5 3.5 0 0 1 9.5 16H6v-2h3.5a1.5 1.5 0 0 0 1.493-1.355L11 12.5a1.5 1.5 0 0 0-1.356-1.493zm7-7H7a2 2 0 0 0-1.995 1.85L5 6v3h4.5a3.5 3.5 0 0 1 3.163 2H19a1 1 0 0 0 .993-.883L20 10V7.5a3.5 3.5 0 0 0-3.308-3.495z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Workout</span></div><div class="slot"><i class=rail></i><svg viewBox="0 0 24 24" width="21" height="21" style="color:var(--accent);display:block;flex:none"><path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12h2a8 8 0 1 0 1.385-4.5H8v2H2v-6h2V6a9.99 9.99 0 0 1 8-4m1 5v4.585l3.243 3.243l-1.415 1.415L11 12.413V7z"/></svg><span class="lab" style="color:var(--accent)">History</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M12 7a8 8 0 1 1 0 16a8 8 0 0 1 0-16m0 2a6 6 0 1 0 0 12a6 6 0 0 0 0-12m0 1.5l1.322 2.68l2.958.43l-2.14 2.085l.505 2.946L12 17.25l-2.645 1.39l.505-2.945l-2.14-2.086l2.958-.43zM18 2v3l-1.363 1.138A9.9 9.9 0 0 0 13 5.049V2zm-7-.001v3.05a9.9 9.9 0 0 0-3.636 1.088L6 5V2z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Ranks</span></div><div class="slot"><svg viewBox="0 0 24 24" width="21" height="21" style="color:rgba(255,255,255,.6);display:block;flex:none"><path fill="currentColor" d="M2 13h6v8H2zm14-5h6v13h-6zM9 3h6v18H9zM4 15v4h2v-4zm7-10v14h2V5zm7 5v9h2v-9z"/></svg><span class="lab" style="color:rgba(255,255,255,.6)">Stats</span></div><div class="slot"><span class="av">Q</span><span class="lab" style="color:rgba(255,255,255,.6)">You</span></div></div></div>
+    <div class="stage" style="margin-top:14px">
+      <div class="eyebrow" style="text-align:center">Every dock glyph, 26 px</div>
+      <div class="glyphs"><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M13 19h6V9.978l-7-5.444l-7 5.444V19h6v-6h2zm8 1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.49a1 1 0 0 1 .386-.79l8-6.223a1 1 0 0 1 1.228 0l8 6.223a1 1 0 0 1 .386.79z"/></svg><span class="gl">Home</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M16.5 2A5.5 5.5 0 0 1 22 7.5V10a3 3 0 0 1-1 2.235V17a3 3 0 0 1-2 2.829V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-1.17A3 3 0 0 1 3 17V6a4 4 0 0 1 4-4zm-7 9H5v6a1 1 0 0 0 .883.993L6 18h12a1 1 0 0 0 .993-.883L19 17v-4h-6.036A3.5 3.5 0 0 1 9.5 16H6v-2h3.5a1.5 1.5 0 0 0 1.493-1.355L11 12.5a1.5 1.5 0 0 0-1.356-1.493zm7-7H7a2 2 0 0 0-1.995 1.85L5 6v3h4.5a3.5 3.5 0 0 1 3.163 2H19a1 1 0 0 0 .993-.883L20 10V7.5a3.5 3.5 0 0 0-3.308-3.495z"/></svg><span class="gl">Workout</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12h2a8 8 0 1 0 1.385-4.5H8v2H2v-6h2V6a9.99 9.99 0 0 1 8-4m1 5v4.585l3.243 3.243l-1.415 1.415L11 12.413V7z"/></svg><span class="gl">History</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M12 7a8 8 0 1 1 0 16a8 8 0 0 1 0-16m0 2a6 6 0 1 0 0 12a6 6 0 0 0 0-12m0 1.5l1.322 2.68l2.958.43l-2.14 2.085l.505 2.946L12 17.25l-2.645 1.39l.505-2.945l-2.14-2.086l2.958-.43zM18 2v3l-1.363 1.138A9.9 9.9 0 0 0 13 5.049V2zm-7-.001v3.05a9.9 9.9 0 0 0-3.636 1.088L6 5V2z"/></svg><span class="gl">Ranks</span></div><div class="g"><svg viewBox="0 0 24 24" width="26" height="26" style="color:var(--ink);display:block;flex:none"><path fill="currentColor" d="M2 13h6v8H2zm14-5h6v13h-6zM9 3h6v18H9zM4 15v4h2v-4zm7-10v14h2V5zm7 5v9h2v-9z"/></svg><span class="gl">Stats</span></div></div>
+    </div>
+    <p class="caption">Line idle, fill active. Note the workout glyph.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Pack 3</p><span class="tag">Softest</span><span class="tag">3 058 icons</span><span class="tag">Apache 2.0</span></div>
+    <h2 style="font-size:26px">Remix Icon</h2>
+    <p class="thesis">Every glyph ships as a matched <b class="accent">line and fill pair</b>, designed for exactly this: outline when idle, solid when selected. Rounder and friendlier than the other two — the question is whether torq wants friendly.</p>
+    <div class="cols">
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Line/fill pairs across the whole set</b>, not just part of it, so the filled active state never has a gap.</li><li><b>3 058 icons</b>, nearly double lucide.</li><li>Heavier optical weight than lucide, which holds up better on a near-black page.</li><li>Apache 2.0 — the most permissive licence here for a paid app.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>Roundest of the three.</b> On a page built from blades and 10-px corners it softens the brand rather than reinforcing it.</li><li><b>No dumbbell.</b> The nearest workout glyph is a boxing glove, which is not what the tab does.</li><li>No official React Native package — you would render the SVGs yourself or add a wrapper.</li></ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<p class="eyebrow">Side by side</p>
+<h2 style="font-size:22px;margin:6px 0 18px">The facts, not the vibes</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>&nbsp;</th><th>lucide (now)</th><th>1 · Tabler</th><th>2 · Phosphor</th><th>3 · Remix</th></tr></thead>
+  <tbody>
+    <tr><td>Unique glyphs</td><td>~1 600</td><td class="yes">~5 900</td><td class="mid">~1 512</td><td class="yes">~3 058</td></tr>
+    <tr><td>Weights / variants</td><td class="no">1</td><td class="mid">outline + partial filled</td><td class="yes">6</td><td class="yes">line + fill, all</td></tr>
+    <tr><td>Licence</td><td>ISC</td><td class="yes">MIT</td><td class="yes">MIT</td><td class="yes">Apache 2.0</td></tr>
+    <tr><td>Official RN package</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
+    <tr><td>Terminals</td><td class="no">Round</td><td class="yes">Square-ish</td><td class="mid">Round, geometric</td><td class="no">Round</td></tr>
+    <tr><td>Filled active tab</td><td class="no">Not possible</td><td class="mid">Partial</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
+    <tr><td>Has a real dumbbell</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No — boxing glove</td></tr>
+    <tr><td>Migration cost</td><td>—</td><td class="yes">Rename map in Icon.tsx</td><td class="mid">Rename + weight prop</td><td class="no">Rename + own renderer</td></tr>
+  </tbody>
+</table></div>
+
+<p class="lede" style="margin-top:22px">
+  <b class="accent">My read:</b> Tabler if you want the app to look more like itself with one afternoon's
+  work — it is the same idiom with the corners the brand actually wants, it is four times the library,
+  and the migration is a rename map behind the <code>Icon</code> component you already have. Phosphor if
+  you want the dock to gain something lucide structurally cannot give it: a <i>filled</i> active tab, which
+  is the same move the streak mark just made. Remix I would not ship — the roundness pulls against the
+  brand, there is no official RN package, and its workout tab would be a boxing glove.
+  <br/><br/>
+  One thing none of these change: <b>the icons are not the reason the app looks generic</b>. The vortex,
+  the shields and the streak mark are already yours. This is the last 10%.
+</p>
+
+<hr class="hair"/>
+<p class="eyebrow">Your call</p>
+<h2 style="font-size:22px;margin:6px 0 0">Which pack do I migrate to?</h2>
+<form class="pick" data-lavish-question="icons" onsubmit="
+  event.preventDefault();
+  const f = new FormData(event.currentTarget);
+  const choice = f.get('pack');
+  const notes = (f.get('notes') || '').toString().trim();
+  if (!choice) return;
+  window.lavish.queuePrompt(
+    'Migrate the app icons to: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
+    { tag: 'choice', text: 'Icon pack: ' + choice + (notes ? ' — ' + notes : ''),
+      element: event.currentTarget, queueKey: 'icons',
+      data: { question: 'icons', answer: choice, notes } }
+  );
+">
+  <p class="soft" style="font-size:13.5px">
+    Pick one and I migrate every icon in the app behind the existing <code>Icon</code> component,
+    then check each screen on the device. Annotate any single glyph you dislike first.
+  </p>
+  <div class="picks">
+    <label><input type="radio" name="pack" value="Tabler">
+      <span><span class="nm">1 · Tabler</span><span class="ds">Sharper lucide. 5 900 icons, MIT, drop-in.</span></span></label>
+    <label><input type="radio" name="pack" value="Phosphor">
+      <span><span class="nm">2 · Phosphor</span><span class="ds">Six weights; filled active tab. 1 512 glyphs.</span></span></label>
+    <label><input type="radio" name="pack" value="Remix Icon">
+      <span><span class="nm">3 · Remix</span><span class="ds">Line/fill pairs, 3 058 icons, softer.</span></span></label>
+    <label><input type="radio" name="pack" value="none — keep lucide">
+      <span><span class="nm">Keep lucide</span><span class="ds">Not worth the churn right now.</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Anything specific — a glyph that must look a certain way, whether the active tab should be filled…"></textarea>
+  <button class="send" type="submit">Queue this answer</button>
+  <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
+</form>
+</div></body></html>
