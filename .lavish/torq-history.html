@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>torq · history — three redesigns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--page:#0E0F0E;--page2:#1B1E1A;--surface:#151714;--ink:#F2F4EE;--inkSoft:#9AA294;
+--inkFaint:#5C6356;--line:#262A24;--hair:#22261F;--accent:#C8FE23;--accentInk:#1A1B1A;
+--good:#5AC8A0;--warn:#F0A742;--bad:#E06A5A;--pr:#9C86E8;--gold:#E9B920;
+--r-lg:16px;--r-md:12px;--r-ctrl:10px;--r-sm:8px}
+*,*::before,*::after{box-sizing:border-box}
+:where(.grid,.flex)>*{min-width:0}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+-webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 22px 120px}
+h1,h2,h3{margin:0;line-height:1.15;letter-spacing:-.02em}
+p{margin:0}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--inkFaint)}
+.lede{color:var(--inkSoft);font-size:15px;max-width:66ch}
+.hair{height:1px;background:var(--hair);border:0;margin:40px 0}
+.accent{color:var(--accent)}.soft{color:var(--inkSoft)}.faint{color:var(--inkFaint)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--hair);
+border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);margin-top:26px}
+.fact{background:var(--page);padding:16px 18px 18px}
+.fact b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em}
+.fact span{font-size:12px;color:var(--inkSoft);display:block;margin-top:2px}
+.fact.bad b{color:var(--bad)}
+.opt{display:grid;grid-template-columns:minmax(0,392px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:900px){.opt{grid-template-columns:minmax(0,1fr)}}
+.opt-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;
+border-radius:999px;background:var(--page2);color:var(--inkSoft);border:1px solid var(--line)}
+.tag.rec{background:rgba(200,254,35,.12);color:var(--accent);border-color:rgba(200,254,35,.32)}
+.thesis{font-size:15.5px;color:var(--inkSoft);margin-top:8px;max-width:58ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px;margin-top:22px}
+.cols h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.win h4{color:var(--accent)}.cost h4{color:var(--warn)}
+ul{margin:0;padding-left:0;list-style:none}
+li{font-size:13.5px;color:var(--inkSoft);padding-left:16px;position:relative;margin-bottom:7px}
+li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--inkFaint)}
+.win li::before{background:var(--accent)}.cost li::before{background:var(--warn)}
+li b{color:var(--ink);font-weight:600}
+.phone{width:392px;max-width:100%;border:1px solid var(--line);border-radius:26px;background:var(--page);
+padding:14px;box-shadow:0 18px 44px rgba(0,0,0,.55)}
+.screen{height:620px;border-radius:16px;overflow-y:auto;overflow-x:hidden;position:relative;
+scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.screen::-webkit-scrollbar{width:5px}.screen::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+.pad{padding:16px 16px 28px}
+.shot{width:100%;display:block;border-radius:16px}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.caption{font-size:11.5px;color:var(--inkFaint);margin-top:10px;text-align:center}
+.title{font-size:26px;font-weight:700;letter-spacing:-.03em}
+.mon{display:flex;align-items:baseline;justify-content:space-between;margin:20px 0 6px}
+.mon b{font-size:18px;font-weight:700}
+.mon span{font-size:12px;font-weight:700;color:var(--inkFaint)}
+.dv{height:1px;background:var(--hair)}
+
+/* ── A: timeline ────────────────────────────────────────── */
+.tl{position:relative;padding-left:30px}
+.tl::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:var(--hair)}
+.node{position:relative;padding:12px 0}
+.node::before{content:"";position:absolute;left:-25px;top:19px;width:10px;height:10px;border-radius:999px;
+background:var(--page);border:2px solid var(--inkFaint)}
+.node.pr::before{background:var(--accent);border-color:var(--accent)}
+.node .when{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--inkFaint)}
+.node .nm{font-size:16px;font-weight:700;margin-top:2px}
+.node .meta{font-size:11.5px;color:var(--inkFaint);margin-top:2px}
+.chips{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.chip{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:var(--r-sm);
+background:var(--page2);color:var(--inkSoft)}
+.chip.on{background:rgba(200,254,35,.14);color:var(--accent)}
+.chip.gold{background:rgba(233,185,32,.14);color:var(--gold)}
+.gap{position:relative;padding:8px 0 8px;font-size:10.5px;font-weight:700;color:var(--inkFaint);
+letter-spacing:.08em}
+.gap::before{content:"";position:absolute;left:-25px;top:15px;width:10px;height:10px;border-radius:999px;
+background:var(--page);border:2px dashed var(--line)}
+
+/* ── B: month spread ───────────────────────────────────── */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:10px 0 4px}
+.cal i{aspect-ratio:1;border-radius:4px;background:var(--page2);display:block}
+.cal i.on{background:var(--accent)}
+.cal i.on2{background:rgba(200,254,35,.45)}
+.cal i.pad{background:transparent}
+.msum{display:flex;gap:14px;margin-top:8px}
+.msum div{flex:1;min-width:0}
+.msum b{display:block;font-size:19px;font-weight:700;letter-spacing:-.02em}
+.msum span{font-size:9px;font-weight:700;color:var(--inkFaint);letter-spacing:.1em}
+.bcard{padding:12px 0}
+.bcard .top{display:flex;align-items:baseline;gap:8px}
+.bcard .nm{font-size:16px;font-weight:700}
+.bcard .dt{font-size:11px;color:var(--inkFaint);margin-left:auto}
+.bcard .hl{font-size:12.5px;color:var(--inkSoft);margin-top:4px}
+.bcard .hl b{color:var(--ink)}
+
+/* ── C: session cards ──────────────────────────────────── */
+.scard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+padding:13px 14px;margin-bottom:9px}
+.scard.pr{border-color:rgba(233,185,32,.34);background:linear-gradient(150deg,rgba(233,185,32,.07),rgba(21,23,20,1) 62%)}
+.scard .row1{display:flex;align-items:center;gap:8px}
+.scard .tagp{font-size:9px;font-weight:700;letter-spacing:.1em;padding:3px 7px;border-radius:5px;
+background:var(--page2);color:var(--inkSoft)}
+.scard .nm{font-size:16px;font-weight:700}
+.scard .dt{margin-left:auto;font-size:11px;color:var(--inkFaint);white-space:nowrap}
+.scard .lift{display:flex;justify-content:space-between;font-size:12.5px;margin-top:7px}
+.scard .lift span:first-child{color:var(--inkSoft)}
+.scard .lift span:last-child{font-weight:700}
+.scard .foot{display:flex;gap:14px;margin-top:10px;padding-top:9px;border-top:1px solid var(--hair);
+font-size:11.5px;font-weight:700;color:var(--inkSoft)}
+.scard .foot .g{color:var(--gold)}
+.scard .foot .a{color:var(--accent)}
+.more{font-size:11px;color:var(--inkFaint);margin-top:6px}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md)}
+table{border-collapse:collapse;width:100%;min-width:700px}
+th,td{text-align:left;padding:13px 16px;font-size:13px;border-bottom:1px solid var(--hair);vertical-align:top}
+th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--inkFaint);font-weight:700;background:var(--surface)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:var(--inkSoft);font-weight:600}
+.yes{color:var(--accent);font-weight:700}.no{color:var(--bad);font-weight:700}.mid{color:var(--warn);font-weight:700}
+.pick{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:24px;margin-top:14px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0 14px}
+.pick label{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);
+border-radius:var(--r-ctrl);background:var(--page);cursor:pointer;transition:border-color .15s}
+.pick label:hover{border-color:var(--inkFaint)}
+.pick label:has(input:checked){border-color:var(--accent);background:rgba(200,254,35,.06)}
+.pick input[type=radio]{accent-color:var(--accent);margin-top:3px;flex:none;width:16px;height:16px}
+.pick .nm{font-size:13.5px;font-weight:700}.pick .ds{font-size:11.5px;color:var(--inkSoft);margin-top:2px}
+.pick textarea{width:100%;background:var(--page);border:1px solid var(--line);border-radius:var(--r-sm);
+color:var(--ink);font-family:inherit;font-size:13px;padding:11px 12px;resize:vertical;min-height:74px}
+.pick .send{margin-top:14px;background:var(--accent);color:var(--accentInk);border:0;border-radius:var(--r-ctrl);
+font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:pointer}
+.note{font-size:11.5px;color:var(--inkFaint);margin-top:10px}
+.annot{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--hair)}
+.annot .n{width:20px;height:20px;border-radius:999px;background:var(--bad);color:#fff;font-size:11px;
+font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
+.annot p{font-size:13.5px;color:var(--inkSoft)}.annot p b{color:var(--ink)}
+</style></head><body><div class="wrap">
+<header style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+  <div style="width:44px;height:44px;border-radius:var(--r-md);background:#1A1B1A;display:grid;
+              place-items:center;border:1px solid var(--line);flex:none">
+    <svg viewBox="0 0 24 24" width="26" height="26"><path fill="#C8FE23"
+      d="M12 2.2 14 9l6.8-2-4.9 5 4.9 5L14 15l-2 6.8L10 15l-6.8 2 4.9-5-4.9-5L10 9z"/></svg>
+  </div>
+  <div style="flex:1;min-width:260px">
+    <p class="eyebrow">torq · history</p>
+    <h1 style="font-size:36px;margin-top:6px">Three History redesigns</h1>
+    <p class="lede" style="margin-top:12px">
+      The page is a <b class="accent">wall of identical rows</b>. Every session looks the same weight
+      whether it set five records or was three sets of bench, and the numbers it leads with — volume
+      and calories — are the two you have already cut from Home and Stats. All three ideas fix the
+      same thing: make a session's <i>meaning</i> visible before its inventory.
+    </p>
+  </div>
+</header>
+
+<section class="facts">
+  <div class="fact bad"><b>12 240 kg</b><span>Volume, still on every card, after you removed it everywhere else.</span></div>
+  <div class="fact bad"><b>5 rows</b><span>Of "3 × Barbell X … 90 kg" per card. The list is most of the ink.</span></div>
+  <div class="fact bad"><b>0</b><span>Visual difference between a 15-PR session and an empty one.</span></div>
+  <div class="fact"><b>0</b><span>Sense of rhythm — you cannot see a week off, or a streak, from the log.</span></div>
+</section>
+
+<hr class="hair"/>
+<p class="eyebrow">Today</p>
+<h2 style="font-size:22px;margin-top:6px">The real page, on your phone</h2>
+<div class="opt" style="margin-top:20px">
+  <div>
+    <div class="shots">
+      <img class="shot" src="hist-now-1.png" alt="History top"/>
+      <img class="shot" src="hist-now-2.png" alt="History scrolled"/>
+    </div>
+    <p class="caption">Captured from the emulator just now.</p>
+  </div>
+  <div>
+    <h4 style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bad);margin-bottom:4px">What's wrong</h4>
+    <div class="annot"><span class="n">1</span><p><b>Everything is the same weight.</b> Leg Day set <i>15 personal records</i> and Morning Workout was three sets of bench, and on the page they are two identical blocks of grey rows.</p></div>
+    <div class="annot"><span class="n">2</span><p><b>The exercise list eats the card.</b> Five lines of "4 × Barbell Full Squat … 90 kg" is an inventory, not a memory. The number on the right is only the top weight, which is rarely the point.</p></div>
+    <div class="annot"><span class="n">3</span><p><b>Volume and calories are still the headline stats</b> — the exact two you deleted from Home and Stats. History is now the last place in the app that leads with them.</p></div>
+    <div class="annot"><span class="n">4</span><p><b>No rhythm.</b> A log's second job is showing your pattern: streaks, weeks off, whether you are training more than last month. Nothing here does that.</p></div>
+    <div class="annot"><span class="n">5</span><p><b>Nothing connects a session to your rank</b>, even though the app can say exactly which sessions moved it.</p></div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="title">History</div>
+      <div class="mon"><b>August</b><span>4 sessions</span></div>
+      <div class="tl">
+        <div class="node pr">
+          <div class="when">Sat 8 Aug · 10:05</div>
+          <div class="nm">Morning Workout</div>
+          <div class="meta">1 min · 3 sets · bench only</div>
+          <div class="chips"><span class="chip gold">1 PR</span><span class="chip">Chest</span></div>
+        </div>
+        <div class="gap">1 day off</div>
+        <div class="node pr">
+          <div class="when">Fri 7 Aug · 18:57</div>
+          <div class="nm">Leg Day</div>
+          <div class="meta">57 min · 17 sets · 5 exercises</div>
+          <div class="chips"><span class="chip gold">15 PRs</span><span class="chip on">+4 pts</span>
+            <span class="chip">Legs</span><span class="chip">Back</span></div>
+        </div>
+        <div class="gap">2 days off</div>
+        <div class="node">
+          <div class="when">Wed 5 Aug · 18:55</div>
+          <div class="nm">Pull Day</div>
+          <div class="meta">55 min · 14 sets · 4 exercises</div>
+          <div class="chips"><span class="chip gold">12 PRs</span><span class="chip on">+2 pts</span>
+            <span class="chip">Back</span><span class="chip">Arms</span></div>
+        </div>
+        <div class="gap">2 days off</div>
+        <div class="node">
+          <div class="when">Mon 3 Aug · 18:53</div>
+          <div class="nm">Push Day</div>
+          <div class="meta">53 min · 16 sets · 5 exercises</div>
+          <div class="chips"><span class="chip gold">6 PRs</span><span class="chip">Chest</span>
+            <span class="chip">Shoulders</span></div>
+        </div>
+      </div>
+      <div class="mon"><b>July</b><span>14 sessions</span></div>
+      <div class="tl">
+        <div class="node">
+          <div class="when">Fri 31 Jul · 18:50</div>
+          <div class="nm">Leg Day</div>
+          <div class="meta">50 min · 17 sets · 5 exercises</div>
+          <div class="chips"><span class="chip gold">6 PRs</span><span class="chip">Legs</span></div>
+        </div>
+      </div>
+    </div></div></div>
+    <p class="caption">The rail shows the gaps as clearly as the sessions.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea A</p><span class="tag rec">Recommended</span><span class="tag">Medium build</span></div>
+    <h2 style="font-size:26px">The timeline</h2>
+    <p class="thesis">
+      A rail down the left with a node per session — <b class="accent">lime when it set a record</b> —
+      and the empty days named between them. The exercise inventory becomes muscle chips; what earns
+      the space instead is what the session <i>did</i>: records, points, muscles worked.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>Rhythm becomes visible.</b> "2 days off" between nodes tells you more about your training than any per-session number, and no other screen shows it.</li>
+        <li><b>Sessions stop looking equal.</b> A lime node and a gold PR chip make Leg Day obviously the big one.</li>
+        <li><b>Half the ink.</b> Five inventory rows collapse to two or three chips, so twice as many sessions fit a screen.</li>
+        <li>Volume and calories leave the card, finishing the job you started on Home and Stats.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>You lose the at-a-glance exercise list.</b> Knowing what you actually lifted now needs a tap.</li>
+        <li>The gap markers need care — "0 days off" between two sessions on one day must not appear.</li>
+        <li>A rail plus nodes is more layout than a flat list, and it has to keep working inside the virtualised SectionList.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="title">History</div>
+
+      <div class="mon" style="margin-bottom:0"><b>August 2026</b><span>4 sessions</span></div>
+      <div class="cal"><i class="pad"></i><i class="pad"></i><i class="pad"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on2"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on2"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i></div>
+      <div class="msum">
+        <div><b>4</b><span>SESSIONS</span></div>
+        <div><b>34</b><span>PRs</span></div>
+        <div><b>+6</b><span>POINTS</span></div>
+        <div><b>2h 46</b><span>TIME</span></div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div class="bcard">
+          <div class="top"><span class="nm">Morning Workout</span><span class="dt">Sat 8 · 1m</span></div>
+          <div class="hl">Best set <b>Bench Press 70 kg × 3</b> · <b style="color:var(--gold)">1 PR</b></div>
+        </div>
+        <div class="dv"></div>
+        <div class="bcard">
+          <div class="top"><span class="nm">Leg Day</span><span class="dt">Fri 7 · 57m</span></div>
+          <div class="hl">Best set <b>Full Squat 90 kg × 5</b> · <b style="color:var(--gold)">15 PRs</b>
+            · <b style="color:var(--accent)">+4 pts</b></div>
+        </div>
+        <div class="dv"></div>
+        <div class="bcard">
+          <div class="top"><span class="nm">Pull Day</span><span class="dt">Wed 5 · 55m</span></div>
+          <div class="hl">Best set <b>Deadlift 100 kg × 4</b> · <b style="color:var(--gold)">12 PRs</b>
+            · <b style="color:var(--accent)">+2 pts</b></div>
+        </div>
+        <div class="dv"></div>
+        <div class="bcard">
+          <div class="top"><span class="nm">Push Day</span><span class="dt">Mon 3 · 53m</span></div>
+          <div class="hl">Best set <b>Bench Press 67.5 kg × 5</b> · <b style="color:var(--gold)">6 PRs</b></div>
+        </div>
+      </div>
+
+      <div class="mon" style="margin-bottom:0"><b>July 2026</b><span>14 sessions</span></div>
+      <div class="cal"><i class="pad"></i><i class="pad"></i><i class="pad"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on2"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on2"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i><i class="on"></i><i class=""></i><i class=""></i></div>
+      <div class="msum">
+        <div><b>14</b><span>SESSIONS</span></div>
+        <div><b>61</b><span>PRs</span></div>
+        <div><b>+31</b><span>POINTS</span></div>
+        <div><b>11h</b><span>TIME</span></div>
+      </div>
+    </div></div></div>
+    <p class="caption">Each month opens with its own shape, then one line per session.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea B</p><span class="tag">Most informative</span><span class="tag">Large build</span></div>
+    <h2 style="font-size:26px">The month spread</h2>
+    <p class="thesis">
+      Every month opens with a <b class="accent">calendar of the days you trained</b> and four numbers
+      that summarise it, then the sessions collapse to one line each: the best set, the records, the
+      points. History becomes a series of months you can compare rather than a queue of sessions.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>The densest signal per screen.</b> A month's shape, its totals and its sessions in one view.</li>
+        <li><b>"Best set" is the honest headline</b> — one line that says what the session was actually about, where the five-row list said nothing.</li>
+        <li><b>Months become comparable.</b> Scroll back and you can see July was 14 sessions and +31 points against August's 4.</li>
+        <li>The heatmap is the rhythm view the app is missing, and it lives where you already look for the past.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>Most to build.</b> A calendar grid per section, month aggregates, and per-session best-set and points-gained, all inside a virtualised list.</li>
+        <li>Points-gained per session means replaying the rank history — cheap, but new work.</li>
+        <li>A month with two sessions gets a mostly empty calendar, which looks like failure rather than data.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="title">History</div>
+      <div class="mon"><b>August</b><span>4 sessions</span></div>
+
+      <div class="scard pr">
+        <div class="row1"><span class="tagp">PUSH</span><span class="nm">Morning Workout</span>
+          <span class="dt">Sat 8 Aug</span></div>
+        <div class="lift"><span>Barbell Bench Press</span><span>70 kg × 3</span></div>
+        <div class="foot"><span>1m</span><span>3 sets</span><span class="g">1 PR</span></div>
+      </div>
+
+      <div class="scard pr">
+        <div class="row1"><span class="tagp">LEG</span><span class="nm">Leg Day</span>
+          <span class="dt">Fri 7 Aug</span></div>
+        <div class="lift"><span>Barbell Full Squat</span><span>90 kg × 5</span></div>
+        <div class="lift"><span>Romanian Deadlift</span><span>80 kg × 8</span></div>
+        <div class="more">+ 3 more exercises</div>
+        <div class="foot"><span>57m</span><span>17 sets</span><span class="g">15 PRs</span>
+          <span class="a">+4 pts</span></div>
+      </div>
+
+      <div class="scard">
+        <div class="row1"><span class="tagp">PULL</span><span class="nm">Pull Day</span>
+          <span class="dt">Wed 5 Aug</span></div>
+        <div class="lift"><span>Barbell Deadlift</span><span>100 kg × 4</span></div>
+        <div class="lift"><span>Cable Pulldown</span><span>65 kg × 10</span></div>
+        <div class="more">+ 2 more exercises</div>
+        <div class="foot"><span>55m</span><span>14 sets</span><span class="g">12 PRs</span>
+          <span class="a">+2 pts</span></div>
+      </div>
+
+      <div class="scard">
+        <div class="row1"><span class="tagp">PUSH</span><span class="nm">Push Day</span>
+          <span class="dt">Mon 3 Aug</span></div>
+        <div class="lift"><span>Barbell Bench Press</span><span>67.5 kg × 5</span></div>
+        <div class="lift"><span>Incline Bench Press</span><span>55 kg × 8</span></div>
+        <div class="more">+ 3 more exercises</div>
+        <div class="foot"><span>53m</span><span>16 sets</span><span class="g">6 PRs</span></div>
+      </div>
+
+      <div class="mon"><b>July</b><span>14 sessions</span></div>
+      <div class="scard">
+        <div class="row1"><span class="tagp">LEG</span><span class="nm">Leg Day</span>
+          <span class="dt">Fri 31 Jul</span></div>
+        <div class="lift"><span>Barbell Full Squat</span><span>87.5 kg × 5</span></div>
+        <div class="more">+ 4 more exercises</div>
+        <div class="foot"><span>50m</span><span>17 sets</span><span class="g">6 PRs</span></div>
+      </div>
+    </div></div></div>
+    <p class="caption">A gold-edged card means the session set records.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea C</p><span class="tag">Safest</span><span class="tag">Small build</span></div>
+    <h2 style="font-size:26px">Session cards</h2>
+    <p class="thesis">
+      Keep the list, give it <b class="accent">hierarchy</b>. Each session becomes a real card with the
+      routine's tag, its two heaviest lifts as <b>weight × reps</b> rather than a five-row inventory,
+      and a gold edge when it set records. The least disruptive of the three and the closest to what
+      you already have.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>Cards stop being interchangeable.</b> A gold edge and a PR count do the work the current page leaves to reading.</li>
+        <li><b>Weight × reps beats top-weight-only.</b> "90 kg × 5" is a memory; "90 kg" is a fact with the interesting half missing.</li>
+        <li><b>The PUSH / PULL / LEG tag matches Home's week strip</b>, so the two screens finally speak the same language.</li>
+        <li>Smallest change: the data is all computed already except the per-session points.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>It reintroduces boxes</b> on a page the CARDLESS rule says should be content on the page with hairlines. This is the one idea that argues with the design system.</li>
+        <li>Still no rhythm — you cannot see a week off.</li>
+        <li>"+ 3 more exercises" hides things behind a tap that used to be visible.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<p class="eyebrow">Side by side</p>
+<h2 style="font-size:22px;margin:6px 0 18px">What each one decides</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>&nbsp;</th><th>Today</th><th>A · Timeline</th><th>B · Month spread</th><th>C · Session cards</th></tr></thead>
+  <tbody>
+    <tr><td>A session's headline</td><td class="no">Its inventory</td><td><b>What it achieved</b></td><td><b>Its best set</b></td><td><b>Its two top lifts</b></td></tr>
+    <tr><td>Volume &amp; calories</td><td class="no">Front and centre</td><td class="yes">Gone</td><td class="yes">Gone</td><td class="yes">Gone</td></tr>
+    <tr><td>PR session stands out</td><td class="no">No</td><td class="yes">Lime node + chip</td><td class="yes">Gold count</td><td class="yes">Gold edge</td></tr>
+    <tr><td>Shows rhythm / days off</td><td class="no">No</td><td class="yes">Named gaps</td><td class="yes">Month heatmap</td><td class="no">No</td></tr>
+    <tr><td>Sessions per screen</td><td class="no">~2</td><td class="yes">~5</td><td class="yes">~6</td><td class="mid">~4</td></tr>
+    <tr><td>Fits the CARDLESS rule</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No — boxes return</td></tr>
+    <tr><td>Matches Home's language</td><td class="no">No</td><td class="mid">Muscle chips</td><td class="mid">Partly</td><td class="yes">Session tags</td></tr>
+    <tr><td>New data needed</td><td>—</td><td class="mid">Points per session</td><td class="no">Points, best set, month totals</td><td class="mid">Points, session tag</td></tr>
+    <tr><td>Build effort</td><td>—</td><td class="mid">Medium</td><td class="no">Large</td><td class="yes">Small</td></tr>
+  </tbody>
+</table></div>
+
+<p class="lede" style="margin-top:22px">
+  <b class="accent">My read:</b> A. It is the only one that answers "what does a log <i>do</i> that a list
+  cannot" — it shows the gaps, and the gaps are the story of anyone's training year. It also stays
+  cardless, halves the ink per session, and finishes removing volume from the app. B has the best
+  content and the worst cost/benefit; its month heatmap is worth stealing into A later as a section
+  header. C is the safe one, and the only one that fights the design system — bringing boxes back to
+  a page you deliberately un-boxed in the cardless migration.
+</p>
+
+<hr class="hair"/>
+<p class="eyebrow">Your call</p>
+<h2 style="font-size:22px;margin:6px 0 0">Which do I build?</h2>
+<form class="pick" data-lavish-question="history" onsubmit="
+  event.preventDefault();
+  const f = new FormData(event.currentTarget);
+  const choice = f.get('design');
+  const notes = (f.get('notes') || '').toString().trim();
+  if (!choice) return;
+  window.lavish.queuePrompt(
+    'Redesign the History page using: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
+    { tag: 'choice', text: 'History: ' + choice + (notes ? ' — ' + notes : ''),
+      element: event.currentTarget, queueKey: 'history',
+      data: { question: 'history', answer: choice, notes } }
+  );
+">
+  <p class="soft" style="font-size:13.5px">
+    Pick one and I implement it end to end. The mocks are real markup — annotate any row,
+    chip or card you want changed first.
+  </p>
+  <div class="picks">
+    <label><input type="radio" name="design" value="A — The timeline">
+      <span><span class="nm">A · Timeline</span><span class="ds">Rail with a node per session, named gaps, muscle chips. My recommendation.</span></span></label>
+    <label><input type="radio" name="design" value="A — The timeline, with B's month heatmap header">
+      <span><span class="nm">A + month heatmap</span><span class="ds">The timeline, and each month opens with B's calendar.</span></span></label>
+    <label><input type="radio" name="design" value="B — The month spread">
+      <span><span class="nm">B · Month spread</span><span class="ds">Calendar + totals per month, one line per session.</span></span></label>
+    <label><input type="radio" name="design" value="C — Session cards">
+      <span><span class="nm">C · Session cards</span><span class="ds">Boxed cards with tags, top lifts, gold edge for PRs.</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Anything to change first — whether to keep the exercise list, how much detail per session, should points appear…"></textarea>
+  <button class="send" type="submit">Queue this answer</button>
+  <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
+</form>
+</div></body></html>

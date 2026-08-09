@@ -98,3 +98,30 @@ export function sessionTag(routine: Routine, exercises: Exercise[]): string {
   const [part] = routineMuscles(routine, exercises, 1);
   return part ? part.slice(0, 5).toUpperCase() : "TRAIN";
 }
+
+/**
+ * The body parts a FINISHED workout actually worked, most-worked first —
+ * the History timeline's chips.
+ *
+ * Counts only ticked, non-warmup sets: a session where you racked the bar
+ * after two warmups did not train that muscle, and saying it did would make
+ * the log lie about the one thing it exists to record.
+ */
+export function workoutMuscles(
+  workout: Workout,
+  exercises: Exercise[],
+  limit = 3,
+): BodyPart[] {
+  const partOf = new Map(exercises.map((e) => [e.id, e.bodyPart]));
+  const sets = new Map<BodyPart, number>();
+  for (const entry of workout.entries) {
+    const part = partOf.get(entry.exerciseId);
+    if (!part) continue;
+    const n = entry.sets.filter((s) => s.done && s.type !== "warmup").length;
+    if (n > 0) sets.set(part, (sets.get(part) ?? 0) + n);
+  }
+  return [...sets.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([part]) => part);
+}

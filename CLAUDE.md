@@ -1741,6 +1741,41 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   is open, so the dock never shows nothing selected. Options B (centre lime
   action button) and C (adaptive session bar) are described in the artifact
   if the workout-first direction is ever wanted.
+- 2026-08-09 (later): HISTORY REBUILT as THE TIMELINE (Adilzhan: "I don't
+  really like how history page looks like"; he picked idea A from the lavish
+  review `.lavish/torq-history.html`, which embeds real screenshots of the
+  page as it was). The old page was a wall of identical WorkoutCards: every
+  session rendered the same five-line inventory of "4 x Barbell Full Squat
+  ... 90 kg", so a session that set fifteen records looked exactly like three
+  sets of bench. It was also the LAST screen still leading with VOLUME and
+  calories, months after both were cut from Home and Stats.
+  `src/screens/History.tsx` now draws a rail down the left with one node per
+  session — LIME when the session set a record, hollow when it did not — and
+  the row says what the session DID: "15 PRs" (gold), "+4 pts" (lime) and the
+  muscles worked, over duration/sets/exercises. The exercise list is gone
+  from the row; it was always one tap away in the summary, which is
+  unchanged.
+  The empty days are NAMED between the nodes ("1 day off"). That is the whole
+  argument for the redesign: a log's second job is showing your pattern, and
+  a gap marker says more about a training year than any per-session number.
+  Gaps are computed WITHIN a month only — one spanning a month boundary would
+  render above the next month's header and read as the wrong month's rest.
+  Two implementation notes worth keeping:
+  - Every row draws its OWN slice of the rail (plus a cap at the first and
+    last node of a month) rather than the list drawing one long line. The
+    list is virtualised, so a single continuous rail would be cut wherever
+    windowing decided to unmount. Stacked segments are seamless and survive
+    recycling.
+  - The two new numbers are ONE chronological pass each, not one per row:
+    `prTotals` (stats.ts, already there) and the new `pointsPerWorkout`
+    (progress.ts), which replays the running best-e1RM map and diffs overall
+    DOTS before and after each session. Per-row computation is what made this
+    page cost 600 ms to open in the first place.
+  Also new: `workoutMuscles` in muscles.ts (ticked, non-warmup sets only — a
+  session where you racked the bar after two warmups did not train that
+  muscle). `WorkoutCard` stays: Home's recents and the exercise-info History
+  tab still use it. tsc + 180 tests + android export clean; verified on
+  emulator-5556 (timeline, gap markers, rail caps, tap-through to summary).
 - 2026-08-09: Four requested changes (Adilzhan).
   (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
   expo-image-picker (config plugin added to app.json). The picture is kept

@@ -247,3 +247,44 @@ export function tierDates(
   }
   return out;
 }
+
+/**
+ * How many overall points each session ADDED, keyed by workout id.
+ *
+ * The History timeline's "+4 pts" chip. Both sides of the subtraction use
+ * the SAME bodyweight — the one on the day of the session — so the number
+ * is what the lifting was worth, not what the scales did that week.
+ *
+ * Sessions sharing a timestamp are folded in sequentially rather than as a
+ * group (unlike `prTotals`, where the tie changes the answer). Deltas are
+ * additive, so the pair still totals correctly however the credit splits.
+ */
+export function pointsPerWorkout(
+  workouts: Workout[],
+  unit: string,
+  bodyAt: (ms: number) => BodyAt,
+): Map<string, number> {
+  const toKg = unit === "lb" ? LB_TO_KG : 1;
+  const running = new Map<string, number>();
+  const out = new Map<string, number>();
+
+  // bestsPerWorkout drops the ids, so pair each entry with its workout.
+  const byTime = workouts
+    .filter((w) => w.endedAt)
+    .sort((a, b) => (a.endedAt ?? 0) - (b.endedAt ?? 0));
+
+  for (const w of byTime) {
+    const body = bodyAt(w.endedAt ?? w.startedAt);
+    const before = running.size === 0 ? 0 : pointsFrom(running, toKg, body);
+    for (const e of w.entries) {
+      for (const s of e.sets) {
+        if (s.type === "warmup" || s.weight <= 0 || s.reps <= 0 || s.reps > 10) continue;
+        const rm = est1RM(s.weight, s.reps);
+        if (rm > (running.get(e.exerciseId) ?? 0)) running.set(e.exerciseId, rm);
+      }
+    }
+    const after = running.size === 0 ? 0 : pointsFrom(running, toKg, body);
+    out.set(w.id, Math.max(0, after - before));
+  }
+  return out;
+}
