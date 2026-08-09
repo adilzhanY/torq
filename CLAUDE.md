@@ -1776,6 +1776,38 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   muscle). `WorkoutCard` stays: Home's recents and the exercise-info History
   tab still use it. tsc + 180 tests + android export clean; verified on
   emulator-5556 (timeline, gap markers, rail caps, tap-through to summary).
+- 2026-08-09 (later): SWIPE LEFT TO DELETE A SET (Adilzhan asked how users
+  delete sets, referencing Strong). There was no way at all: the live session
+  had "Add set" and no inverse, so a mis-tapped extra set stayed for the rest
+  of the session. Now every set row swipes left to reveal a red Delete.
+  `src/components/SwipeToDelete.tsx` is HAND-ROLLED on PanResponder +
+  Animated rather than react-native-gesture-handler's Swipeable. The
+  dependency is not in this project, its legacy Swipeable is deprecated in
+  favour of a Reanimated one, and Reanimated needs a babel plugin — and this
+  app has NO babel.config.js at all, because NativeWind v5 is CSS-first.
+  Trading a 60-line gesture for a build-config change is a bad deal.
+  THE ONE THING THAT MATTERS IF YOU TOUCH IT: the claim is
+  `onMoveShouldSetPanResponderCapture`, not the bubbling version. The row is
+  full of Pressables and TextInputs, and once a child holds the responder an
+  ancestor can only take it during the CAPTURE phase — the bubbling handler
+  shipped first and did nothing at all. The 12 px + |dx| > 1.6·|dy|
+  threshold is what keeps taps, field focus and vertical scrolling with the
+  child; all three were re-verified on the emulator after the change.
+  Opening is CONTROLLED by ActiveSession (`swipeOpen` holds one "ei-si") so
+  only one row can sit open — two half-open rows read as a rendering bug —
+  and an open row's own content is covered by a close-on-tap overlay, since
+  its controls are shifted off their labels while it is open.
+  `removeSet` takes NO confirmation on purpose: one set is cheap to retype
+  and a dialog on every mis-swipe costs more than the mistake. Deleting the
+  LAST remaining set falls through to the exercise's existing confirm instead
+  of leaving an empty header. It also cancels a running rest and clears the
+  grow-in keys for that exercise, because both are keyed by set INDEX and
+  every index at or after the removed row now points at a different set.
+  GOTCHA that ate twenty minutes: pressing hardware Back at the app root
+  exits Expo Go, and the `am start` that follows serves the CACHED bundle —
+  so edits appear not to apply. Force-stop first. Proven by giving the
+  component a red border and screenshotting for it, which is the fastest way
+  to answer "is my code even live".
 - 2026-08-09: Four requested changes (Adilzhan).
   (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
   expo-image-picker (config plugin added to app.json). The picture is kept

@@ -25,6 +25,7 @@ import { useUi } from "../lib/ui";
 import { computePRs, lastSetsFor } from "../lib/stats";
 import { targetRepsOf } from "../lib/suggest";
 import { ExercisePicker } from "../components/ExercisePicker";
+import { SwipeToDelete } from "../components/SwipeToDelete";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
 import { Card, Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, TextField, Txt } from "../components/ui";
@@ -419,6 +420,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [pad, setPad] = useState(false);
   /** Bumped to pop a specific set's rest editor open (pad's RESET). */
   const [editReq, setEditReq] = useState<{ key: string; n: number } | null>(null);
+  /** "ei-si" of the set row swiped open, if any — one at a time. */
+  const [swipeOpen, setSwipeOpen] = useState<string | null>(null);
   /** Which set's type menu is open + where to anchor it (touch position). */
   const [typeMenu, setTypeMenu] = useState<{ ei: number; si: number; x: number; y: number } | null>(null);
   /** Per-exercise header menus, anchored at the pressed button's pageY. */
@@ -464,6 +467,42 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       i !== ei ? e : { ...e, sets: e.sets.map((s, j) => (j !== si ? s : { ...s, ...patch })) },
     );
     setEntries(entries);
+  };
+
+  /**
+   * Delete one set (swipe left on its row).
+   *
+   * No confirmation on purpose: one set is cheap to retype, and a dialog on
+   * every mis-swipe mid-session costs more than the mistake. Deleting the LAST
+   * remaining set falls through to the exercise's own confirm instead of
+   * leaving an empty header with nothing but "Add set" under it.
+   */
+  const removeSet = (ei: number, si: number) => {
+    const entry = w.entries[ei];
+    if (!entry) return;
+    setSwipeOpen(null);
+    if (entry.sets.length <= 1) {
+      setConfirmRemove(ei);
+      return;
+    }
+    // Rest keys and the grow-in keys are index-based, so anything at or after
+    // the removed row now points at the wrong set: cancel the one and forget
+    // the others rather than animate/countdown the wrong row.
+    if (rest?.key.startsWith(`${ei}-`)) {
+      const restSi = Number(rest.key.slice(String(ei).length + 1));
+      if (restSi >= si) {
+        resetCountdown();
+        setRest(null);
+      }
+    }
+    for (const key of [...grownSets.current]) {
+      if (key.startsWith(`${ei}-`)) grownSets.current.delete(key);
+    }
+    setEntries(
+      w.entries.map((e, i) =>
+        i !== ei ? e : { ...e, sets: e.sets.filter((_, j) => j !== si) },
+      ),
+    );
   };
 
   /** Sets from the most recent finished workout containing this exercise
@@ -772,12 +811,20 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
             const Wrap = grownSets.current.has(restKey) ? GrowIn : View;
             return (
             <Wrap key={si}>
+              {/* Swipe left to delete. The wrapper carries the full-bleed
+                  −16 margin so the revealed Delete panel reaches the screen
+                  edge like the row does. */}
+              <SwipeToDelete
+                style={{ marginHorizontal: -16 }}
+                isOpen={swipeOpen === restKey}
+                onOpenChange={(open) => setSwipeOpen(open ? restKey : null)}
+                onDelete={() => removeSet(ei, si)}
+              >
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 10,
-                  marginHorizontal: -16,
                   paddingHorizontal: 16,
                   paddingVertical: 1,
                   backgroundColor: set.done ? "rgba(200,254,35,0.10)" : "transparent",
@@ -869,6 +916,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   <Icon name="Check" size={16} color={set.done ? C.accentInk : C.inkFaint} />
                 </Squish>
               </View>
+              </SwipeToDelete>
               {/* A done set's rest is history — show its divider only while
                   the countdown is actually running. Idle timers appear under
                   unfinished sets only. */}
