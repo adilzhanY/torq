@@ -7,19 +7,24 @@
  * Android's 48 dp minimum touch target — with only the active tab labelled,
  * and every tap reflowed all seven targets sideways under the thumb. So:
  *
- *  - FIVE fixed fifths (~70 dp each). Nothing resizes, nothing slides, so
- *    muscle memory works from the second session on.
+ *  - SIX fixed slots (~58 dp each). Nothing resizes, nothing slides, so
+ *    muscle memory works from the second session on. History came back into
+ *    the dock on 2026-08-09 after Adilzhan simply could not find it: the
+ *    original 36 dp squeeze was six tabs PLUS a profile button PLUS a
+ *    capsule stealing 2.6× the width, and with the morph gone six equal
+ *    slots still clear Android's 48 dp minimum comfortably.
  *  - Every tab carries its NAME. Medal, dumbbell and flexed-bicep all read
  *    as "training" to someone new; icons alone were doing too much work.
  *  - The active tab is lime with a short rail at the top edge — the only
  *    thing that animates, and it animates in place.
- *  - Profile is the fifth slot as the user's AVATAR, not a generic glyph:
+ *  - Profile is the last slot as the user's AVATAR, not a generic glyph:
  *    it doubles as "who is signed in".
  *
- * History and Exercises left the dock and became sub-pages: History is
- * reached from Home's "Recent workouts · See all" and Exercises from the
- * Workout tab's library row. Their PARENT tab stays lit while they are open
- * (the standard sub-page model), so the dock never shows nothing selected.
+ * Exercises is the one screen still outside the dock: it is a sub-page of
+ * Workout, reached from that tab's library row, and its PARENT tab stays lit
+ * while it is open so the dock never shows nothing selected. Home's "Recent
+ * workouts · See all" survives as a shortcut into History even though
+ * History is a tab again — a second door into a room is not a problem.
  */
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, View } from "react-native";
@@ -34,19 +39,19 @@ import { avatarSource } from "../lib/avatar";
 const ITEMS: { tab: Tab; label: string; icon: string }[] = [
   { tab: "home", label: "Home", icon: "House" },
   { tab: "workout", label: "Workout", icon: "Dumbbell" },
+  { tab: "history", label: "History", icon: "History" },
   { tab: "ranks", label: "Ranks", icon: "Medal" },
   { tab: "stats", label: "Stats", icon: "ChartColumn" },
 ];
 
 /** Which dock tab owns a screen that is no longer in the dock. */
 const PARENT: Partial<Record<Tab, Tab>> = {
-  history: "home",
   exercises: "workout",
 };
 
 const IDLE = "rgba(255,255,255,0.6)";
 
-/** Shared shell so the four tabs and the avatar slot measure identically. */
+/** Shared shell so every tab and the avatar slot measure identically. */
 function Slot({
   active,
   onPress,
@@ -75,12 +80,13 @@ function Slot({
       onPress={onPress}
       style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 4 }}
     >
-      {/* The rail sits on the dock's top edge, above the icon. */}
+      {/* The rail sits on the dock's top edge, above the icon. Narrower
+          than the slot so six of them never touch. */}
       <Animated.View
         style={{
           position: "absolute",
           top: 0,
-          width: 26,
+          width: 24,
           height: 3,
           borderBottomLeftRadius: 3,
           borderBottomRightRadius: 3,
@@ -133,7 +139,7 @@ export function BottomNav({ onProfile }: { onProfile: () => void }) {
         );
       })}
 
-      {/* Profile: the fifth slot, and the only one that opens an overlay
+      {/* Profile: the last slot, and the only one that opens an overlay
           rather than switching tabs — so it never takes the active state. */}
       <Slot active={false} label="You" onPress={onProfile}>
         <Avatar uri={avatarSource(settings)} name={settings.name} size={23} />

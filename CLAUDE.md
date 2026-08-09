@@ -125,14 +125,13 @@ on the `Exercise` row, which keys `DB_GIF_BY_ID`.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
-FOUR dock tabs plus the profile slot (2026-08-09 "Five, spelled out"):
-Home (default) · Workout · Ranks · Stats, then "You" — the user's AVATAR,
-which opens Profile as a full-screen overlay rather than switching tabs
-(the floating top bar was REMOVED 2026-08-06; TOP_BAR_SPACE is 0).
-History and Exercises are still full screens with their own Tab ids, but
-they are SUB-PAGES now: History opens from Home's "Recent workouts · See
-all", Exercises from the Workout tab's "Exercise library" row, and each
-keeps its parent tab lit while open. Stats (tab id "stats", ChartColumn icon, titled "Progress")
+FIVE dock tabs plus the profile slot: Home (default) · Workout · History ·
+Ranks · Stats, then "You" — the user's AVATAR, which opens Profile as a
+full-screen overlay rather than switching tabs (the floating top bar was
+REMOVED 2026-08-06; TOP_BAR_SPACE is 0). Exercises is the only screen left
+outside the dock: it is a SUB-PAGE of Workout, opened from that tab's
+"Exercise library" row, and keeps its parent tab lit while open. Home's
+"Recent workouts · See all" still jumps to History as a shortcut. Stats (tab id "stats", ChartColumn icon, titled "Progress")
 is the STRENGTH page, not the workload page (2026-08-09): rank points now +
 the climb (RankLine with tier bands), tier progress in points and kilos,
 the dumbbell "what moved" chart, the records feed, then bodyweight and
@@ -1436,6 +1435,15 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): HISTORY BACK IN THE DOCK. Adilzhan asked "where is
+  history page?" — which is the answer to whether a lime "See all" link on
+  Home was a discoverable enough entry point. It is a tab again, so the dock
+  is six fixed slots at ~58 dp. That is NOT a return to the old problem: the
+  36 dp squeeze came from six tabs PLUS a separate profile button PLUS the
+  capsule stealing 2.6× the width, and with the morph gone six equal slots
+  still clear Android's 48 dp minimum. History dropped its back chevron and
+  its back-to-Home handler (it is top level again); Home's "See all" stays
+  as a second door. Exercises remains a sub-page of Workout.
 - 2026-08-09 (later): RANK BADGE ANIMATED + THE TIER LADDER (Adilzhan: show
   the badge bigger, animate the orbit on every tier and not just World
   Class, and list the tiers with the points each needs, "like in games, so
