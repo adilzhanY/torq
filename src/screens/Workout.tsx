@@ -737,38 +737,36 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Ellipsis" size={20} color={C.inkSoft} />
             </Pressable>
           </View>
-          {/* Notes, if any. Sticky (on the exercise) is pinned and dimmer;
-              the session note is today's. Tap either to edit. */}
+          {/* STICKY NOTE — a full-bleed amber BAND under the exercise name,
+              Strong's treatment. A note you wrote to your future self is an
+              instruction ("elbows in", "bar on pin 4"), so it gets a surface
+              of its own instead of the 12 px grey line it used to be, which
+              read as metadata and was skipped. Tap to edit. */}
           {(() => {
             const sticky = exercises.find((e) => e.id === entry.exerciseId)?.notes;
-            if (!sticky && !entry.notes) return null;
+            if (!sticky) return null;
             return (
-              <View style={{ gap: 4, marginTop: 8 }}>
-                {sticky ? (
-                  <Pressable
-                    onPress={() => {
-                      setDraftNote(sticky);
-                      setStickyFor(ei);
-                    }}
-                    style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}
-                  >
-                    <Icon name="Pin" size={12} color={C.inkFaint} />
-                    <Txt size={12} color={C.inkFaint} style={{ flex: 1 }}>{sticky}</Txt>
-                  </Pressable>
-                ) : null}
-                {entry.notes ? (
-                  <Pressable
-                    onPress={() => {
-                      setDraftNote(entry.notes ?? "");
-                      setNoteFor(ei);
-                    }}
-                    style={{ flexDirection: "row", alignItems: "flex-start", gap: 6 }}
-                  >
-                    <Icon name="FileText" size={12} color={C.inkSoft} />
-                    <Txt size={12} color={C.inkSoft} style={{ flex: 1 }}>{entry.notes}</Txt>
-                  </Pressable>
-                ) : null}
-              </View>
+              <Pressable
+                onPress={() => {
+                  setDraftNote(sticky);
+                  setStickyFor(ei);
+                }}
+                style={{
+                  marginHorizontal: -16,
+                  marginTop: 10,
+                  paddingHorizontal: 16,
+                  paddingVertical: 9,
+                  backgroundColor: C.warnSurf,
+                  flexDirection: "row",
+                  alignItems: "flex-start",
+                  gap: 8,
+                }}
+              >
+                <Icon name="Pin" size={13} color={C.warnAcc} />
+                <Txt size={13} color={C.warnAcc} style={{ flex: 1, lineHeight: 18 }}>
+                  {sticky}
+                </Txt>
+              </Pressable>
             );
           })()}
 
@@ -805,6 +803,30 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Check" size={14} color={C.inkFaint} />
             </View>
           </View>
+          {/* SESSION NOTE — Strong puts it here, in the list itself between
+              the column header and the first set, as a real field-shaped box.
+              It is about TODAY ("shoulder felt off"), so it sits with today's
+              sets rather than up in the exercise's identity. Tap to edit. */}
+          {entry.notes ? (
+            <Pressable
+              onPress={() => {
+                setDraftNote(entry.notes ?? "");
+                setNoteFor(ei);
+              }}
+              style={{
+                backgroundColor: C.page2,
+                borderWidth: 1,
+                borderColor: C.line,
+                borderRadius: R.sm,
+                paddingHorizontal: 12,
+                paddingVertical: 9,
+                marginTop: 4,
+                marginBottom: 6,
+              }}
+            >
+              <Txt size={13} color={C.inkSoft} style={{ lineHeight: 18 }}>{entry.notes}</Txt>
+            </Pressable>
+          ) : null}
           {entry.sets.map((set, si) => {
             const prev = prevSets?.[si];
             const restKey = `${ei}-${si}`;

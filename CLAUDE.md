@@ -1808,6 +1808,21 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   so edits appear not to apply. Force-stop first. Proven by giving the
   component a red border and screenshotting for it, which is the fastest way
   to answer "is my code even live".
+- 2026-08-09 (later): NOTES REDRAWN like Strong's (Adilzhan: "here is how
+  sticky note and note looks like. it's too bad", with a Strong screenshot).
+  Both notes were 12 px grey lines wedged under the exercise name — the
+  sticky one in inkFaint, which is the app's DIMMEST ink. A note you wrote to
+  your future self is an instruction ("elbows in", "bar on pin 4"); rendering
+  it fainter than the column headers guarantees it gets skipped.
+  Now, in Strong's order: exercise name → STICKY NOTE as a full-bleed amber
+  band (C.warnSurf, pin + warnAcc text, margin −16 so it reaches both screen
+  edges) → SET/PREVIOUS/KG/REPS header → SESSION NOTE as a field-shaped box
+  (page2 fill, hairline border, R.sm) → the sets.
+  The split in PLACEMENT now carries the split in MEANING that already
+  existed in the data: the sticky note belongs to the exercise and comes back
+  every session, so it sits with the exercise's identity; the session note is
+  about today ("shoulder felt off"), so it sits inside today's list. Editing
+  is unchanged — tap either to open the existing dialog.
 - 2026-08-09: Four requested changes (Adilzhan).
   (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
   expo-image-picker (config plugin added to app.json). The picture is kept
