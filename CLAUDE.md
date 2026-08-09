@@ -1435,6 +1435,23 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): ONE PAGE TITLE. Adilzhan: "there is a different size
+  of page name on top in every page… remove the logo, make the page name
+  consistent". The app had FIVE sizes for the same thing — 30 on Home, 26 on
+  History/Workout/Ranks/Stats/Profile/Settings, 24 on sub-pages, 22 on the
+  exercise browser — none of it chosen, all of it accumulated. `PageTitle`
+  in ui.tsx is now the single definition (26 / extrabold / -0.6 tracking)
+  and every page uses it; measured after, the five tab titles land within
+  0.33 dp of each other. It carries `includeFontPadding: false` as part of
+  the definition, which is also what keeps the streak pill level beside
+  Home's heading.
+  The Ranks header lost its `<Logo size={30} />` — no other page had one.
+  Logo/SpinningLogo still belong on the auth gate, onboarding, the error
+  screen, the paywall and the share card, and RankBadge still uses
+  VORTEX_PATH.
+  DELIBERATELY NOT migrated: the TodayHero panel headlines, the onboarding
+  wizard's step titles, and Auth's centred "Confirm your email" — those are
+  hero copy inside a screen, not the page's name.
 - 2026-08-09 (later): THE STREAK MARK IS OURS NOW. Adilzhan asked for a
   streak icon "unique to the app, not just an icon from a pack" and picked
   concept A, "Cut flame", from `.lavish/torq-streak.html`: a SOLID flame

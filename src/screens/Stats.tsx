@@ -24,7 +24,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
 import { SubPage } from "../components/SubPage";
-import { Divider, Eyebrow, NumberField, Pill, PrimaryButton, Txt } from "../components/ui";
+import { Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, Txt } from "../components/ui";
 import { Sparkline, fmtShort } from "../components/charts";
 import { MuscleBreakdown, ProBars } from "../components/ProCharts";
 import { Dumbbell, Meter, RankLine } from "../components/ProgressCharts";
@@ -234,7 +234,7 @@ export function Stats() {
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Progress</Txt>
+          <PageTitle style={{ flex: 1 }}>Progress</PageTitle>
           <Segmented value={range} onChange={setRange} />
         </View>
 

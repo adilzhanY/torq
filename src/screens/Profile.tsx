@@ -27,7 +27,7 @@ import { RankBadge } from "../components/RankBadge";
 import { CenterDialog } from "../components/Dialog";
 import { ShareRankCard } from "../components/ShareCard";
 import { Paywall } from "../components/Paywall";
-import { Divider, Eyebrow, PrimaryButton, TextField, Txt } from "../components/ui";
+import { Divider, Eyebrow, PageTitle, PrimaryButton, TextField, Txt } from "../components/ui";
 import { Settings } from "./Settings";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
@@ -303,7 +303,7 @@ export function Profile({
           <Pressable hitSlop={8} onPress={onClose}>
             <Icon name="ChevronLeft" size={24} color={C.ink} />
           </Pressable>
-          <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Profile</Txt>
+          <PageTitle style={{ flex: 1 }}>Profile</PageTitle>
           <Pressable hitSlop={8} onPress={() => setSettingsOpen(true)}>
             <Icon name="SlidersVertical" size={21} color={C.inkSoft} />
           </Pressable>

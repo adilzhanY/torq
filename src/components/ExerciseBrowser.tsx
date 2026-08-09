@@ -14,7 +14,7 @@ import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { PopIn, SlideUp, Squish } from "./anim";
 import { CenterDialog } from "./Dialog";
-import { Divider, SectionTitle, TextField, Txt } from "./ui";
+import { Divider, PageTitle, SectionTitle, TextField, Txt } from "./ui";
 import { useKeyboardHeight } from "./KeyboardAware";
 import { useStore } from "../lib/store";
 import { haystack, matchesText, tokenize } from "../lib/search";
@@ -338,9 +338,7 @@ export function ExerciseBrowser({
         </Pressable>
       </View>
 
-      <Txt size={22} weight="extrabold" style={{ paddingHorizontal: 16, paddingTop: 8 }}>
-        {title}
-      </Txt>
+      <PageTitle style={{ paddingHorizontal: 16, paddingTop: 8 }}>{title}</PageTitle>
 
       {searchOpen || q ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>

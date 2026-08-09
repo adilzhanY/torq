@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { C, TOP_BAR_SPACE } from "../theme";
-import { Divider, Txt } from "../components/ui";
+import { Divider, PageTitle, Txt } from "../components/ui";
 import { ConfirmDialog } from "../components/Dialog";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
@@ -49,7 +49,7 @@ export function History() {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={26} weight="extrabold">History</Txt>
+      <PageTitle>History</PageTitle>
 
       {sorted.length === 0 ? (
         <Txt size={13} color={C.inkFaint}>

@@ -29,7 +29,7 @@ import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { StreakMark } from "../components/StreakMark";
 import { PopIn, Squish } from "../components/anim";
-import { Divider, Eyebrow, Txt } from "../components/ui";
+import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
 import { CalendarDialog } from "../components/CalendarDialog";
 import { StreakDialog } from "../components/StreakDialog";
 import { computeStreak, type Streak } from "../lib/streak";
@@ -542,16 +542,7 @@ export function Home() {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <PopIn key={day} style={{ flex: 1, gap: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              {/* includeFontPadding: false trims Android's phantom line box,
-                  which was centring the streak pill on a taller box than the
-                  word actually occupies and leaving it riding high. */}
-              <Txt
-                size={30}
-                weight="extrabold"
-                style={{ letterSpacing: -0.9, includeFontPadding: false }}
-              >
-                {heading}
-              </Txt>
+              <PageTitle>{heading}</PageTitle>
               {streak.hasPlan ? (
                 <StreakPill
                   streak={streak}

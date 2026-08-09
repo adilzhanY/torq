@@ -7,7 +7,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
-import { Divider, Eyebrow, Txt } from "../components/ui";
+import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { TierCarousel } from "../components/TierCarousel";
@@ -17,7 +17,6 @@ import { LockedPanel, Paywall } from "../components/Paywall";
 import { can, type Feature } from "../lib/entitlements";
 import { Arena } from "./Arena";
 import { Friends } from "./Friends";
-import { Logo } from "../components/Logo";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
 import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
@@ -81,8 +80,7 @@ export function Ranks() {
     <>
     {/* Header: mark + title + body class */}
     <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-      <Logo size={30} />
-      <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Ranks</Txt>
+      <PageTitle style={{ flex: 1 }}>Ranks</PageTitle>
       <Txt size={13} color={C.inkSoft}>
         {Math.round(profile.weightKg)} kg · {profile.sex === "male" ? "M" : "F"}
       </Txt>

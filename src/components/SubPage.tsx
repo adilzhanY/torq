@@ -15,7 +15,7 @@ import { KeyboardAwareScrollView } from "./KeyboardAware";
 import { C } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
-import { Txt } from "./ui";
+import { PageTitle, Txt } from "./ui";
 
 export function SubPage({
   title,
@@ -52,7 +52,7 @@ export function SubPage({
           <Pressable hitSlop={8} onPress={onBack}>
             <Icon name="ChevronLeft" size={24} color={C.ink} />
           </Pressable>
-          <Txt size={24} weight="extrabold" style={{ flex: 1 }}>{title}</Txt>
+          <PageTitle style={{ flex: 1 }}>{title}</PageTitle>
         </View>
         {children}
       </KeyboardAwareScrollView>

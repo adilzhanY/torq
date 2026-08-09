@@ -37,6 +37,40 @@ export function Txt({
 }
 
 /**
+ * PageTitle — the heading at the top of every screen, defined ONCE.
+ *
+ * Before this existed the app shipped five different sizes for the same
+ * thing: 30 on Home, 26 on History/Workout/Ranks/Stats/Profile/Settings,
+ * 24 on sub-pages and 22 on the exercise browser. Nobody chose that; it
+ * accumulated. One component means it can never drift again.
+ *
+ * `includeFontPadding: false` is part of the definition, not decoration:
+ * Android pads a Text's line box above the caps, and anything centred
+ * beside a title (the streak pill on Home) gets centred on that padding
+ * and rides high.
+ */
+export function PageTitle({
+  children,
+  style,
+  numberOfLines,
+}: {
+  children: React.ReactNode;
+  style?: StyleProp<TextStyle>;
+  numberOfLines?: number;
+}) {
+  return (
+    <Txt
+      size={26}
+      weight="extrabold"
+      numberOfLines={numberOfLines}
+      style={[{ letterSpacing: -0.6, includeFontPadding: false }, style]}
+    >
+      {children}
+    </Txt>
+  );
+}
+
+/**
  * CARDLESS: a content block, not a box. Transparent by default — content
  * sits directly on the page; only the old padding survives so layouts keep
  * their gutters. Passing an explicit `background` (dialog bodies, the odd

@@ -27,16 +27,7 @@ import { targetRepsOf } from "../lib/suggest";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
-import {
-  Card,
-  Divider,
-  Eyebrow,
-  NumberField,
-  Pill,
-  PrimaryButton,
-  TextField,
-  Txt,
-} from "../components/ui";
+import { Card, Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, TextField, Txt } from "../components/ui";
 import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
 import { CenterDialog, ConfirmDialog, MenuRow } from "../components/Dialog";
 import { useStore } from "../lib/store";
@@ -1488,7 +1479,7 @@ export function Workout() {
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={26} weight="extrabold">Workout</Txt>
+      <PageTitle>Workout</PageTitle>
 
       <Eyebrow>Quick start</Eyebrow>
       <Pressable

@@ -19,7 +19,7 @@ import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
 import { SubPage } from "../components/SubPage";
 import { ConfirmDialog } from "../components/Dialog";
-import { Divider, Eyebrow, NumberField, PrimaryButton, Txt } from "../components/ui";
+import { Divider, Eyebrow, NumberField, PageTitle, PrimaryButton, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
 import { deleteAccount } from "../lib/social";
@@ -479,7 +479,7 @@ export function Settings({
           <Pressable hitSlop={8} onPress={onClose}>
             <Icon name="ChevronLeft" size={24} color={C.ink} />
           </Pressable>
-          <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Settings</Txt>
+          <PageTitle style={{ flex: 1 }}>Settings</PageTitle>
         </View>
 
         <Eyebrow>You</Eyebrow>
