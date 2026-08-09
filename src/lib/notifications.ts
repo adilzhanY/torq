@@ -1,10 +1,24 @@
 /**
  * Push notifications for friend requests and rank-ups.
  *
- * IMPORTANT (SDK 57 docs): remote push does NOT work in Expo Go on Android
- * from SDK 53 — it needs a development or preview build. Everything here is
- * written to no-op safely in Expo Go rather than throw, so the emulator dev
- * loop keeps working; local notifications still function there.
+ * ⚠️ THE IMPORT ITSELF IS THE DANGEROUS PART — do not turn the dynamic
+ * import below back into a top-level `import * as Notifications from
+ * "expo-notifications"`.
+ *
+ * `expo-notifications/build/index.js` re-exports
+ * `DevicePushTokenAutoRegistration.fx`, and that module calls
+ * `addPushTokenListener()` at MODULE SCOPE. In Expo Go on Android that
+ * helper THROWS (remote push was removed from Expo Go in SDK 53). A throw
+ * while a module is being required takes the whole bundle down, so the app
+ * never rendered a frame in Expo Go: a red "[runtime not ready]" box before
+ * any of our code ran. Guarding our own functions with `pushSupported()` did
+ * nothing, because the crash happened at import time, before any function
+ * could be called. Caught on the emulator 2026-08-09.
+ *
+ * So the module is loaded LAZILY and only once we know we are not in Expo
+ * Go. Everything degrades to a silent no-op there, which keeps
+ * `run_android.sh` working — it just cannot deliver a push, which was
+ * already true.
  *
  * What this module does NOT do: decide when to notify. That belongs on the
  * server (see supabase/functions/notify), because a device that is closed
@@ -15,23 +29,55 @@
  * not on first launch when it reads as noise and gets denied forever.
  */
 import { Platform } from "react-native";
-import * as Notifications from "expo-notifications";
+import { isRunningInExpoGo } from "expo";
 import Constants from "expo-constants";
 import { supabase } from "./supabase";
 
-/** Show a banner even when the app is open — these are always user-relevant. */
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+/** Type-only: `typeof import(...)` is erased, so this pulls in no code. */
+type NotificationsApi = typeof import("expo-notifications");
+
+let cached: NotificationsApi | null = null;
 
 /** Expo Go can't do remote push (SDK 53+); everything degrades quietly. */
 export function pushSupported(): boolean {
-  return Constants.appOwnership !== "expo";
+  return !isRunningInExpoGo();
+}
+
+/**
+ * The one place expo-notifications is loaded. Returns null in Expo Go, where
+ * importing it would throw and kill the bundle.
+ */
+async function notifications(): Promise<NotificationsApi | null> {
+  if (!pushSupported()) return null;
+  if (cached) return cached;
+  try {
+    const mod = await import("expo-notifications");
+    // Show a banner even when the app is open — these are always
+    // user-relevant. Set here rather than at module scope because there is
+    // no module scope to set it in any more.
+    mod.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+    cached = mod;
+    return cached;
+  } catch {
+    // A build where the native module is missing must not break the app.
+    return null;
+  }
+}
+
+/**
+ * Warm the module up so the foreground notification handler is installed
+ * before anything can arrive. A no-op in Expo Go. Safe to call at startup —
+ * it never throws and never blocks the first frame.
+ */
+export function primePush(): void {
+  void notifications();
 }
 
 /** The EAS project id, which getExpoPushTokenAsync requires. */
@@ -43,13 +89,13 @@ function easProjectId(): string | undefined {
   return (fromConfig as string | undefined) ?? fromEas;
 }
 
-async function ensureAndroidChannel(): Promise<void> {
+async function ensureAndroidChannel(n: NotificationsApi): Promise<void> {
   if (Platform.OS !== "android") return;
   // Android 13+ shows no permission prompt until a channel exists, and
   // getExpoPushTokenAsync needs the channel first.
-  await Notifications.setNotificationChannelAsync("default", {
+  await n.setNotificationChannelAsync("default", {
     name: "torq",
-    importance: Notifications.AndroidImportance.DEFAULT,
+    importance: n.AndroidImportance.DEFAULT,
     lightColor: "#C8FE23",
   });
 }
@@ -62,21 +108,22 @@ export type PermissionOutcome = "granted" | "denied" | "unsupported";
  * the token upsert is idempotent.
  */
 export async function registerForPush(): Promise<PermissionOutcome> {
-  if (!pushSupported()) return "unsupported";
+  const n = await notifications();
+  if (!n) return "unsupported";
   try {
-    await ensureAndroidChannel();
+    await ensureAndroidChannel(n);
 
-    const existing = await Notifications.getPermissionsAsync();
+    const existing = await n.getPermissionsAsync();
     let status = existing.status;
     if (status !== "granted") {
-      status = (await Notifications.requestPermissionsAsync()).status;
+      status = (await n.requestPermissionsAsync()).status;
     }
     if (status !== "granted") return "denied";
 
     const projectId = easProjectId();
     if (!projectId) return "unsupported";
 
-    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    const token = (await n.getExpoPushTokenAsync({ projectId })).data;
     await saveToken(token);
     return "granted";
   } catch {
@@ -102,11 +149,12 @@ async function saveToken(token: string): Promise<void> {
  * the next person's friend requests to the previous owner's phone.
  */
 export async function unregisterPush(): Promise<void> {
-  if (!pushSupported()) return;
+  const n = await notifications();
+  if (!n) return;
   try {
     const projectId = easProjectId();
     if (!projectId) return;
-    const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+    const token = (await n.getExpoPushTokenAsync({ projectId })).data;
     const sb = supabase();
     if (!sb) return;
     await sb.from("push_tokens").delete().eq("token", token);
@@ -118,16 +166,28 @@ export async function unregisterPush(): Promise<void> {
 export type PushTap = { kind: "friend_request" | "rank_up" | "unknown" };
 
 /**
- * Listen for taps on a notification. Returns an unsubscribe function.
- * The caller decides where to navigate — this module knows nothing about
- * screens.
+ * Listen for taps on a notification. Returns an unsubscribe function
+ * SYNCHRONOUSLY, so callers can use it straight from a useEffect even though
+ * the module underneath resolves a tick later. The caller decides where to
+ * navigate — this module knows nothing about screens.
  */
 export function onNotificationTap(handler: (tap: PushTap) => void): () => void {
-  const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-    const kind = response.notification.request.content.data?.kind;
-    handler({
-      kind: kind === "friend_request" || kind === "rank_up" ? kind : "unknown",
+  let sub: { remove: () => void } | null = null;
+  let cancelled = false;
+
+  void notifications().then((n) => {
+    if (!n || cancelled) return;
+    sub = n.addNotificationResponseReceivedListener((response) => {
+      const kind = response.notification.request.content.data?.kind;
+      handler({
+        kind: kind === "friend_request" || kind === "rank_up" ? kind : "unknown",
+      });
     });
   });
-  return () => sub.remove();
+
+  return () => {
+    cancelled = true;
+    sub?.remove();
+    sub = null;
+  };
 }

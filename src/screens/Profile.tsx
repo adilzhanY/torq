@@ -252,6 +252,7 @@ export function Profile({
   const exName = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
   const totalVolume = workouts.reduce((sum, w) => sum + workoutVolume(w), 0);
   const ranked = lifts.length > 0;
+  const photo = avatarSource(settings);
 
   /** "lifting since Jul 2026" — derived from the first logged session rather
    *  than stored, so it stays true for someone who imported their history. */
@@ -311,10 +312,17 @@ export function Profile({
         {/* Identity */}
         <View style={{ alignItems: "center", marginTop: 18 }}>
           <Pressable onPress={() => setEditing(true)}>
-            {/* Lime RING: the one place the accent frames something instead of
-                filling it, which is what makes it read as a portrait. */}
-            <View style={{ padding: 3, borderRadius: R.pill, backgroundColor: C.accent }}>
-              <Avatar uri={avatarSource(settings)} name={displayName} size={96} />
+            {/* Lime RING, but only around a PHOTO. The no-picture avatar is
+                already a lime disc, so ringing it in the same lime turned the
+                whole thing into one blob on the device. */}
+            <View
+              style={
+                photo
+                  ? { padding: 3, borderRadius: R.pill, backgroundColor: C.accent }
+                  : undefined
+              }
+            >
+              <Avatar uri={photo} name={displayName} size={96} />
             </View>
           </Pressable>
           <Txt size={24} weight="extrabold" style={{ marginTop: 12 }} numberOfLines={1}>

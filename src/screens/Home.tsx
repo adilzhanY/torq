@@ -352,7 +352,13 @@ export function Home() {
       {/* Week at a glance: the plan week as a Monday-first day strip */}
       <View>
         <Eyebrow>
-          {(isToday ? "This week" : "That week") + ` · ${weekDoneCount} of ${weekTarget} done`}
+          {/* "4 of 3 done" read as a bug. Training MORE than the plan is a
+              good thing, so once you pass the target it says so instead of
+              printing an impossible fraction. */}
+          {(isToday ? "This week" : "That week") +
+            (weekDoneCount > weekTarget
+              ? ` · ${weekDoneCount} done · ${weekDoneCount - weekTarget} above plan`
+              : ` · ${weekDoneCount} of ${weekTarget} done`)}
         </Eyebrow>
         <View style={{ flexDirection: "row", gap: 6 }}>
           {weekDays.map((d) => {

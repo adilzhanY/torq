@@ -362,9 +362,22 @@ Client: `src/lib/notifications.ts`. Server: `supabase/functions/notify`
 one row per DEVICE keyed on the token itself.
 
 Things that are decisions, not accidents:
-- Remote push is DEAD in Expo Go from SDK 53. `pushSupported()` detects that
-  and every function no-ops, so `run_android.sh` still works — it just won't
-  deliver pushes. Testing push needs a dev/preview build.
+- **NEVER import `expo-notifications` at module scope.** `notifications.ts`
+  loads it with a dynamic `import()` behind `pushSupported()`, and that is
+  not style — it is the fix for a total app failure. The package's
+  `index.js` re-exports `DevicePushTokenAutoRegistration.fx`, which calls
+  `addPushTokenListener()` AT MODULE SCOPE, and that helper THROWS in Expo
+  Go on Android (remote push was removed in SDK 53). A throw during require
+  takes the whole bundle down, so the app showed a red "[runtime not ready]"
+  box and never rendered a frame — and the `pushSupported()` guards were
+  useless, because the crash happened at import time before any of our code
+  ran. Found on the emulator 2026-08-09; it had been broken since push
+  landed. `primePush()` (called from App.tsx) warms the module and installs
+  the foreground handler in real builds, and is a no-op in Expo Go.
+- Remote push is DEAD in Expo Go from SDK 53. `pushSupported()` (now
+  `!isRunningInExpoGo()`) detects that and every function no-ops, so
+  `run_android.sh` still works — it just won't deliver pushes. Testing push
+  needs a dev/preview build.
 - Permission is requested when the user opens **Friends**, not at launch.
   The OS prompt appears once; shown out of context it gets denied forever.
 - `unregisterPush()` runs on sign-out. A token left behind would deliver the
@@ -1406,6 +1419,21 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): FIRST EMULATOR RUN since the push work — the app did
+  not load at all. Red box: "[runtime not ready]: expo-notifications:
+  Android Push notifications … was removed from Expo Go with the release of
+  SDK 53", thrown from `addPushTokenListener` during module require. See the
+  rule at the top of "Push notifications" above; fixed by loading the
+  package lazily. Two visual fixes found in the same pass: Profile's lime
+  avatar ring around the lime no-photo avatar read as one blob (the ring now
+  only frames an actual photo), and Home's week strip could print an
+  impossible "4 of 3 done" (it now says "4 done · 1 above plan" once you
+  pass the target). Verified on the emulator: Home, Ranks and the new
+  Profile all render, and the five-tab dock behaves.
+  STILL OUTSTANDING: `supabase/social.sql` has not been re-run, so every
+  social read fails with "column profiles.avatar_url does not exist" —
+  visible as a red banner on the Friends view. Paste the file into the SQL
+  editor.
 - 2026-08-09 (later): PROFILE split into an ATHLETE CARD + a SETTINGS HUB
   (Adilzhan picked "idea 1 with a settings page built like idea 2" from the
   lavish review `.lavish/torq-profile.html`). The old page was four screens

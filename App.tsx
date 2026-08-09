@@ -1,5 +1,5 @@
 import "./src/global.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -11,6 +11,7 @@ import {
   SpaceGrotesk_700Bold,
 } from "@expo-google-fonts/space-grotesk";
 import { AuthProvider, useAuth } from "./src/lib/auth";
+import { primePush } from "./src/lib/notifications";
 import { StoreProvider, useStore } from "./src/lib/store";
 import { UiProvider, useUi } from "./src/lib/ui";
 import { C } from "./src/theme";
@@ -184,6 +185,11 @@ function Root() {
 }
 
 export default function App() {
+  // Loads expo-notifications and installs the foreground handler in real
+  // builds; a deliberate no-op in Expo Go, where importing that package at
+  // all throws and would take the whole bundle down (see lib/notifications).
+  useEffect(primePush, []);
+
   const [loaded] = useFonts({
     SpaceGrotesk_400Regular,
     SpaceGrotesk_500Medium,
