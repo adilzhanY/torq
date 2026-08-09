@@ -1461,6 +1461,16 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   `includeFontPadding: false` on the count removed Android's phantom line
   padding (which had the contents sitting 0.67 dp high); that shrank the
   pill 28 -> 26 dp, so `hitSlop={11}` restores a 48 dp tap target.
+  SECOND ROUND, and the more useful lesson: the pill still "looked a bit
+  up", and it was not the pill — it was the HEADING. `alignItems: "center"`
+  centres a sibling on a Text's LINE BOX, and Android pads that box above
+  the caps, so the pill sat 1.67 dp above "Sunday"'s cap block (and the
+  descender of "y" pulls the ink centre lower still). Adding
+  `includeFontPadding: false` to the heading landed it at +0.17 dp of the
+  cap block. **When something next to text looks vertically off on Android,
+  suspect the text's line box before you nudge the thing beside it.** Not
+  applied globally in `Txt` on purpose — it would shift spacing on every
+  screen at once, which is not a change to make blind.
   ONLY the streak uses it. Kcal keeps lucide's stroked `Flame` in
   WorkoutCard / WorkoutSummary / Settings, which turns a collision into a
   distinction: solid mark = your streak, outline = energy burnt.

@@ -542,7 +542,16 @@ export function Home() {
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <PopIn key={day} style={{ flex: 1, gap: 2 }}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-              <Txt size={30} weight="extrabold" style={{ letterSpacing: -0.9 }}>{heading}</Txt>
+              {/* includeFontPadding: false trims Android's phantom line box,
+                  which was centring the streak pill on a taller box than the
+                  word actually occupies and leaving it riding high. */}
+              <Txt
+                size={30}
+                weight="extrabold"
+                style={{ letterSpacing: -0.9, includeFontPadding: false }}
+              >
+                {heading}
+              </Txt>
               {streak.hasPlan ? (
                 <StreakPill
                   streak={streak}
