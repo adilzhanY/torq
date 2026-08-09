@@ -10,6 +10,7 @@ import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Divider, Eyebrow, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
+import { TierLadder } from "../components/TierLadder";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { ShareRankCard } from "../components/ShareCard";
 import { LockedPanel, Paywall } from "../components/Paywall";
@@ -170,7 +171,14 @@ export function Ranks() {
             {/* Overall */}
             <Eyebrow>Overall</Eyebrow>
             <View style={{ alignItems: "center", gap: 2 }}>
-              <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={170} />
+              {/* The headline badge: as big as the gutter allows, and the one
+                  place the orbit actually turns on this screen. The negative
+                  margins claw back the viewBox's empty top and bottom bands —
+                  the artwork only occupies y 25–104 of 136, and at this size
+                  that padding is ~45 px of nothing at each end. */}
+              <View style={{ marginTop: -22, marginBottom: -34 }}>
+                <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={248} animated />
+              </View>
               <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
                 <Txt size={44} weight="extrabold" color={C.accent}>{Math.round(s.points)}</Txt>
                 <Txt size={16} weight="extrabold" color={C.accent}>pts</Txt>
@@ -198,6 +206,16 @@ export function Ranks() {
                 }}
               />
             </View>
+
+            {/* The board: every tier, including the ones you have not earned */}
+            <Eyebrow>The ladder</Eyebrow>
+            <View style={{ marginHorizontal: -4 }}>
+              <TierLadder points={s.points} scale={3} />
+            </View>
+            <Txt size={10.5} color={C.inkFaint} style={{ marginTop: 6 }}>
+              Overall points are the sum of your best three lifts, so each tier
+              here needs three times a single lift's threshold.
+            </Txt>
 
             {/* Every ranked lift */}
             <Eyebrow>Lifts ({lifts.length})</Eyebrow>

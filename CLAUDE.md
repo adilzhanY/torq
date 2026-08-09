@@ -1436,6 +1436,37 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): RANK BADGE ANIMATED + THE TIER LADDER (Adilzhan: show
+  the badge bigger, animate the orbit on every tier and not just World
+  Class, and list the tiers with the points each needs, "like in games, so
+  they are disabled, but user can see how they look like").
+  `RankBadge` now has TWO render paths and the split matters: STATIC (the
+  default) is the old single-SVG badge with the balls parked and the ring
+  masked around them — list rows keep it, because Ranks draws 8 lift rows,
+  Friends draws a row per friend and none of them should pay for motion
+  nobody is watching. ANIMATED (`animated` prop) actually orbits. RN has no
+  SMIL, so one looping Animated.Value drives translateX/translateY/scale/
+  opacity through interpolation tables sampled off the tilted ellipse, all
+  on the NATIVE driver — the motion never touches the JS thread while you
+  scroll. Z-ORDER IS FAKED: each ball is drawn TWICE, once under the shield
+  and once over it, cross-fading between the copies at the ellipse's left
+  and right extremes where the ball is clear of the shield and the swap is
+  invisible. The balls are plain Views, not SVG circles — at ~12 px a fill
+  plus a specular dot is indistinguishable from the radial gradient and
+  costs a fraction of the nodes. The animated path drops the ring's mask gap
+  on purpose: an opaque ball riding over a continuous ring reads as "in
+  front" by itself, and animating the mask would need JS-driven SVG props.
+  The Ranks hero went 170 → 248 px with negative vertical margins, because
+  the artwork only occupies y 25–104 of the 136-unit viewBox and at that
+  size the empty bands are ~45 px at each end.
+  NEW `src/components/TierLadder.tsx`: all nine tiers as a 3×3 board.
+  Earned = full colour and orbiting; current = lime frame; LOCKED = the real
+  badge art at 45% opacity with a lock and the points still needed — not a
+  silhouette and not a "?", because the entire point is seeing what Diamond
+  looks like while you are still Silver. Motion is the reward: locked badges
+  stand still. Verified on the emulator by capturing three frames 1.4 s
+  apart and montaging them — the ball visibly crosses in front of the
+  shield.
 - 2026-08-09 (later): STATS REBUILT as "the climb" (Adilzhan: "I don't like
   that it shows the volume, not rank advancement, or weight increasing in
   exercises" — he picked idea 1 plus the dumbbell chart from idea 2 in the
