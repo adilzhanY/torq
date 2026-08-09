@@ -1435,6 +1435,32 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): TAB SWITCHES MADE FAST — measured, not guessed.
+  Adilzhan: "when i change pages it feels too slow". Instrumented first
+  (stamp the moment setTab fires, log on the new screen's mount effect) and
+  the numbers named the culprit immediately: Workout 38 ms, Stats 51,
+  Home 114, Ranks 140–167, **History 601**.
+  HISTORY was the whole complaint. Two causes, one real:
+  (a) `computePRs` was called PER CARD and each call rescanned the entire
+      history — quadratic. New `prTotals(workouts)` in stats.ts does one
+      chronological pass; both it and computePRs now share a `scoreWorkout`
+      helper so the fast path cannot drift from the slow one, and six tests
+      assert they agree (including the same-`startedAt` tie case, which is
+      why prTotals scores tied sessions as a group).
+  (b) THE ACTUAL BOTTLENECK: the tab mounted every card at once — 37
+      workouts × the six lucide icons a card draws. It is a SectionList now
+      (initialNumToRender 5, windowSize 5, removeClippedSubviews).
+      601 ms -> 80–118 ms.
+  Also: Ranks memoised `rankLifts`/`overallRank`/`tierDates` (tierDates was
+  called INLINE IN JSX, so it walked the whole history on every render), the
+  carousel mounts only the badges within ±2 of the focused tier (each one is
+  a 2 500-char traced path), and `RankBadge` is `memo`-wrapped. Home
+  memoised its two `rankLifts` calls and `computeStreak`.
+  AFTER: Workout 38, Stats 56, History 80–118, Home 86–90, Ranks 125–165.
+  Numbers are from the DEV bundle in Expo Go; a production build is faster.
+  NOT DONE, deliberately: keeping visited tabs mounted. It would make
+  revisits instant, but the RankBadge orbits and carousel loops would keep
+  running off-screen — trading one performance problem for another.
 - 2026-08-09 (later): ONE PAGE TITLE. Adilzhan: "there is a different size
   of page name on top in every page… remove the logo, make the page name
   consistent". The app had FIVE sizes for the same thing — 30 on Home, 26 on

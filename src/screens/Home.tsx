@@ -22,7 +22,7 @@
  *    strip below now carries that — with each day's SESSION TAG — and the
  *    calendar button still reaches any date.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
@@ -477,7 +477,12 @@ export function Home() {
   })();
 
   // ----- Streak (plan-aware, see lib/streak.ts) -----------------------------
-  const streak = computeStreak(workouts, routines, now);
+  const streak = useMemo(
+    () => computeStreak(workouts, routines, now),
+    // `now` moves every render but only by milliseconds; a streak is in days.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [workouts, routines, today],
+  );
   const todayHit = workouts.some((w) => w.endedAt && dayStart(w.startedAt) === today);
   const streakTodayPending = !!todaysRoutine && !todayHit;
 
@@ -508,15 +513,24 @@ export function Home() {
 
   // ----- Rank momentum (global, not day-scoped) ----------------------------
   const profile = bodyProfileAt(settings, measurements, now);
-  const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
-  const overall = overallRank(lifts);
-  const prevOverall = overallRank(
-    rankLifts(
-      workouts.filter((w) => w.endedAt && w.endedAt < weekStartOf(today)),
-      settings.unit,
-      profile.weightKg,
-      profile.sex,
-    ),
+  // rankLifts walks every set in the history and used to run TWICE per
+  // render here (once for now, once for the start of the week).
+  const lifts = useMemo(
+    () => rankLifts(workouts, settings.unit, profile.weightKg, profile.sex),
+    [workouts, settings.unit, profile.weightKg, profile.sex],
+  );
+  const overall = useMemo(() => overallRank(lifts), [lifts]);
+  const prevOverall = useMemo(
+    () =>
+      overallRank(
+        rankLifts(
+          workouts.filter((w) => w.endedAt && w.endedAt < weekStartOf(today)),
+          settings.unit,
+          profile.weightKg,
+          profile.sex,
+        ),
+      ),
+    [workouts, today, settings.unit, profile.weightKg, profile.sex],
   );
   const weekDelta = Math.round(overall.state.points - prevOverall.state.points);
   const tierUp = closestTierUp(lifts, profile.weightKg, profile.sex, settings.unit);

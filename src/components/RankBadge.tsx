@@ -32,7 +32,7 @@
  * riding over a continuous ring reads as "in front" by itself, and a moving
  * gap would need animated SVG props, which are JS-driven.
  */
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Animated, Easing, View } from "react-native";
 import Svg, {
   Circle,
@@ -262,7 +262,7 @@ function OrbitBall({
   );
 }
 
-export function RankBadge({
+function RankBadgeImpl({
   tier,
   stage = 4,
   size = 44,
@@ -423,3 +423,10 @@ export function RankBadge({
     </View>
   );
 }
+
+/**
+ * The vortex emblem is a 2 500-character traced path and the Ranks screen
+ * mounts about seventeen of these at once (nine in the ladder, one per
+ * lift). Memoising keeps a parent re-render from re-diffing all of them.
+ */
+export const RankBadge = memo(RankBadgeImpl);

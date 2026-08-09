@@ -47,10 +47,15 @@ export function WorkoutCard({
   workout: w,
   onPress,
   onDelete,
+  prCount: prCountProp,
 }: {
   workout: Workout;
   onPress?: () => void;
   onDelete?: () => void;
+  /** Precomputed PR count. A LIST of cards must pass this (see stats
+   *  `prTotals`) — computing it per card rescans the whole history and is
+   *  quadratic, which cost History 601 ms to open. */
+  prCount?: number;
 }) {
   const { exercises, workouts, measurements, settings } = useStore();
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
@@ -60,7 +65,11 @@ export function WorkoutCard({
     bodyProfileAt(settings, measurements, w.startedAt),
     settings,
   );
-  const prCount = useMemo(() => computePRs(w, workouts).total, [w, workouts]);
+  const ownPr = useMemo(
+    () => (prCountProp == null ? computePRs(w, workouts).total : 0),
+    [w, workouts, prCountProp],
+  );
+  const prCount = prCountProp ?? ownPr;
   return (
     <Pressable onPress={onPress} disabled={!onPress}>
       {/* CARDLESS: bare block aligned to the page gutter; callers separate

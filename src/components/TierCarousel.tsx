@@ -167,14 +167,21 @@ export function TierCarousel({
                 }}
               >
                 {/* Locked tiers still show their real art — dimmed, never a
-                    silhouette — and stand still. Motion is the reward. */}
+                    silhouette — and stand still. Motion is the reward.
+                    Only the badges NEAR the centre are mounted: each one is a
+                    2 500-character traced path, and drawing all nine at once
+                    was a measurable share of the tab's open time. */}
                 <View style={{ opacity: isEarned ? 1 : 0.5 }}>
-                  <RankBadge
-                    tier={name}
-                    stage={i === currentIndex ? stageOf(state.progress) : 4}
-                    size={BADGE}
-                    animated={isEarned}
-                  />
+                  {Math.abs(i - focus) <= 2 ? (
+                    <RankBadge
+                      tier={name}
+                      stage={i === currentIndex ? stageOf(state.progress) : 4}
+                      size={BADGE}
+                      animated={isEarned}
+                    />
+                  ) : (
+                    <View style={{ width: BADGE, height: (BADGE * 136) / 170 }} />
+                  )}
                 </View>
               </Animated.View>
             </Pressable>

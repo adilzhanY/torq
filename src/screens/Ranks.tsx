@@ -47,8 +47,16 @@ export function Ranks() {
     },
     [settings, measurements],
   );
-  const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
-  const overall = overallRank(lifts);
+  const lifts = useMemo(
+    () => rankLifts(workouts, settings.unit, profile.weightKg, profile.sex),
+    [workouts, settings.unit, profile.weightKg, profile.sex],
+  );
+  const overall = useMemo(() => overallRank(lifts), [lifts]);
+  /** Walks the whole history — it must not run on every render. */
+  const tierDates_ = useMemo(
+    () => tierDates(finishedWorkouts, settings.unit, bodyAt),
+    [finishedWorkouts, settings.unit, bodyAt],
+  );
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
   /** Percentile line for the three competition lifts; null for the rest. */
   const pctOf = (exerciseId: string, points: number) => {
@@ -185,7 +193,7 @@ export function Ranks() {
                 The full-bleed negative margin lets neighbours run to the
                 screen edges instead of stopping at the page gutter. */}
             <View style={{ marginHorizontal: -16, marginTop: -4 }}>
-              <TierCarousel state={s} dates={tierDates(finishedWorkouts, settings.unit, bodyAt)} />
+              <TierCarousel state={s} dates={tierDates_} />
             </View>
 
             <View style={{ alignItems: "center", gap: 2, marginTop: 10 }}>
