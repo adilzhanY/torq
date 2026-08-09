@@ -1435,6 +1435,27 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): THE STREAK MARK IS OURS NOW. Adilzhan asked for a
+  streak icon "unique to the app, not just an icon from a pack" and picked
+  concept A, "Cut flame", from `.lavish/torq-streak.html`: a SOLID flame
+  silhouette with two tapered BLADES cut out of it (evenodd), curving the
+  way the vortex logo's blades curve. `src/components/StreakMark.tsx`.
+  Method worth repeating: the candidates were generated PARAMETRICALLY
+  (a tapered-blade function over quadratic beziers) and rasterised at 14 /
+  16 / 20 / 28 px with rsvg before any of them were shown, because a streak
+  mark lives in a pill next to a number and that is where icons die. That
+  caught two failures — concept B's first draft read as a CROWN, and
+  concept C's read as a blob below ~20 px. Regenerate with
+  scratchpad `gen_streak.py` rather than nudging beziers by hand.
+  ONLY the streak uses it. Kcal keeps lucide's stroked `Flame` in
+  WorkoutCard / WorkoutSummary / Settings, which turns a collision into a
+  distinction: solid mark = your streak, outline = energy burnt.
+  `StreakMarkLive` replaced the hand-authored Lottie in StreakDialog —
+  keeping it would have meant the celebration using a DIFFERENT flame from
+  the pill that opened it. It keeps what the Lottie had that mattered
+  (squash-and-stretch flicker, two rising embers) on the native driver.
+  `assets/flame.json` stays in the repo but nothing references it, and
+  `lottie-react-native` now has no importer in src/.
 - 2026-08-09 (later): HOME REBUILT as "Today, full-bleed" (Adilzhan picked
   idea 1 from the lavish review `.lavish/torq-home.html`; his brief was
   "remove volume completely, no one is measuring that… show more about

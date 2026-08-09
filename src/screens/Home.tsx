@@ -27,6 +27,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "../components/Icon";
+import { StreakMark } from "../components/StreakMark";
 import { PopIn, Squish } from "../components/anim";
 import { Divider, Eyebrow, Txt } from "../components/ui";
 import { CalendarDialog } from "../components/CalendarDialog";
@@ -86,7 +87,7 @@ function StreakPill({
         paddingVertical: 6,
       }}
     >
-      <Icon name="Flame" size={15} color={fg} />
+      <StreakMark size={15} color={fg} />
       <Txt size={14} weight="extrabold" color={fg}>{streak.current}</Txt>
     </Squish>
   );

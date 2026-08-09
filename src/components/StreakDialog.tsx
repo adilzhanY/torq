@@ -1,15 +1,20 @@
 /**
- * Streak celebration dialog (Duolingo-style, reference: week-streak card):
- * hand-authored Lottie flame (assets/flame.json — flickering squash &
- * stretch, counter-phased white core, rising embers) in a soft halo, the
- * giant day count, encouragement, this week's M–S strip (orange gradient
- * check circles on trained days, plain day numbers otherwise, today bold),
- * and the longest-streak line.
+ * StreakDialog — the Duolingo-style celebration (Adilzhan's reference
+ * image): the streak mark breathing inside a soft halo, a giant count,
+ * a personalised line, a Monday-first week strip and the longest-streak
+ * trophy. Auto-pops once per trained day from Home; the pill reopens it.
+ *
+ * The mark used to be a hand-authored Lottie (assets/flame.json). It was
+ * replaced 2026-08-09 by `StreakMarkLive` when the app got its OWN streak
+ * icon: keeping the Lottie would have meant this dialog celebrating with a
+ * different flame from the pill that opened it. The motion it had that
+ * mattered — squash-and-stretch flicker, rising embers — came with it.
+ * assets/flame.json is kept in the repo but is no longer referenced.
  */
 import { View } from "react-native";
-import LottieView from "lottie-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { C } from "../theme";
+import { StreakMarkLive } from "./StreakMark";
 import { Icon } from "./Icon";
 import { CenterDialog } from "./Dialog";
 import { Txt } from "./ui";
@@ -72,12 +77,7 @@ export function StreakDialog({
             justifyContent: "center",
           }}
         >
-          <LottieView
-            source={require("../../assets/flame.json")}
-            autoPlay
-            loop
-            style={{ width: 118, height: 118 }}
-          />
+          <StreakMarkLive size={112} color="#FF8A3D" />
         </View>
         <Txt size={52} weight="extrabold" style={{ marginTop: -4 }}>
           {streak.current}
