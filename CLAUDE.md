@@ -1447,6 +1447,20 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   caught two failures — concept B's first draft read as a CROWN, and
   concept C's read as a blob below ~20 px. Regenerate with
   scratchpad `gen_streak.py` rather than nudging beziers by hand.
+  OPTICAL FIX the same day: the mark's ink is 13.95 x 20.38 inside the
+  24-unit box, so drawing it in a SQUARE left 3.15 units of dead air down
+  each side — the streak pill's padding was geometrically equal (12/12) but
+  looked lopsided because the real gaps were 15.2 px left against 12 px
+  right. StreakMark now defaults to a TIGHT viewBox at the ink's true
+  aspect (`STREAK_ASPECT`), so `size` is the flame's actual height and
+  padding maths means what it says; `square` keeps the old box for the
+  animated version, whose embers are positioned in those coordinates.
+  Measured after, by sampling the screenshot per row (the pill is rounded,
+  so a bounding box catches its own antialiasing): left 10.67 dp vs right
+  11.00 dp, top 8.33 vs bottom 8.00 — inside a third of a dp on both axes.
+  `includeFontPadding: false` on the count removed Android's phantom line
+  padding (which had the contents sitting 0.67 dp high); that shrank the
+  pill 28 -> 26 dp, so `hitSlop={11}` restores a 48 dp tap target.
   ONLY the streak uses it. Kcal keeps lucide's stroked `Flame` in
   WorkoutCard / WorkoutSummary / Settings, which turns a collision into a
   distinction: solid mark = your streak, outline = energy burnt.

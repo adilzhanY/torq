@@ -77,18 +77,28 @@ function StreakPill({
   return (
     <Squish
       onPress={onPress}
+      // The pill is 48 x 26 dp of ink; the slop brings the TAP target up to
+      // the 48 dp minimum without inflating the shape.
+      hitSlop={11}
       style={{
         flexDirection: "row",
         alignItems: "center",
-        gap: 5,
+        // The mark's box is now its ink, so these are the real visual gaps.
+        gap: 6,
         backgroundColor: bg,
         borderRadius: R.pill,
         paddingHorizontal: 12,
         paddingVertical: 6,
       }}
     >
-      <StreakMark size={15} color={fg} />
-      <Txt size={14} weight="extrabold" color={fg}>{streak.current}</Txt>
+      {/* Sized to the digits: 13 px of flame against a ~9.8 px cap height
+          reads as level, where a 15 px square left it towering. */}
+      <StreakMark size={13} color={fg} />
+      {/* Android pads a Text's line box above the glyphs, which pushed the
+          pill's contents ~0.7 dp high inside otherwise symmetric padding. */}
+      <Txt size={14} weight="extrabold" color={fg} style={{ includeFontPadding: false }}>
+        {streak.current}
+      </Txt>
     </Squish>
   );
 }
