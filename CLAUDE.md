@@ -136,18 +136,18 @@ is the STRENGTH page, not the workload page (2026-08-09): rank points now +
 the climb (RankLine with tier bands), tier progress in points and kilos,
 the dumbbell "what moved" chart, the records feed, then bodyweight and
 streak. Volume/sets/hours/weekly bars/muscle split live in its "Training
-load" sub-page and measurements in a "Measurements" sub-page. Home is the coach's "Today" screen: big date header
-("Today"/"Yesterday"/weekday) with a calendar button (custom
-CalendarDialog), a scrubbable DateRuler, then the TodayHero — today's
-planned session with one-tap Start (states: live session lime / plan day
-dark card with exercise preview / done-checked / rest day with next-up /
-no-plan → opens the wizard via `useUi().openPlanWizard`) — then the WEEK
-STRIP (Monday-first plan-week dots: trained/today/planned/rest) and the
-RANK MOMENTUM block (overall RankBadge, points + weekly delta,
-pts-to-next-tier bar, closest per-lift tier-up line), a
-7-day volume Sparkline, and a day-aware workout list (Today → 3 most
-recent; other days → that day's workouts). Calories are NOT shown on
-Home (removed 2026-08-06; still on WorkoutCard/summary/Stats). The Workout tab is
+load" sub-page and measurements in a "Measurements" sub-page. Home is "TODAY, FULL-BLEED" (2026-08-09): weekday headline + date + streak
+pill + calendar button, then the TodayHero as a PANEL THAT CHANGES SHAPE —
+training day = lime gradient + border, session name, muscle chips, sets and
+minutes, big Start; rest day = grey surface, moon, "Recovering", what is
+recovering and how long since, a NEXT UP block and only a ghost "Train
+anyway"; plus done / live-session / no-plan faces. Then the WEEK STRIP,
+which now carries each day's SESSION TAG (PUSH / PULL / LEG), three stat
+TILES (rank + weekly delta, streak + week dots, kg to the next tier), a
+tappable rank-shield row into Ranks, and the day-aware workout list.
+The DateRuler and the volume Sparkline are GONE — see the History note
+below. Calories are NOT shown on Home (removed 2026-08-06; still on
+WorkoutCard/summary/Stats). The Workout tab is
 quick-start + the user's routines + a
 "Recommended" section (3-card push/pull/legs split from
 `src/lib/recommended.ts`, exercises referenced by ExerciseDB `dbId`), and
@@ -1435,6 +1435,29 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): HOME REBUILT as "Today, full-bleed" (Adilzhan picked
+  idea 1 from the lavish review `.lavish/torq-home.html`; his brief was
+  "remove volume completely, no one is measuring that… show more about
+  stats, today's session (rest or training day) with more visuals so the
+  user knows what day is today").
+  The diagnosis the screenshots made obvious: a REST DAY and a TRAINING DAY
+  rendered as the SAME typographic block with a different noun — eyebrow,
+  headline, grey sentence — so you had to read the page to learn what today
+  was. The day is now a panel that changes shape: training is lime-gradient
+  and framed with muscle chips and a big Start; rest is a grey moonlit
+  object with no primary CTA that spends its space on what is recovering
+  and what lands next. Verified BOTH states on the device (the training
+  panel by temporarily forcing the state, then reverting).
+  DELETED: the volume Sparkline (it measured work done, not strength) and
+  the DateRuler — it cost ~90 px to repeat the date already in the header
+  and its ticks said nothing about which days you train. The week strip now
+  carries that, tagged PUSH / PULL / LEG per day, and the calendar button
+  still reaches any date.
+  NEW `src/lib/muscles.ts` (11 tests): `routineMuscles` ranks a session's
+  body parts by SET COUNT — volume would let one heavy squat outrank six
+  shoulder movements — `recovering` gives days-since per group counting
+  only ticked working sets (a warmup does not fatigue anything worth
+  reporting), and `sessionTag` makes the week-strip labels.
 - 2026-08-09 (later): HISTORY BACK IN THE DOCK. Adilzhan asked "where is
   history page?" — which is the answer to whether a lime "See all" link on
   Home was a discoverable enough entry point. It is a tab again, so the dock
