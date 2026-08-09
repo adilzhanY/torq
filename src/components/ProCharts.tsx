@@ -348,14 +348,20 @@ export function MinMaxTiles({
   );
 }
 
-/** Ink ramp for the stacked breakdown segments (largest → faintest). */
-const RAMP = [
-  "rgba(26,27,26,1)",
-  "rgba(26,27,26,0.72)",
-  "rgba(26,27,26,0.5)",
-  "rgba(26,27,26,0.32)",
-  "rgba(26,27,26,0.16)",
-];
+/**
+ * Ink ramp for the stacked breakdown segments, largest → faintest.
+ *
+ * These used to be `rgba(26,27,26,…)` — near-BLACK, written for the old
+ * light clay theme. After the cardless dark rebrand the page is #0E0F0E, so
+ * every segment was black on near-black and the bar rendered as an empty
+ * grey strip with a legend of percentages beside it. Caught on the device
+ * 2026-08-09.
+ *
+ * Now a proper ordinal ramp for a dark surface: one hue, monotone lightness,
+ * every adjacent step separable, faintest end still clearing the background
+ * (validated — light→dark, ΔL ≥ 0.06 per step, 2.17:1 at the dim end).
+ */
+const RAMP = ["#F2F4EE", "#BFC7B8", "#939B8C", "#6B7365", "#464C41"];
 
 /** One stacked horizontal bar + legend dots (reference: Muscle Breakdown). */
 export function MuscleBreakdown({
@@ -386,7 +392,7 @@ export function MuscleBreakdown({
               backgroundColor: RAMP[Math.min(i, RAMP.length - 1)],
               // Hairline separators between segments.
               borderRightWidth: i < rows.length - 1 ? 2 : 0,
-              borderRightColor: C.surface,
+              borderRightColor: C.page,
             }}
           />
         ))}

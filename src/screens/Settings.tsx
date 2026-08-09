@@ -17,6 +17,7 @@ import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
+import { SubPage } from "../components/SubPage";
 import { ConfirmDialog } from "../components/Dialog";
 import { Divider, Eyebrow, NumberField, PrimaryButton, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
@@ -83,48 +84,6 @@ function Row({
     </View>
   );
   return onPress ? <Pressable onPress={onPress}>{body}</Pressable> : body;
-}
-
-/** The frame every sub-page shares: back header + scroll body. */
-function SubPage({
-  title,
-  onBack,
-  children,
-}: {
-  title: string;
-  onBack: () => void;
-  children: React.ReactNode;
-}) {
-  useEffect(() => {
-    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      onBack();
-      return true;
-    });
-    return () => sub.remove();
-  }, [onBack]);
-
-  return (
-    <SlideUp
-      style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        top: 0,
-        bottom: 0,
-        backgroundColor: C.page,
-      }}
-    >
-      <KeyboardAwareScrollView contentContainerStyle={{ padding: 16, paddingBottom: 60, gap: 14 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-          <Pressable hitSlop={8} onPress={onBack}>
-            <Icon name="ChevronLeft" size={24} color={C.ink} />
-          </Pressable>
-          <Txt size={24} weight="extrabold" style={{ flex: 1 }}>{title}</Txt>
-        </View>
-        {children}
-      </KeyboardAwareScrollView>
-    </SlideUp>
-  );
 }
 
 /** Sex / birth year / height / fallback weight — feeds calorie estimation. */

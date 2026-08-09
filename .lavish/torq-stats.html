@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>torq · stats — three redesigns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--page:#0E0F0E;--page2:#1B1E1A;--surface:#151714;--ink:#F2F4EE;--inkSoft:#9AA294;
+--inkFaint:#5C6356;--line:#262A24;--hair:#22261F;--accent:#C8FE23;--accentInk:#1A1B1A;
+--good:#5AC8A0;--warn:#F0A742;--bad:#E06A5A;--pr:#9C86E8;--gold:#E9B920;
+--r-lg:16px;--r-md:12px;--r-ctrl:10px;--r-sm:8px;}
+*,*::before,*::after{box-sizing:border-box}
+:where(.grid,.flex)>*{min-width:0}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--ink);font-family:"Space Grotesk",system-ui,sans-serif;
+-webkit-font-smoothing:antialiased;line-height:1.5}
+.wrap{max-width:1180px;margin:0 auto;padding:44px 22px 120px}
+h1,h2,h3,h4{margin:0;line-height:1.15;letter-spacing:-.02em}
+p{margin:0}
+.eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--inkFaint)}
+.lede{color:var(--inkSoft);font-size:15px;max-width:66ch}
+.hair{height:1px;background:var(--hair);border:0;margin:40px 0}
+.accent{color:var(--accent)}.soft{color:var(--inkSoft)}.faint{color:var(--inkFaint)}
+.head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.logo{width:44px;height:44px;border-radius:var(--r-md);background:#1A1B1A;display:grid;place-items:center;
+border:1px solid var(--line);flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:1px;background:var(--hair);
+border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);margin-top:26px}
+.fact{background:var(--page);padding:16px 18px 18px}
+.fact b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em}
+.fact span{font-size:12px;color:var(--inkSoft);display:block;margin-top:2px}
+.fact.bad b{color:var(--bad)}
+.opt{display:grid;grid-template-columns:minmax(0,392px) minmax(0,1fr);gap:36px;align-items:start}
+@media (max-width:900px){.opt{grid-template-columns:minmax(0,1fr)}}
+.opt-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;
+border-radius:999px;background:var(--page2);color:var(--inkSoft);border:1px solid var(--line)}
+.tag.rec{background:rgba(200,254,35,.12);color:var(--accent);border-color:rgba(200,254,35,.32)}
+.thesis{font-size:15.5px;color:var(--inkSoft);margin-top:8px;max-width:58ch}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px;margin-top:22px}
+.cols h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px}
+.win h4{color:var(--accent)}.cost h4{color:var(--warn)}
+ul{margin:0;padding-left:0;list-style:none}
+li{font-size:13.5px;color:var(--inkSoft);padding-left:16px;position:relative;margin-bottom:7px}
+li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--inkFaint)}
+.win li::before{background:var(--accent)}.cost li::before{background:var(--warn)}
+li b{color:var(--ink);font-weight:600}
+.phone{width:392px;max-width:100%;border:1px solid var(--line);border-radius:26px;background:var(--page);
+padding:14px;box-shadow:0 18px 44px rgba(0,0,0,.55)}
+.screen{height:560px;border-radius:16px;overflow-y:auto;overflow-x:hidden;position:relative;
+scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.screen::-webkit-scrollbar{width:5px}.screen::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+.pad{padding:16px 16px 28px}
+.shot{width:100%;display:block;border-radius:16px}
+.caption{font-size:11.5px;color:var(--inkFaint);margin-top:10px;text-align:center}
+.eb{font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--inkFaint);margin:18px 0 8px}
+.dv{height:1px;background:var(--hair)}
+.hero{font-size:46px;font-weight:700;letter-spacing:-.035em;line-height:1}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.axis{font:600 9px "Space Grotesk",sans-serif;fill:#5C6356;letter-spacing:.06em}
+.tierlab{font:700 8px "Space Grotesk",sans-serif;letter-spacing:.08em}
+.endlab{font:700 11px "Space Grotesk",sans-serif;fill:#F2F4EE}
+.rowlab{font:600 11px "Space Grotesk",sans-serif;fill:#9AA294}
+.delta{font:700 11px "Space Grotesk",sans-serif}
+.k{display:flex;gap:10px}.k>div{flex:1;min-width:0}
+.k b{display:block;font-size:22px;font-weight:700;letter-spacing:-.03em}
+.k span{font-size:9px;font-weight:700;color:var(--inkFaint)}
+.lrow{display:flex;align-items:center;gap:10px;padding:9px 0}
+.lrow .nm{font-size:13.5px;font-weight:600}
+.lrow .sub{font-size:11px;color:var(--inkFaint)}
+.lrow .vl{margin-left:auto;font-size:14px;font-weight:700}
+.pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px;
+background:var(--page2);color:var(--inkSoft)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--page2);border-radius:var(--r-sm);padding:5px 11px;font-size:11.5px;font-weight:700;color:var(--inkSoft)}
+.chip.on{background:var(--accent);color:var(--accentInk)}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md)}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{text-align:left;padding:13px 16px;font-size:13px;border-bottom:1px solid var(--hair);vertical-align:top}
+th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--inkFaint);font-weight:700;background:var(--surface)}
+tbody tr:last-child td{border-bottom:0}
+td:first-child{color:var(--inkSoft);font-weight:600}
+td b{color:var(--ink);font-weight:700}
+.yes{color:var(--accent);font-weight:700}.no{color:var(--bad);font-weight:700}.mid{color:var(--warn);font-weight:700}
+.pick{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:24px;margin-top:14px}
+.picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0 14px}
+.pick label{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);
+border-radius:var(--r-ctrl);background:var(--page);cursor:pointer;transition:border-color .15s}
+.pick label:hover{border-color:var(--inkFaint)}
+.pick label:has(input:checked){border-color:var(--accent);background:rgba(200,254,35,.06)}
+.pick input[type=radio]{accent-color:var(--accent);margin-top:3px;flex:none;width:16px;height:16px}
+.pick .nm{font-size:13.5px;font-weight:700}.pick .ds{font-size:11.5px;color:var(--inkSoft);margin-top:2px}
+.pick textarea{width:100%;background:var(--page);border:1px solid var(--line);border-radius:var(--r-sm);
+color:var(--ink);font-family:inherit;font-size:13px;padding:11px 12px;resize:vertical;min-height:74px}
+.pick .send{margin-top:14px;background:var(--accent);color:var(--accentInk);border:0;border-radius:var(--r-ctrl);
+font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:pointer}
+.note{font-size:11.5px;color:var(--inkFaint);margin-top:10px}
+.annot{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--hair)}
+.annot .n{width:20px;height:20px;border-radius:999px;background:var(--bad);color:#fff;font-size:11px;
+font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
+.annot p{font-size:13.5px;color:var(--inkSoft)}.annot p b{color:var(--ink)}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+</style></head><body>
+<div class="wrap">
+<header class="head">
+  <div class="logo"><svg viewBox="0 0 24 24" width="26" height="26"><path fill="#C8FE23" d="M12 2.2 14 9l6.8-2-4.9 5 4.9 5L14 15l-2 6.8L10 15l-6.8 2 4.9-5-4.9-5L10 9z"/></svg></div>
+  <div style="flex:1;min-width:260px">
+    <p class="eyebrow">torq · stats</p>
+    <h1 style="font-size:36px;margin-top:6px">Three Stats redesigns</h1>
+    <p class="lede" style="margin-top:12px">
+      You're right that the page measures the wrong thing. Volume is <b class="accent">how much work you did</b>;
+      rank and 1RM are <b class="accent">how strong you got</b> — and only the second one is why
+      torq exists. All three ideas below delete volume from the headline. They differ in
+      what replaces it: the ladder, the lifts, or the month.
+    </p>
+  </div>
+</header>
+
+<section class="facts">
+  <div class="fact bad"><b>2 of 4</b><span>Headline figures are volume-flavoured (volume, sets). None mention rank.</span></div>
+  <div class="fact bad"><b>2</b><span>Near-identical weekly bar charts, stacked one above the other.</span></div>
+  <div class="fact bad"><b>4 of 6</b><span>Bar slots are empty — the month window is wider than the data.</span></div>
+  <div class="fact"><b>0</b><span>Charts about rank, PRs or 1RM — the things the app is actually for.</span></div>
+</section><hr class="hair"/>
+<p class="eyebrow">Today</p>
+<h2 style="font-size:22px;margin-top:6px">The real page, on your phone</h2>
+<div class="opt" style="margin-top:20px">
+  <div>
+    <div class="shots">
+      <img class="shot" src="stats-now-1.png" alt="Stats page, top"/>
+      <img class="shot" src="stats-now-2.png" alt="Stats page, bottom"/>
+    </div>
+    <p class="caption">Captured from the emulator just now — not a mock.</p>
+  </div>
+  <div>
+    <h4 style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bad);margin-bottom:4px">What's wrong</h4>
+    <div class="annot"><span class="n">1</span><p><b>Volume is the hero.</b> "29k VOLUME (KG)" sits in the KPI row and the largest chart on the page is weekly volume. Volume rewards long sessions, not strong ones — you can add 20% volume by adding a set of curls.</p></div>
+    <div class="annot"><span class="n">2</span><p><b>Two charts, one story.</b> Weekly volume and weekly workout count have the same shape from the same weeks, stacked. The second one is the first one, dimmer.</p></div>
+    <div class="annot"><span class="n">3</span><p><b>Four of six bars are empty.</b> The month window always shows 5–6 weeks whether or not they contain anything, so the chart is mostly background.</p></div>
+    <div class="annot"><span class="n">4</span><p><b>The muscle breakdown renders as an empty grey strip.</b> The legend says Legs 50% / Chest 19% / Back 15% — but the stacked bar itself has no visible colour. That's a real bug, not a design opinion.</p></div>
+    <div class="annot"><span class="n">5</span><p><b>Raw axis ticks:</b> 35022, 23348, 11674. Unrounded numbers nobody can scan, on an axis whose job is orientation.</p></div>
+    <div class="annot"><span class="n">6</span><p><b>Nothing about getting stronger.</b> No rank over time, no PR, no 1RM, no "which lift is stalling" — and those are the only questions this app is uniquely able to answer.</p></div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;flex:1">Progress</div>
+        <span class="chip on">6M</span><span class="chip">1Y</span><span class="chip">All</span>
+      </div>
+
+      <div class="eb" style="margin-top:16px">Rank · overall</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span class="hero">217</span>
+        <span style="font-size:15px;font-weight:700;color:var(--accent)">pts</span>
+        <span style="margin-left:auto;font-size:13px;font-weight:700;color:var(--good)">▲ +36 in 90 days</span>
+      </div>
+      <div style="margin-top:14px"><svg viewBox="0 0 356 196" class="chart" role="img" aria-label="Rank points over 12 months">
+<rect x="6" y="124.8" width="298.0" height="49.2" fill="#C3CBD4" opacity="0.055"/>
+<line x1="6" y1="124.8" x2="304.0" y2="124.8" stroke="#C3CBD4" stroke-opacity="0.30" stroke-width="1"/>
+<text x="311.0" y="135.8" class="tierlab" fill="#C3CBD4">Iron</text>
+<rect x="6" y="75.6" width="298.0" height="49.2" fill="#E8A55B" opacity="0.055"/>
+<line x1="6" y1="75.6" x2="304.0" y2="75.6" stroke="#E8A55B" stroke-opacity="0.30" stroke-width="1"/>
+<text x="311.0" y="86.6" class="tierlab" fill="#E8A55B">Bronze</text>
+<rect x="6" y="26.4" width="298.0" height="49.2" fill="#EDF2F7" opacity="0.055"/>
+<line x1="6" y1="26.4" x2="304.0" y2="26.4" stroke="#EDF2F7" stroke-opacity="0.30" stroke-width="1"/>
+<text x="311.0" y="37.4" class="tierlab" fill="#EDF2F7">Silver</text>
+<rect x="6" y="10.0" width="298.0" height="16.4" fill="#E9B920" opacity="0.055"/>
+<line x1="6" y1="10.0" x2="304.0" y2="10.0" stroke="#E9B920" stroke-opacity="0.30" stroke-width="1"/>
+<text x="311.0" y="21.0" class="tierlab" fill="#E9B920">Gold</text>
+<path d="M6.0 143.4 L33.1 134.6 L60.2 129.2 L87.3 129.2 L114.4 117.1 L141.5 108.4 L168.5 99.7 L195.6 100.7 L222.7 88.7 L249.8 74.5 L276.9 54.8 L304.0 35.1 L304.0 174.0 L6.0 174.0 Z" fill="#C8FE23" opacity="0.10"/>
+<path d="M6.0 143.4 L33.1 134.6 L60.2 129.2 L87.3 129.2 L114.4 117.1 L141.5 108.4 L168.5 99.7 L195.6 100.7 L222.7 88.7 L249.8 74.5 L276.9 54.8 L304.0 35.1" fill="none" stroke="#C8FE23" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+<circle cx="304.0" cy="35.1" r="4.5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="296.0" y="26.1" class="endlab" text-anchor="end">217 pts</text>
+<text x="6.0" y="190" class="axis" text-anchor="middle">Sep</text>
+<text x="87.3" y="190" class="axis" text-anchor="middle">Dec</text>
+<text x="168.5" y="190" class="axis" text-anchor="middle">Mar</text>
+<text x="249.8" y="190" class="axis" text-anchor="middle">Jun</text>
+<text x="304.0" y="190" class="axis" text-anchor="middle">Aug</text>
+</svg></div>
+      <div style="margin-top:14px"><svg viewBox="0 0 356 8" class="chart" role="img"><rect x="0" y="0" width="356" height="8" rx="4.0" fill="#1B1E1A"/><rect x="0" y="0" width="291.9" height="8" rx="4.0" fill="#C8FE23"/></svg></div>
+      <div style="display:flex;margin-top:6px">
+        <span style="font-size:11.5px;color:var(--inkSoft)">Silver IV</span>
+        <span style="font-size:11.5px;color:var(--inkFaint);margin-left:auto">9 pts to Gold</span>
+      </div>
+
+      <div class="eb">Closest tier-ups</div>
+      <div class="lrow"><div><div class="nm">Barbell Full Squat</div>
+        <div class="sub">114 kg · Silver IV</div></div>
+        <div class="vl accent">+3.9 kg</div></div>
+      <div style="margin:-4px 0 8px"><svg viewBox="0 0 356 8" class="chart" role="img"><rect x="0" y="0" width="356" height="8" rx="4.0" fill="#1B1E1A"/><rect x="0" y="0" width="306.2" height="8" rx="4.0" fill="#C8FE23"/></svg></div>
+      <div class="dv"></div>
+      <div class="lrow"><div><div class="nm">Barbell Deadlift</div>
+        <div class="sub">120 kg · Gold I</div></div>
+        <div class="vl accent">+9.2 kg</div></div>
+      <div style="margin:-4px 0 8px"><svg viewBox="0 0 356 8" class="chart" role="img"><rect x="0" y="0" width="356" height="8" rx="4.0" fill="#1B1E1A"/><rect x="0" y="0" width="78.3" height="8" rx="4.0" fill="#C8FE23"/></svg></div>
+
+      <div class="eb">Recent records</div>
+      <div class="lrow"><div><div class="nm">Deadlift · 120 kg</div><div class="sub">6 Aug · was 115 kg</div></div><div class="vl" style="color:var(--gold)">+5</div></div>
+      <div class="dv"></div>
+      <div class="lrow"><div><div class="nm">Full Squat · 114 kg</div><div class="sub">3 Aug · was 110 kg</div></div><div class="vl" style="color:var(--gold)">+4</div></div>
+      <div class="dv"></div>
+      <div class="lrow"><div><div class="nm">Bench Press · 89 kg</div><div class="sub">1 Aug · was 87 kg</div></div><div class="vl" style="color:var(--gold)">+2</div></div>
+
+      <div class="eb">Body &amp; consistency</div>
+      <div style="display:flex;gap:16px;align-items:flex-end">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:18px;font-weight:700">93.0 <span style="font-size:11px;color:var(--inkFaint)">kg</span></div>
+          <div style="font-size:9px;font-weight:700;color:var(--inkFaint);margin-bottom:4px">BODY WEIGHT</div>
+          <svg viewBox="0 0 160 38" class="chart"><path d="M0.0 34.0 L26.7 24.0 L53.3 19.0 L80.0 20.7 L106.7 10.7 L133.3 5.7 L160.0 4.0" fill="none" stroke="#5AC8A0" stroke-width="2" stroke-linejoin="round"/><circle cx="160.0" cy="4.0" r="3.5" fill="#5AC8A0"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:18px;font-weight:700">37</div>
+          <div style="font-size:9px;font-weight:700;color:var(--inkFaint);margin-bottom:4px">DAY STREAK</div>
+          <svg viewBox="0 0 160 38" class="chart"><path d="M0.0 34.0 L26.7 19.0 L53.3 19.0 L80.0 4.0 L106.7 19.0 L133.3 4.0 L160.0 4.0" fill="none" stroke="#F0A742" stroke-width="2" stroke-linejoin="round"/><circle cx="160.0" cy="4.0" r="3.5" fill="#F0A742"/></svg>
+        </div>
+      </div>
+
+      <div class="eb">More</div>
+      <div class="lrow"><div><div class="nm">Measurements</div><div class="sub">Weight, body fat, chest, waist…</div></div><div class="vl faint">›</div></div>
+      <div class="dv"></div>
+      <div class="lrow"><div><div class="nm">Training load</div><div class="sub">Volume, sets, hours — if you want them</div></div><div class="vl faint">›</div></div>
+    </div></div></div>
+    <p class="caption">Scroll it. One question per block, rank first.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 1</p><span class="tag rec">Recommended</span><span class="tag">Medium build</span></div>
+    <h2 style="font-size:26px">The climb</h2>
+    <p class="thesis">
+      The page becomes one question: <b class="accent">am I getting stronger, and how far to the next tier?</b>
+      A rank-points line with the tier ladder painted behind it, then the two lifts closest to
+      promotion in <b>kilograms to go</b>, then your recent records. Volume is demoted to a
+      "Training load" row you can open if you actually want it.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>The chart the app has never drawn.</b> Rank over time with tier bands turns nine abstract thresholds into a picture of a climb — and every point on it is already computable from your logs.</li>
+        <li><b>"+3.9 kg to Gold" is actionable.</b> Points are the currency but kilos are what you do on Monday, so the tier-up rows are denominated in kilos.</li>
+        <li><b>Records get a home.</b> PRs are currently visible only inside a finished-workout summary that scrolls away.</li>
+        <li><b>Body weight stays</b> — not vanity, it's a DOTS input, so it belongs next to the rank it moves.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>Rank history has to be replayed.</b> Points-at-a-date means recomputing <code>rankLifts</code> over every prefix of your history — cheap for a few hundred workouts, but it needs a memo, not a naive loop per pixel.</li>
+        <li>A new "Training load" sub-page for the volume/sets/hours that leave the surface.</li>
+        <li>The line looks flat for a brand-new user with two sessions.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div style="font-size:26px;font-weight:700;letter-spacing:-.03em">Lifts</div>
+
+      <div class="eb" style="margin-top:14px">What moved · last 90 days (kg)</div>
+      <svg viewBox="0 0 356 186" class="chart" role="img" aria-label="Lift change over 90 days">
+<text x="0" y="11.0" class="rowlab">Barbell Deadlift</text>
+<line x1="183.9" y1="20.0" x2="267.4" y2="20.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="183.9" cy="20.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="267.4" cy="20.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="24.0" class="delta" text-anchor="end" fill="#C8FE23">+15</text>
+<text x="0" y="45.0" class="rowlab">Barbell Full Squat</text>
+<line x1="167.1" y1="54.0" x2="234.0" y2="54.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="167.1" cy="54.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="234.0" cy="54.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="58.0" class="delta" text-anchor="end" fill="#C8FE23">+12</text>
+<text x="0" y="79.0" class="rowlab">Romanian Deadlift</text>
+<line x1="156.0" y1="88.0" x2="195.0" y2="88.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="156.0" cy="88.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="195.0" cy="88.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="92.0" class="delta" text-anchor="end" fill="#C8FE23">+7</text>
+<text x="0" y="113.0" class="rowlab">Barbell Bench Press</text>
+<line x1="72.4" y1="122.0" x2="94.7" y2="122.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="72.4" cy="122.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="94.7" cy="122.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="126.0" class="delta" text-anchor="end" fill="#C8FE23">+4</text>
+<text x="0" y="147.0" class="rowlab">Cable Pulldown</text>
+<line x1="44.6" y1="156.0" x2="44.6" y2="156.0" stroke="#5C6356" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="44.6" cy="156.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="44.6" cy="156.0" r="5" fill="#5C6356" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="160.0" class="delta" text-anchor="end" fill="#5C6356">—</text>
+</svg>
+      <p style="font-size:10.5px;color:var(--inkFaint);margin-top:4px">
+        Hollow dot = 90 days ago · filled = today. Cable Pulldown hasn't moved in 90 days.
+      </p>
+
+      <div class="eb">Barbell Bench Press</div>
+      <div class="chips" style="margin-bottom:12px">
+        <span class="chip on">Bench</span><span class="chip">Squat</span>
+        <span class="chip">Deadlift</span><span class="chip">RDL</span><span class="chip">+4</span>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span class="hero" style="font-size:38px">89</span>
+        <span style="font-size:13px;font-weight:700;color:var(--inkSoft)">kg e1RM</span>
+        <span style="margin-left:auto;font-size:13px;font-weight:700;color:var(--good)">▲ +4 kg</span>
+      </div>
+      <div style="margin-top:12px"><svg viewBox="0 0 356 150" class="chart" role="img" aria-label="Estimated 1RM by session">
+<line x1="0" y1="14.0" x2="350.0" y2="14.0" stroke="#22261F" stroke-width="1"/>
+<line x1="0" y1="52.7" x2="350.0" y2="52.7" stroke="#22261F" stroke-width="1"/>
+<line x1="0" y1="91.3" x2="350.0" y2="91.3" stroke="#22261F" stroke-width="1"/>
+<line x1="0" y1="130.0" x2="350.0" y2="130.0" stroke="#22261F" stroke-width="1"/>
+<path d="M0.0 109.5 L31.8 102.7 L63.6 89.1 L95.5 95.9 L127.3 75.4 L159.1 75.4 L190.9 61.8 L222.7 68.6 L254.5 54.9 L286.4 41.3 L318.2 48.1 L350.0 34.5" fill="none" stroke="#C8FE23" stroke-width="2" stroke-linejoin="round"/>
+<circle cx="0.0" cy="109.5" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<circle cx="63.6" cy="89.1" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<circle cx="127.3" cy="75.4" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<circle cx="190.9" cy="61.8" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<circle cx="286.4" cy="41.3" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<circle cx="350.0" cy="34.5" r="4" fill="#E9B920" stroke="#0E0F0E" stroke-width="2"/>
+<text x="350.0" y="24.5" class="endlab" text-anchor="end">89 kg</text>
+<text x="0" y="145" class="axis">12 sessions</text>
+<text x="350.0" y="145" class="axis" text-anchor="end">◆ = personal record</text>
+</svg></div>
+
+      <div class="eb">Where it stands</div>
+      <div class="lrow"><div><div class="nm">Bronze IV</div><div class="sub">57 pts · 3 pts to Silver</div></div><div class="vl accent">+2.4 kg</div></div>
+      <div style="margin:-4px 0 10px"><svg viewBox="0 0 356 8" class="chart" role="img"><rect x="0" y="0" width="356" height="8" rx="4.0" fill="#1B1E1A"/><rect x="0" y="0" width="277.7" height="8" rx="4.0" fill="#C8FE23"/></svg></div>
+      <div class="lrow"><div><div class="nm">Stronger than 8%</div><div class="sub">of competitive raw benchers (2.2M lifters)</div></div></div>
+      <div class="dv"></div>
+      <div class="lrow"><div><div class="nm">32% of the 93 kg world record</div><div class="sub">IPF classic · 278 kg</div></div></div>
+
+      <div class="eb">Rep maxes</div>
+      <div style="font-size:12px">
+        <div style="display:flex;padding:6px 0;color:var(--inkFaint);font-weight:700;font-size:9.5px;letter-spacing:.1em">
+          <span style="width:34px">REPS</span><span style="flex:1">BEST REAL SET</span><span>EST.</span></div>
+        <div class="dv"></div>
+        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">1</span><span style="flex:1;color:var(--inkSoft)">—</span><span style="font-weight:700">89</span></div>
+        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">3</span><span style="flex:1;color:var(--inkSoft)">80 kg · 1 Aug</span><span style="font-weight:700">81</span></div>
+        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">5</span><span style="flex:1;color:var(--inkSoft)">75 kg · 27 Jul</span><span style="font-weight:700">76</span></div>
+        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">8</span><span style="flex:1;color:var(--inkSoft)">65 kg · 20 Jul</span><span style="font-weight:700">68</span></div>
+      </div>
+    </div></div></div>
+    <p class="caption">The dumbbell chart on top answers "what's stalling" in one look.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 2</p><span class="tag">Most specific</span><span class="tag">Large build</span></div>
+    <h2 style="font-size:26px">The lift lab</h2>
+    <p class="thesis">
+      The page is about <b class="accent">exercises, not sessions</b>. It opens with a dumbbell chart —
+      every ranked lift, 90 days ago versus today — which is the one form that makes
+      "which lifts are moving and which are stuck" readable at a glance. Pick a lift and get
+      its whole file: e1RM line with records, tier, percentile, rep maxes.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>Stalls become visible.</b> A flat dumbbell row is the single most useful thing a training app can tell you, and nothing in torq currently says it.</li>
+        <li><b>Exactly what you asked for</b> — "weight increasing in exercises", as the page's whole subject.</li>
+        <li><b>The rep-max table earns its place here</b>, where you're already thinking about one lift.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>It duplicates a screen you already have.</b> ExerciseInfo already ships About / History / Records / Charts / Rank per exercise. Building the same charts on Stats means two places to maintain the same thing — the strongest argument against this one.</li>
+        <li>Needs a selection model and a sensible default lift.</li>
+        <li>A lift needs two data points 90 days apart before the headline chart says anything.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="font-size:26px;font-weight:700;letter-spacing:-.03em;flex:1">August</div>
+        <span class="chip">‹</span><span class="chip">›</span>
+      </div>
+      <p style="font-size:11.5px;color:var(--inkFaint);margin-top:2px">Your month, in strength</p>
+
+      <div class="eb" style="margin-top:14px">Points gained</div>
+      <div style="display:flex;align-items:baseline;gap:8px">
+        <span class="hero" style="color:var(--accent)">+18</span>
+        <span style="font-size:15px;font-weight:700;color:var(--inkSoft)">pts</span>
+        <span style="margin-left:auto;font-size:12px;color:var(--inkFaint)">199 → 217</span>
+      </div>
+
+      <div class="eb">The ladder</div>
+      <svg viewBox="0 0 356 54" class="chart" role="img" aria-label="Tier ladder">
+<rect x="0.0" y="16" width="37.8" height="12" rx="3" fill="#C77E4F" opacity="0.92"/>
+<text x="18.9" y="48" class="axis" text-anchor="middle">Rust</text>
+<rect x="39.8" y="16" width="37.8" height="12" rx="3" fill="#C3CBD4" opacity="0.92"/>
+<rect x="79.6" y="16" width="37.8" height="12" rx="3" fill="#E8A55B" opacity="0.92"/>
+<rect x="119.3" y="16" width="37.8" height="12" rx="3" fill="#EDF2F7" opacity="0.92"/>
+<text x="138.2" y="48" class="axis" text-anchor="middle">Silver</text>
+<rect x="159.1" y="16" width="37.8" height="12" rx="3" fill="#E9B920" opacity="0.16"/>
+<rect x="198.9" y="16" width="37.8" height="12" rx="3" fill="#A8D8DC" opacity="0.16"/>
+<rect x="238.7" y="16" width="37.8" height="12" rx="3" fill="#6FA9E8" opacity="0.16"/>
+<rect x="278.4" y="16" width="37.8" height="12" rx="3" fill="#C8FE23" opacity="0.16"/>
+<rect x="318.2" y="16" width="37.8" height="12" rx="3" fill="#9C86E8" opacity="0.16"/>
+<text x="337.1" y="48" class="axis" text-anchor="middle">World Class</text>
+<polygon points="145.3,10 155.3,10 150.3,15" fill="#F2F4EE"/>
+<text x="150.3" y="7" class="endlab" text-anchor="middle">you</text>
+</svg>
+
+      <div class="eb">What moved this month (kg)</div>
+      <svg viewBox="0 0 356 152" class="chart" role="img" aria-label="Lift change over 90 days">
+<text x="0" y="11.0" class="rowlab">Deadlift</text>
+<line x1="239.6" y1="20.0" x2="267.4" y2="20.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="239.6" cy="20.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="267.4" cy="20.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="24.0" class="delta" text-anchor="end" fill="#C8FE23">+5</text>
+<text x="0" y="45.0" class="rowlab">Full Squat</text>
+<line x1="211.7" y1="54.0" x2="234.0" y2="54.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="211.7" cy="54.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="234.0" cy="54.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="58.0" class="delta" text-anchor="end" fill="#C8FE23">+4</text>
+<text x="0" y="79.0" class="rowlab">Bench Press</text>
+<line x1="83.6" y1="88.0" x2="94.7" y2="88.0" stroke="#C8FE23" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="83.6" cy="88.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="94.7" cy="88.0" r="5" fill="#C8FE23" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="92.0" class="delta" text-anchor="end" fill="#C8FE23">+2</text>
+<text x="0" y="113.0" class="rowlab">Cable Pulldown</text>
+<line x1="44.6" y1="122.0" x2="44.6" y2="122.0" stroke="#5C6356" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
+<circle cx="44.6" cy="122.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
+<circle cx="44.6" cy="122.0" r="5" fill="#5C6356" stroke="#0E0F0E" stroke-width="2"/>
+<text x="356" y="126.0" class="delta" text-anchor="end" fill="#5C6356">—</text>
+</svg>
+
+      <div class="eb">Strength balance</div>
+      <svg viewBox="0 0 356 114" class="chart" role="img" aria-label="Strength balance versus expected ratios">
+<line x1="149.51999999999998" y1="6" x2="149.51999999999998" y2="94" stroke="#262A24" stroke-width="1"/>
+<rect x="149.5" y="16.0" width="20.8" height="11" rx="3" fill="#5AC8A0"/>
+<text x="177.3" y="25.5" class="delta" fill="#5AC8A0" text-anchor="start">+4%</text>
+<text x="0" y="13.0" class="rowlab">Bench press</text>
+<circle cx="149.51999999999998" cy="51.0" r="3" fill="#5C6356"/>
+<text x="0" y="43.0" class="rowlab">Full squat</text>
+<rect x="66.3" y="76.0" width="83.2" height="11" rx="3" fill="#F0A742"/>
+<text x="59.3" y="85.5" class="delta" fill="#F0A742" text-anchor="end">-16%</text>
+<text x="0" y="73.0" class="rowlab">Deadlift</text>
+<text x="149.51999999999998" y="109" class="axis" text-anchor="middle">expected ratio</text>
+</svg>
+      <p style="font-size:10.5px;color:var(--inkFaint);margin-top:2px">
+        Against the classic 0.75 : 1 : 1.25 bench : squat : deadlift ratio. Your deadlift is the lagging lift.
+      </p>
+
+      <div class="eb">Consistency</div>
+      <svg viewBox="0 0 356 135" class="chart" role="img" aria-label="Sessions per day">
+<rect x="0" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="0" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="0" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="0" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="0" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="0" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="0" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="17" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="17" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="17" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="17" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="17" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="17" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="17" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="34" y="0" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="34" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="34" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="34" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="34" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="34" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="34" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="51" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="51" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="51" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="51" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="51" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="51" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="51" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="68" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="68" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="68" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="68" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="68" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="68" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="68" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="0" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="85" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="85" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="85" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="102" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="102" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="102" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="102" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="102" y="68" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="102" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="102" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="119" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="119" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="119" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="119" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="119" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="119" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="119" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="136" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="136" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="136" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="136" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="136" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="136" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="136" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="153" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="153" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="153" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="153" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="153" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="153" y="85" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="153" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="170" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="170" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="170" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="170" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="170" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="170" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="170" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="187" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="187" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="187" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="187" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="187" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="187" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="187" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="204" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="204" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="204" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="204" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="204" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="204" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="204" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="221" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="221" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="221" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="221" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="221" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="221" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="221" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="238" y="0" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="238" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="238" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="238" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="238" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="238" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="238" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="255" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="255" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="255" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="255" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="255" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="255" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="255" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="272" y="0" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="272" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="272" y="34" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="272" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="272" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="1.0"/>
+<rect x="272" y="85" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="272" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="0" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="17" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="34" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="51" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="68" width="13" height="13" rx="3" fill="#C8FE23" opacity="0.55"/>
+<rect x="289" y="85" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<rect x="289" y="102" width="13" height="13" rx="3" fill="#1B1E1A" opacity="0.1"/>
+<text x="0" y="133" class="axis">18 weeks</text>
+<text x="356" y="133" class="axis" text-anchor="end">more sessions →</text>
+</svg>
+
+      <div class="eb">Body weight (kg)</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="font-size:20px;font-weight:700">93.0</span>
+        <span style="font-size:11.5px;color:var(--good);font-weight:700">+1.8 since May</span>
+      </div>
+      <div style="margin-top:6px"><svg viewBox="0 0 356 54" class="chart"><path d="M0.0 50.0 L59.3 34.7 L118.7 27.0 L178.0 29.6 L237.3 14.2 L296.7 6.6 L356.0 4.0" fill="none" stroke="#5AC8A0" stroke-width="2" stroke-linejoin="round"/><circle cx="356.0" cy="4.0" r="3.5" fill="#5AC8A0"/></svg></div>
+
+      <div class="eb">More</div>
+      <div class="lrow"><div><div class="nm">Measurements</div><div class="sub">Log and history</div></div><div class="vl faint">›</div></div>
+    </div></div></div>
+    <p class="caption">A month you can read top to bottom, then close.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 3</p><span class="tag">Densest</span><span class="tag">Large build</span></div>
+    <h2 style="font-size:26px">The monthly scorecard</h2>
+    <p class="thesis">
+      Keeps your month stepper, but every module changes subject: points gained instead of volume moved,
+      the <b class="accent">whole nine-tier ladder</b> with your marker on it, what moved this month,
+      and a strength-balance chart that names your lagging lift. Reads like a report, not a dashboard.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>The ladder finally appears.</b> Nowhere in torq can you currently see all nine tiers and where you sit among them — the game's whole board.</li>
+        <li><b>Strength balance is a genuine coaching insight</b> and no competitor of yours shows it: a 120 kg deadlift behind a 114 kg squat is a real finding.</li>
+        <li><b>The heatmap replaces two bar charts</b> with one denser, better-filled picture of consistency.</li>
+        <li>The month stepper you built stops being wasted on volume.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>Most to build</b> — five new chart forms, one of which (the balance baseline) is a convention you'd have to defend.</li>
+        <li><b>The balance chart is noise for many users.</b> Anyone not training all three competition lifts gets a chart about lifts they don't do.</li>
+        <li>A month is a short window for strength: some months move 2 pts and the hero reads as failure.</li>
+      </ul></div>
+    </div>
+  </div>
+</div><hr class="hair"/>
+<p class="eyebrow">The charts</p>
+<h2 style="font-size:22px;margin:6px 0 8px">Which form, and why not the obvious one</h2>
+<p class="lede" style="margin-bottom:18px">You asked what charts to use. The form follows the reader's job,
+not the data's shape — and in several places the honest answer is "not a chart".</p>
+<div class="tablewrap"><table>
+  <thead><tr><th>The question</th><th>Form</th><th>Why not the obvious alternative</th></tr></thead>
+  <tbody>
+    <tr><td>Am I climbing?</td><td><b>Line + tier bands</b>, one series</td><td>Not multi-line. The other lifts are context; eight hues would bury the one line that matters. One series needs no legend — the title names it.</td></tr>
+    <tr><td>How far to the next tier?</td><td><b>Meter</b></td><td>Not a two-slice donut. A single ratio against a limit is a bar, and the number does most of the work.</td></tr>
+    <tr><td>Which lifts moved?</td><td><b>Dumbbell</b> (before → after)</td><td>Not grouped bars: pairs read as pairs and the gap <i>is</i> the subject. One hue in two treatments — hollow then, filled now.</td></tr>
+    <tr><td>How did one lift progress?</td><td><b>Line</b>, PR points ringed</td><td>Not bars — time is continuous. The ring is secondary encoding so records aren't colour-alone.</td></tr>
+    <tr><td>Am I balanced?</td><td><b>Diverging bars</b> around a neutral centre</td><td>Not a radar. Radar's filled area exaggerates magnitude and its axis order is arbitrary. Δ-to-target is textbook diverging.</td></tr>
+    <tr><td>Am I consistent?</td><td><b>Calendar heatmap</b>, one hue</td><td>Not a weekly bar chart with four empty slots. A heatmap is dense where bars are sparse.</td></tr>
+    <tr><td>What records did I set?</td><td><b>A list</b></td><td>Not a chart at all. Events with names and dates are a feed; plotting them adds nothing.</td></tr>
+    <tr><td>Where is my body weight going?</td><td><b>Small line</b></td><td>Keep it — DOTS divides by bodyweight, so it is the one measurement that moves your rank.</td></tr>
+    <tr><td>Which muscles did I train?</td><td><b>Cut it</b>, or horizontal stacked bar</td><td>Today it renders as an invisible grey strip. Either fix the fills or admit it was volume-by-another-name.</td></tr>
+  </tbody>
+</table></div>
+
+<p class="lede" style="margin-top:20px">
+  <b class="accent">One rule I'd hold across all three:</b> never put kilograms and points on one plot.
+  A second y-axis makes the reader believe in a correlation whose alignment you invented. Two measures →
+  two charts, or index both to 100 at the start.
+</p><hr class="hair"/>
+<p class="eyebrow">Side by side</p>
+<h2 style="font-size:22px;margin:6px 0 18px">What each one decides</h2>
+<div class="tablewrap"><table>
+  <thead><tr><th>&nbsp;</th><th>Today</th><th>1 · The climb</th><th>2 · The lift lab</th><th>3 · Scorecard</th></tr></thead>
+  <tbody>
+    <tr><td>The page's subject</td><td class="no">Work done</td><td><b>Your rank</b></td><td><b>Your lifts</b></td><td><b>Your month</b></td></tr>
+    <tr><td>Volume</td><td class="no">The headline</td><td class="yes">A sub-page</td><td class="yes">Gone</td><td class="yes">Gone</td></tr>
+    <tr><td>Rank over time</td><td class="no">Nowhere</td><td class="yes">The hero chart</td><td class="mid">Per lift only</td><td class="yes">Points gained + ladder</td></tr>
+    <tr><td>Per-lift progression</td><td class="no">Nowhere</td><td class="mid">Tier-up rows (kg to go)</td><td class="yes">The whole page</td><td class="yes">Dumbbell, monthly</td></tr>
+    <tr><td>Answers "what's stalling"</td><td class="no">No</td><td class="mid">Implicitly</td><td class="yes">Directly</td><td class="yes">Directly</td></tr>
+    <tr><td>Duplicates ExerciseInfo</td><td class="yes">No</td><td class="yes">No</td><td class="no">Heavily</td><td class="mid">A little</td></tr>
+    <tr><td>New chart forms to build</td><td>—</td><td class="yes">2 (banded line, meter)</td><td class="mid">3</td><td class="no">5</td></tr>
+    <tr><td>Works on day 3 of using the app</td><td class="mid">Sort of</td><td class="mid">Flat line, honest</td><td class="no">Needs 90 days</td><td class="no">Needs a full month</td></tr>
+    <tr><td>Build effort</td><td>—</td><td class="mid">Medium</td><td class="no">Large</td><td class="no">Large</td></tr>
+  </tbody>
+</table></div>
+
+<p class="lede" style="margin-top:22px">
+  <b class="accent">My read:</b> build 1, and steal one chart from 2. The rank line is the picture torq has
+  been missing since the rank engine shipped — it's the only screen that would make someone open the app on a
+  rest day. But idea 2's dumbbell chart is the cheapest big win on this page: two numbers per lift, and it
+  answers "what's stalling", which idea 1 only implies. The rest of idea 2 I'd leave alone, because
+  ExerciseInfo already owns per-lift detail and a second copy is a second thing to keep true.
+  Idea 3's ladder is worth stealing later; its balance chart wants a real opinion about ratios before it ships.
+</p><hr class="hair"/>
+<p class="eyebrow">Your call</p>
+<h2 style="font-size:22px;margin:6px 0 0">Which do I build?</h2>
+<form class="pick" data-lavish-question="stats" onsubmit="
+  event.preventDefault();
+  const f = new FormData(event.currentTarget);
+  const choice = f.get('design');
+  const notes = (f.get('notes') || '').toString().trim();
+  if (!choice) return;
+  window.lavish.queuePrompt(
+    'Redesign the Stats page using: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
+    { tag: 'choice', text: 'Stats: ' + choice + (notes ? ' — ' + notes : ''),
+      element: event.currentTarget, queueKey: 'stats',
+      data: { question: 'stats', answer: choice, notes } }
+  );
+">
+  <p class="soft" style="font-size:13.5px">
+    Pick one and I implement it end to end. The mocks are real markup — annotate any chart,
+    row or label you want changed first.
+  </p>
+  <div class="picks">
+    <label><input type="radio" name="design" value="1 — The climb, plus the dumbbell chart from 2">
+      <span><span class="nm">1 + the dumbbell</span><span class="ds">Rank line with tier bands, tier-ups in kg, PR feed — and "what moved" on top. My recommendation.</span></span></label>
+    <label><input type="radio" name="design" value="1 — The climb">
+      <span><span class="nm">1 · The climb</span><span class="ds">Rank-first. The banded rank line as the hero, volume to a sub-page.</span></span></label>
+    <label><input type="radio" name="design" value="2 — The lift lab">
+      <span><span class="nm">2 · The lift lab</span><span class="ds">Per-exercise page: dumbbell chart, e1RM history, rep maxes.</span></span></label>
+    <label><input type="radio" name="design" value="3 — The monthly scorecard">
+      <span><span class="nm">3 · Scorecard</span><span class="ds">Month report: points gained, tier ladder, balance, heatmap.</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Anything to change first — should volume survive anywhere, which lifts to feature, keep the month stepper or drop it…"></textarea>
+  <button class="send" type="submit">Queue this answer</button>
+  <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
+</form>
+</div></body></html>

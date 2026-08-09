@@ -132,11 +132,12 @@ which opens Profile as a full-screen overlay rather than switching tabs
 History and Exercises are still full screens with their own Tab ids, but
 they are SUB-PAGES now: History opens from Home's "Recent workouts · See
 all", Exercises from the Workout tab's "Exercise library" row, and each
-keeps its parent tab lit while open. Stats (replaced Measure; tab id "stats", ChartColumn
-icon) is the analytics home: lifetime overview cards, weekly volume +
-workout-count BarCharts (8 weeks, current week lime), muscle-split HBars
-(30-day working-set volume by body part), body-weight LineChart, and the
-old Measure logging (kind chips + history) at the bottom. Home is the coach's "Today" screen: big date header
+keeps its parent tab lit while open. Stats (tab id "stats", ChartColumn icon, titled "Progress")
+is the STRENGTH page, not the workload page (2026-08-09): rank points now +
+the climb (RankLine with tier bands), tier progress in points and kilos,
+the dumbbell "what moved" chart, the records feed, then bodyweight and
+streak. Volume/sets/hours/weekly bars/muscle split live in its "Training
+load" sub-page and measurements in a "Measurements" sub-page. Home is the coach's "Today" screen: big date header
 ("Today"/"Yesterday"/weekday) with a calendar button (custom
 CalendarDialog), a scrubbable DateRuler, then the TodayHero — today's
 planned session with one-tap Start (states: live session lime / plan day
@@ -545,7 +546,13 @@ AVDs `torq` and `torq2` (both Pixel 7, hw.keyboard=yes) are at
 `~/.config/.android/avd` — the emulator only finds them with
 `ANDROID_AVD_HOME=~/.config/.android/avd` exported. `torq2` exists so Torq
 can run beside Adilzhan's other project (which occupies `torq`/8081):
-`./run_android.sh torq2`. Launch:
+`./run_android.sh torq2`. Used in anger 2026-08-09 — with Claude Code open
+on the grit repo too, Expo Go on the shared `torq` AVD kept reopening THAT
+project, so torq moved to `torq2` (emulator-5556) while grit kept
+emulator-5554. The script boots the AVD, syncs Expo Go to the SDK's required
+version, reuses this repo's existing Metro instead of stacking a second one,
+and pins ANDROID_SERIAL — so the two sessions never fight. Always export
+ANDROID_SERIAL for adb calls when both are up. Launch:
 `ANDROID_AVD_HOME=~/.config/.android/avd ~/Android/Sdk/emulator/emulator -avd
 torq -gpu host`, then `npx expo start --android` (Expo Go).
 
@@ -1429,6 +1436,41 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): STATS REBUILT as "the climb" (Adilzhan: "I don't like
+  that it shows the volume, not rank advancement, or weight increasing in
+  exercises" — he picked idea 1 plus the dumbbell chart from idea 2 in the
+  lavish review `.lavish/torq-stats.html`, which embeds real screenshots of
+  the old page rather than a mock of it).
+  The old page led with "29k VOLUME (KG)" and its biggest chart was weekly
+  volume, above a near-identical weekly workout-count chart, four of whose
+  six slots were empty. Volume measures how much work you did; it rewards
+  long sessions, not strong ones.
+  NEW `src/lib/progress.ts` (pure, 16 new tests): `rankHistory` replays DOTS
+  points across a window — the running best-per-exercise map is advanced
+  through the workouts ONCE rather than recomputed per sample, because the
+  naive version is quadratic and this runs on every render — and reads
+  BODYWEIGHT PER SAMPLE, since DOTS divides by it and a fixed weight would
+  draw a flat line over a real decline. `liftMovement` gives each lift's
+  best e1RM then vs now (a debut starts at its first value, not zero, or the
+  chart would claim a jump that never happened). `recentRecords` is the PR
+  feed, and a lift's FIRST appearance is deliberately not a record.
+  NEW `src/components/ProgressCharts.tsx`: `RankLine` (one series =
+  emphasis, so no legend and exactly ONE direct label; tier bands are an
+  ordinal ramp at 6% alpha; the window always leaves the band ABOVE enough
+  height to carry its own name, because that band is the target) and
+  `Dumbbell` (before → after per lift; one hue in two treatments, hollow =
+  then, filled = now, so a row with no gap reads as a stall).
+  Extracted `src/components/SubPage.tsx` from Settings so Stats and Settings
+  share one sub-page frame and one back-handling story.
+  TWO CHART BUGS fixed on the device in the same pass: `MuscleBreakdown`'s
+  RAMP was `rgba(26,27,26,…)` — near-BLACK, left over from the light clay
+  theme — so on the #0E0F0E cardless page every segment was invisible and
+  the bar rendered as an empty grey strip beside a legend of percentages;
+  it is now a validated ordinal ramp for a dark surface (monotone lightness,
+  ΔL ≥ 0.06 per step, 2.17:1 at the dim end). And dropping the empty weekly
+  buckets turned a sparse chart into a ONE-BAR bar chart, so the weekly bars
+  now need two weeks before they draw at all — one bar is not a chart, it is
+  the figure already printed above it.
 - 2026-08-09 (later): FIRST EMULATOR RUN since the push work — the app did
   not load at all. Red box: "[runtime not ready]: expo-notifications:
   Android Push notifications … was removed from Expo Go with the release of
