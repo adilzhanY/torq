@@ -1402,6 +1402,31 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): PROFILE split into an ATHLETE CARD + a SETTINGS HUB
+  (Adilzhan picked "idea 1 with a settings page built like idea 2" from the
+  lavish review `.lavish/torq-profile.html`). The old page was four screens
+  in one ~2 400 px scroll: identity, a full rank card, every setting, and
+  account deletion.
+  `Profile.tsx` now has one job, "who am I here": centred avatar in a lime
+  ring (tap to edit), name, @handle (from `myProfile()`), body line and
+  "lifting since <month year>" (derived from the earliest workout, so it
+  stays true for imported history); a rank STRIP with a 64px shield that
+  SUMMARISES and links to the Ranks tab instead of repeating its 168px
+  shield; workouts / volume / day-streak; best lifts with tier + percentile;
+  Share (wired to the existing `ShareRankCard`, which had no button anywhere
+  near this page) and Edit profile; then three quick links — Friends,
+  Training plan, Settings.
+  NEW `src/screens/Settings.tsx` is the grouped hub. Its rule: EVERY ROW
+  SHOWS ITS CURRENT VALUE, so "what unit am I on" is answered by scanning,
+  not tapping. Single-switch controls (units, sound) stay inline; anything
+  with more than one field opens a `SubPage` (body profile, daily goals,
+  account, your data, developer) — plain `sub` state plus a shared frame,
+  not a router. Developer tools are now two taps off the main path instead
+  of sitting under a real user's history.
+  Also: the Ranks You/Friends/Arena segment moved from Ranks' local state
+  into `useUi` (`ranksView` + `openRanks(view)`), so Profile's Friends row
+  can deep-link straight to the Friends segment. `Icon` gained Camera and
+  UserRound.
 - 2026-08-09 (later): BOTTOM NAV redesigned — "Five, spelled out" (Adilzhan
   picked it from the lavish review `.lavish/torq-navbar.html`, which put the
   current morphing dock next to three interactive alternatives). The

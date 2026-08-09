@@ -22,13 +22,15 @@ import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
 import { percentileForExercise, percentileLabel } from "../lib/percentile";
 import { useStore } from "../lib/store";
+import { useUi } from "../lib/ui";
 
 export function Ranks() {
   const { workouts, exercises, measurements, settings } = useStore();
   /** Library id of the lift opened as a full rank page. */
   const [info, setInfo] = useState<string | null>(null);
-  /** You (own ladder) vs Friends (the circle's ranks). */
-  const [view, setView] = useState<"you" | "friends" | "arena">("you");
+  /** You (own ladder) vs Friends (the circle's ranks) vs the Arena. Held in
+   *  the UI context so Profile can deep-link straight to a segment. */
+  const { ranksView: view, setRanksView: setView } = useUi();
   /** Share-card overlay (the rank as a story image). */
   const [sharing, setSharing] = useState(false);
   /** Paid surface the user reached for, if it is locked. */

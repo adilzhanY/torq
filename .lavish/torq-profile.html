@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>torq · profile — three redesigns</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* torq design tokens — src/theme.ts (CARDLESS rebrand, SHARP-10 radii) */
+  :root{
+    --page:#0E0F0E; --page2:#1B1E1A; --surface:#151714;
+    --ink:#F2F4EE; --inkSoft:#9AA294; --inkFaint:#5C6356;
+    --line:#262A24; --hair:#22261F;
+    --primary:#1A1B1A; --accent:#C8FE23; --accentInk:#1A1B1A;
+    --good:#5AC8A0; --warn:#F0A742; --bad:#E06A5A; --pr:#9C86E8; --gold:#E9B920;
+    --badSurf:#2B1715;
+    --r-lg:16px; --r-md:12px; --r-ctrl:10px; --r-sm:8px;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  :where(.grid,.flex)>*{min-width:0;}
+  html{background:var(--page);}
+  body{margin:0;background:var(--page);color:var(--ink);
+       font-family:"Space Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:1180px;margin:0 auto;padding:44px 22px 120px;}
+  h1,h2,h3,h4{margin:0;line-height:1.15;letter-spacing:-.02em;}
+  p{margin:0;}
+  .eyebrow{font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--inkFaint);}
+  .lede{color:var(--inkSoft);font-size:15px;max-width:64ch;}
+  .hair{height:1px;background:var(--hair);border:0;margin:38px 0;}
+  .accent{color:var(--accent);} .soft{color:var(--inkSoft);} .faint{color:var(--inkFaint);}
+
+  .head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;}
+  .logo{width:44px;height:44px;border-radius:var(--r-md);background:var(--primary);
+        display:grid;place-items:center;border:1px solid var(--line);flex:none;}
+  .logo svg{width:28px;height:28px;}
+
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--hair);
+         border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);margin-top:26px;}
+  .fact{background:var(--page);padding:16px 18px 18px;}
+  .fact b{display:block;font-size:26px;font-weight:700;letter-spacing:-.03em;}
+  .fact span{font-size:12px;color:var(--inkSoft);display:block;margin-top:2px;}
+  .fact.bad b{color:var(--bad);}
+
+  .opt{display:grid;grid-template-columns:minmax(0,392px) minmax(0,1fr);gap:36px;align-items:start;}
+  @media (max-width:900px){.opt{grid-template-columns:minmax(0,1fr);}}
+  .opt-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px;}
+  .tag{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+       padding:4px 9px;border-radius:999px;background:var(--page2);color:var(--inkSoft);border:1px solid var(--line);}
+  .tag.rec{background:rgba(200,254,35,.12);color:var(--accent);border-color:rgba(200,254,35,.32);}
+  .thesis{font-size:15.5px;color:var(--inkSoft);margin-top:8px;max-width:58ch;}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:26px;margin-top:22px;}
+  .cols h4{font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:8px;}
+  .win h4{color:var(--accent);} .cost h4{color:var(--warn);}
+  ul{margin:0;padding-left:0;list-style:none;}
+  li{font-size:13.5px;color:var(--inkSoft);padding-left:16px;position:relative;margin-bottom:7px;}
+  li::before{content:"";position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--inkFaint);}
+  .win li::before{background:var(--accent);} .cost li::before{background:var(--warn);}
+  li b{color:var(--ink);font-weight:600;}
+
+  /* ── phone ─────────────────────────────────────────────── */
+  .phone{width:392px;max-width:100%;border:1px solid var(--line);border-radius:26px;background:var(--page);
+         padding:14px;box-shadow:0 18px 44px rgba(0,0,0,.55);}
+  .screen{height:520px;border-radius:16px;background:var(--page);overflow-y:auto;overflow-x:hidden;
+          scrollbar-width:thin;scrollbar-color:var(--line) transparent;position:relative;}
+  .screen::-webkit-scrollbar{width:5px}
+  .screen::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
+  .pad{padding:16px 16px 26px;}
+  .caption{font-size:11.5px;color:var(--inkFaint);margin-top:10px;text-align:center;}
+
+  /* app primitives, mirrored from src/components/ui.tsx */
+  .app-h{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .app-h .ttl{font-size:26px;font-weight:700;letter-spacing:-.03em;flex:1;}
+  .ico{display:inline-block;flex:none;}
+  .ico svg{display:block;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.4;
+           stroke-linecap:round;stroke-linejoin:round;}
+  .eb{font-size:10px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--inkFaint);
+      margin:18px 0 6px;}
+  .dv{height:1px;background:var(--hair);margin:0;}
+  .fld{background:var(--page2);border:1px solid var(--line);border-radius:var(--r-sm);
+       padding:10px 12px;font-size:14px;color:var(--inkSoft);}
+  .chips{display:flex;gap:6px;}
+  .chip{background:var(--page2);border-radius:var(--r-sm);padding:6px 16px;font-size:13px;font-weight:700;color:var(--inkSoft);}
+  .chip.on{background:var(--accent);color:var(--accentInk);}
+  .btn{display:block;width:100%;text-align:center;background:var(--accent);color:var(--accentInk);
+       border-radius:var(--r-ctrl);padding:12px;font-size:14px;font-weight:700;}
+  .btn.ghost{background:var(--page2);color:var(--ink);}
+  .btn.danger{background:var(--badSurf);color:var(--bad);}
+  .tog{width:52px;height:30px;border-radius:999px;background:var(--accent);padding:3px;display:flex;
+       justify-content:flex-end;align-items:center;flex:none;}
+  .tog i{width:22px;height:22px;border-radius:999px;background:var(--accentInk);display:block;}
+  .tog.off{background:var(--page2);border:1px solid var(--line);justify-content:flex-start;}
+  .tog.off i{background:var(--inkFaint);}
+
+  .av{border-radius:999px;background:var(--accent);color:var(--accentInk);display:grid;place-items:center;
+      font-weight:700;flex:none;overflow:hidden;}
+  .avring{padding:3px;border-radius:999px;background:linear-gradient(140deg,var(--accent),#7fa010);display:inline-block;}
+
+  .stat3{display:flex;gap:10px;}
+  .stat3 > div{flex:1;min-width:0;}
+  .stat3 b{display:block;font-size:24px;font-weight:700;letter-spacing:-.03em;}
+  .stat3 span{font-size:10px;font-weight:700;color:var(--inkFaint);}
+
+  .bar{height:6px;border-radius:999px;background:var(--page2);overflow:hidden;}
+  .bar i{display:block;height:100%;border-radius:999px;background:var(--accent);}
+
+  .lrow{display:flex;align-items:center;gap:10px;padding:8px 0;}
+  .lrow .nm{font-size:14px;font-weight:600;} .lrow .tr{font-size:11.5px;font-weight:700;}
+  .lrow .vl{font-size:15px;font-weight:700;margin-left:auto;}
+
+  /* settings list rows (idea 2) */
+  .srow{display:flex;align-items:center;gap:12px;padding:13px 0;}
+  .srow .ic{width:34px;height:34px;border-radius:var(--r-ctrl);background:var(--page2);border:1px solid var(--line);
+            display:grid;place-items:center;flex:none;color:var(--ink);}
+  .srow .ic .ico{width:17px;height:17px;}
+  .srow .tx{flex:1;min-width:0;}
+  .srow .tx b{display:block;font-size:14px;font-weight:600;}
+  .srow .tx span{display:block;font-size:11.5px;color:var(--inkFaint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .srow .ch{color:var(--inkFaint);width:17px;height:17px;flex:none;}
+
+  /* trophy shelf (idea 3) */
+  .shelf{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none;}
+  .shelf::-webkit-scrollbar{display:none}
+  .tro{flex:none;width:84px;text-align:center;}
+  .tro .d{width:64px;height:64px;margin:0 auto 6px;border-radius:18px;display:grid;place-items:center;
+          background:var(--page2);border:1px solid var(--line);color:var(--gold);}
+  .tro .d .ico{width:26px;height:26px;}
+  .tro.on .d{background:rgba(233,185,32,.12);border-color:rgba(233,185,32,.42);}
+  .tro.off .d{color:var(--inkFaint);opacity:.5;}
+  .tro b{display:block;font-size:10.5px;font-weight:700;line-height:1.25;}
+  .tro span{font-size:9.5px;color:var(--inkFaint);}
+  .hero3{margin:-16px -16px 0;padding:24px 16px 18px;text-align:center;
+         background:radial-gradient(120% 80% at 50% 0%,rgba(233,185,32,.20),rgba(14,15,14,0) 70%);}
+  .friends{display:flex;align-items:center;gap:0;}
+  .friends .av{border:2px solid var(--page);margin-left:-9px;}
+  .friends .av:first-child{margin-left:0;}
+
+  .annot{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--hair);}
+  .annot .n{width:20px;height:20px;border-radius:999px;background:var(--bad);color:#fff;font-size:11px;
+            font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px;}
+  .annot p{font-size:13.5px;color:var(--inkSoft);} .annot p b{color:var(--ink);}
+
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md);}
+  table{border-collapse:collapse;width:100%;min-width:680px;}
+  th,td{text-align:left;padding:13px 16px;font-size:13px;border-bottom:1px solid var(--hair);vertical-align:top;}
+  th{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--inkFaint);font-weight:700;background:var(--surface);}
+  tbody tr:last-child td{border-bottom:0;}
+  td:first-child{color:var(--inkSoft);font-weight:600;}
+  .yes{color:var(--accent);font-weight:700;} .no{color:var(--bad);font-weight:700;} .mid{color:var(--warn);font-weight:700;}
+
+  .pick{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--surface);padding:24px;margin-top:14px;}
+  .picks{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin:16px 0 14px;}
+  .pick label{display:flex;gap:11px;align-items:flex-start;padding:14px;border:1px solid var(--line);
+              border-radius:var(--r-ctrl);background:var(--page);cursor:pointer;transition:border-color .15s;}
+  .pick label:hover{border-color:var(--inkFaint);}
+  .pick label:has(input:checked){border-color:var(--accent);background:rgba(200,254,35,.06);}
+  .pick input[type=radio]{accent-color:var(--accent);margin-top:3px;flex:none;width:16px;height:16px;}
+  .pick .nm{font-size:13.5px;font-weight:700;} .pick .ds{font-size:11.5px;color:var(--inkSoft);margin-top:2px;}
+  .pick textarea{width:100%;background:var(--page);border:1px solid var(--line);border-radius:var(--r-sm);
+                 color:var(--ink);font-family:inherit;font-size:13px;padding:11px 12px;resize:vertical;min-height:74px;}
+  .pick .send{margin-top:14px;background:var(--accent);color:var(--accentInk);border:0;border-radius:var(--r-ctrl);
+              font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:pointer;}
+  .note{font-size:11.5px;color:var(--inkFaint);margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="head">
+  <div class="logo"><svg viewBox="0 0 1024 1024"><g transform="translate(0,1024) scale(0.1,-0.1)"><path fill="#C8FE23" d="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z"/></g></svg></div>
+  <div style="flex:1;min-width:260px">
+    <p class="eyebrow">torq · profile</p>
+    <h1 style="font-size:36px;margin-top:6px">Three profile redesigns</h1>
+    <p class="lede" style="margin-top:12px">
+      The page is doing four unrelated jobs at once: it is your identity, your rank card, the app's
+      settings screen, and the place you delete your account. Each idea below picks
+      <b class="accent">a different job to make it good at</b> — that is the decision, not the styling.
+    </p>
+  </div>
+</header>
+
+<section class="facts">
+  <div class="fact bad"><b>12</b><span>Sections stacked in one flat scroll, with no grouping between them.</span></div>
+  <div class="fact bad"><b>~2 400 px</b><span>Scroll height. Changing units means passing your rank shield.</span></div>
+  <div class="fact"><b>2×</b><span>The rank shield now appears here <i>and</i> on the Ranks tab.</span></div>
+  <div class="fact bad"><b>0</b><span>Mentions of your @handle, friends, or Arena standing — on your profile.</span></div>
+</section>
+
+<!-- ── TODAY ────────────────────────────────────────────── -->
+<hr class="hair" />
+<p class="eyebrow">Today</p>
+<h2 style="font-size:22px;margin-top:6px">Everything, in one column</h2>
+<div class="opt" style="margin-top:20px">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="app-h"><span class="ico" style="width:24px;height:24px"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></span><span class="ttl">Profile</span></div>
+
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="av" style="width:76px;height:76px;font-size:32px">A</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:20px;font-weight:700">Adilzhan</div>
+          <div style="font-size:12px;color:var(--inkSoft)">83 kg · M</div>
+          <div style="display:flex;gap:14px;margin-top:4px">
+            <span style="font-size:12px;font-weight:700;color:var(--accent)">Change photo</span>
+            <span style="font-size:12px;font-weight:700;color:var(--inkFaint)">Remove</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="stat3" style="margin-top:14px">
+        <div><b>128</b><span>WORKOUTS</span></div>
+        <div><b>412350</b><span>VOLUME (KG)</span></div>
+      </div>
+
+      <div class="eb">Rank</div>
+      <div style="text-align:center">
+        <svg viewBox="0 0 170 136" style="width:168px;height:134px"><use href="#shield-gold"/></svg>
+        <div style="font-size:16px;font-weight:700;color:var(--gold);margin-top:-4px">Gold III</div>
+      </div>
+      <div style="display:flex;align-items:baseline;gap:6px;margin-top:12px">
+        <span style="font-size:40px;font-weight:700;letter-spacing:-.03em">284</span>
+        <span style="font-size:14px;font-weight:700;color:var(--accent)">pts</span>
+      </div>
+      <div style="font-size:12px;color:var(--inkSoft)">overall</div>
+      <div class="bar" style="margin-top:10px"><i style="width:58%"></i></div>
+      <div style="font-size:12px;color:var(--inkFaint);margin-top:6px">31 pts to Platinum</div>
+
+      <div class="eb">Best lifts</div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:52px;height:42px"><use href="#shield-gold"/></svg>
+        <span><span class="nm" style="display:block">Barbell Bench Press</span><span class="tr" style="color:var(--gold)">Gold II</span></span><span class="vl">122</span></div>
+      <div class="dv"></div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:52px;height:42px"><use href="#shield-silver"/></svg>
+        <span><span class="nm" style="display:block">Barbell Squat</span><span class="tr" style="color:#C9D2DA">Silver IV</span></span><span class="vl">160</span></div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Settings</div>
+      <div style="font-size:12px;font-weight:700;color:var(--inkSoft);margin-bottom:8px">Your name</div>
+      <div class="fld">Adilzhan</div>
+      <div style="font-size:12px;font-weight:700;color:var(--inkSoft);margin:10px 0 8px">Units</div>
+      <div class="chips"><span class="chip on">kg</span><span class="chip">lb</span></div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Sound</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="flex:1"><div style="font-size:13px;font-weight:600">Sound effects</div>
+          <div style="font-size:11px;color:var(--inkFaint)">Set ticks, the rest countdown and the finish chime.</div></div>
+        <div class="tog"><i></i></div>
+      </div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Body profile</div>
+      <div class="chips" style="margin-bottom:10px"><span class="chip on">Male</span><span class="chip">Female</span></div>
+      <div style="display:flex;gap:10px"><div class="fld" style="flex:1">2000</div><div class="fld" style="flex:1">175 cm</div><div class="fld" style="flex:1">83 kg</div></div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Training plan</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:10px">Build muscle · 4 days a week</div>
+      <div class="btn">Rebuild plan</div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Daily goals</div>
+      <div class="fld">300 kcal</div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Account &amp; sync</div>
+      <div style="font-size:13px;font-weight:600">Signed in as adilzhan1112@gmail.com</div>
+      <div class="btn" style="margin-top:10px">Sync now</div>
+      <div class="btn ghost" style="margin-top:8px">Sign out</div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Your data</div>
+      <div class="btn ghost">Export my data</div>
+      <div class="btn danger" style="margin-top:8px">Delete my account</div>
+
+      <div class="dv" style="margin-top:16px"></div>
+      <div class="eb">Developer</div>
+      <div class="btn ghost">Pro: OFF (tap to turn on)</div>
+      <div class="btn ghost" style="margin-top:8px">Seed demo workouts (12 weeks)</div>
+      <div class="btn danger" style="margin-top:8px">Remove demo workouts</div>
+    </div></div></div>
+    <p class="caption">Scroll it — this is the whole page today.</p>
+  </div>
+  <div>
+    <h4 style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bad);margin-bottom:4px">What goes wrong</h4>
+    <div class="annot"><span class="n">1</span><p><b>Four screens in a trench coat.</b> Identity, rank, settings and account deletion share one scroll with nothing but hairlines between them.</p></div>
+    <div class="annot"><span class="n">2</span><p><b>Settings are buried behind the trophy.</b> Switching kg → lb means scrolling past a 168&nbsp;px shield you did not come for.</p></div>
+    <div class="annot"><span class="n">3</span><p><b>The rank block is now a duplicate.</b> Ranks is a dock tab with a bigger version of the same shield, the same points and the same best-lift list.</p></div>
+    <div class="annot"><span class="n">4</span><p><b>It is not a profile.</b> Your @handle, your friends and your Arena standing — the things that make it <i>yours</i> — are all on another tab.</p></div>
+    <div class="annot"><span class="n">5</span><p><b>Developer tools ship to users.</b> "Seed demo workouts" sits three taps from a real person's real history.</p></div>
+    <div class="annot"><span class="n">6</span><p><b>Nothing here is shareable</b>, even though <code style="color:var(--accent)">ShareRankCard</code> already exists and this is the page people screenshot.</p></div>
+  </div>
+</div>
+
+<!-- ── IDEA 1 ───────────────────────────────────────────── -->
+<hr class="hair" />
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="app-h">
+        <span class="ico" style="width:24px;height:24px"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></span>
+        <span class="ttl">Profile</span>
+        <span class="ico" style="width:21px;height:21px;color:var(--inkSoft)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1"/></svg></span>
+      </div>
+
+      <div style="text-align:center;padding:4px 0 2px">
+        <span class="avring"><span class="av" style="width:96px;height:96px;font-size:40px">A</span></span>
+        <div style="font-size:24px;font-weight:700;letter-spacing:-.03em;margin-top:12px">Adilzhan</div>
+        <div style="font-size:13px;color:var(--accent);font-weight:600">@adilzhan</div>
+        <div style="font-size:11.5px;color:var(--inkFaint);margin-top:3px">83 kg · M · lifting since Jul 2026</div>
+      </div>
+
+      <!-- rank strip: a summary that LINKS to the Ranks tab, not a copy of it -->
+      <div style="display:flex;align-items:center;gap:12px;margin-top:18px;background:var(--surface);
+                  border:1px solid var(--line);border-radius:var(--r-md);padding:12px">
+        <svg viewBox="0 0 170 136" style="width:64px;height:51px;flex:none"><use href="#shield-gold"/></svg>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:baseline;gap:5px">
+            <span style="font-size:20px;font-weight:700">284</span>
+            <span style="font-size:11px;font-weight:700;color:var(--accent)">pts</span>
+            <span style="font-size:12px;font-weight:700;color:var(--gold);margin-left:auto">Gold III</span>
+          </div>
+          <div class="bar" style="margin-top:7px"><i style="width:58%"></i></div>
+          <div style="font-size:11px;color:var(--inkFaint);margin-top:5px">31 pts to Platinum</div>
+        </div>
+        <span class="ico" style="width:17px;height:17px;color:var(--inkFaint)"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </div>
+
+      <div class="stat3" style="margin-top:18px">
+        <div><b>128</b><span>WORKOUTS</span></div>
+        <div><b>412k</b><span>VOLUME KG</span></div>
+        <div><b>14</b><span>DAY STREAK</span></div>
+      </div>
+
+      <div class="eb">Best lifts</div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:44px;height:35px"><use href="#shield-gold"/></svg>
+        <span><span class="nm" style="display:block">Barbell Bench Press</span><span class="tr" style="color:var(--gold)">Gold II · top 34%</span></span><span class="vl">122</span></div>
+      <div class="dv"></div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:44px;height:35px"><use href="#shield-silver"/></svg>
+        <span><span class="nm" style="display:block">Barbell Squat</span><span class="tr" style="color:#C9D2DA">Silver IV · top 51%</span></span><span class="vl">160</span></div>
+      <div class="dv"></div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:44px;height:35px"><use href="#shield-gold"/></svg>
+        <span><span class="nm" style="display:block">Barbell Deadlift</span><span class="tr" style="color:var(--gold)">Gold I · top 39%</span></span><span class="vl">205</span></div>
+
+      <div style="display:flex;gap:8px;margin-top:18px">
+        <span class="btn" style="flex:1">Share card</span>
+        <span class="btn ghost" style="flex:1">Edit profile</span>
+      </div>
+
+      <div class="eb">Quick links</div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/></svg></span></span>
+        <span class="tx"><b>Friends</b><span>7 friends · 2 requests</span></span>
+        <span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></span></span>
+        <span class="tx"><b>Training plan</b><span>Build muscle · 4 days a week</span></span>
+        <span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></span></span>
+        <span class="tx"><b>Settings</b><span>Units, sound, body profile, account, data</span></span>
+        <span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+    </div></div></div>
+    <p class="caption">One screen about you. Every knob lives one tap away.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 1</p><span class="tag rec">Recommended</span><span class="tag">Medium build</span></div>
+    <h2 style="font-size:26px">The athlete card</h2>
+    <p class="thesis">
+      Profile stops being a settings screen and becomes <b class="accent">the page you would screenshot</b>:
+      avatar, name, handle, a rank strip that summarises rather than repeats, three lifetime numbers,
+      your best lifts with their percentiles, and a Share button wired to the card component that
+      already exists. Everything adjustable moves behind a gear.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>It finally answers "who am I here".</b> Handle, tier, streak and best lifts in one glance, above the fold.</li>
+        <li><b>Settings get their own page</b> and stop competing with a trophy for attention.</li>
+        <li><b>The rank block stops duplicating the Ranks tab</b> — it becomes a 64&nbsp;px summary that links there.</li>
+        <li><b>Share reuses <code>ShareRankCard</code></b>, so the most postable screen in the app finally has a share button.</li>
+        <li>Developer tools move to the settings page, out of a normal user's path.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>A new Settings screen</b> to build and route to — the ~8 sections that move have to keep working.</li>
+        <li>Changing units is now two taps instead of one long scroll. Better, but it <i>is</i> a change.</li>
+        <li>"Lifting since" and the streak need wiring in; the streak already exists, the join date does not.</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── IDEA 2 ───────────────────────────────────────────── -->
+<hr class="hair" />
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="app-h"><span class="ico" style="width:24px;height:24px"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></span><span class="ttl">Profile</span></div>
+
+      <div class="srow" style="padding:6px 0 14px">
+        <span class="av" style="width:56px;height:56px;font-size:24px">A</span>
+        <span class="tx" style="margin-left:2px"><b style="font-size:18px">Adilzhan</b><span style="color:var(--accent);font-weight:600">@adilzhan</span></span>
+        <span class="ico ch" style="width:20px;height:20px"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </div>
+
+      <div class="eb">You</div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12.409 13.017A5 5 0 0 1 22 15c0 3.866-4 7-9 7-4.077 0-8.153-.82-10.371-2.462-.426-.316-.631-.832-.62-1.362C2.118 12.723 2.627 2 10 2a3 3 0 0 1 3 3 2 2 0 0 1-2 2c-1.105 0-1.64-.444-2-1"/></svg></span></span>
+        <span class="tx"><b>Body profile</b><span>Male · 83 kg · 175 cm · 2000</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/></svg></span></span>
+        <span class="tx"><b>Training plan</b><span>Build muscle · Mon Tue Thu Sat</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico" style="color:var(--warn)"><svg viewBox="0 0 24 24"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg></span></span>
+        <span class="tx"><b>Daily goals</b><span>300 kcal a day</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+
+      <div class="eb">App</div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></span></span>
+        <span class="tx"><b>Units</b></span><div class="chips"><span class="chip on" style="padding:5px 12px;font-size:12px">kg</span><span class="chip" style="padding:5px 12px;font-size:12px">lb</span></div></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/></svg></span></span>
+        <span class="tx"><b>Sound effects</b><span>Set ticks, rest countdown, finish chime</span></span><div class="tog"><i></i></div></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg></span></span>
+        <span class="tx"><b>Notifications</b><span>Friend requests, rank-ups</span></span><div class="tog"><i></i></div></div>
+
+      <div class="eb">Account</div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/><circle cx="12" cy="12" r="10"/></svg></span></span>
+        <span class="tx"><b>adilzhan1112@gmail.com</b><span>Signed in · synced 2 minutes ago</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic"><span class="ico" style="color:var(--accent)"><svg viewBox="0 0 24 24"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/></svg></span></span>
+        <span class="tx"><b>Friends &amp; visibility</b><span>@adilzhan · public · in the Arena</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+
+      <div class="eb">Your data</div>
+      <div class="srow"><span class="ic"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg></span></span>
+        <span class="tx"><b>Export my data</b><span>128 workouts as JSON</span></span><span class="ico ch"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></div>
+      <div class="dv"></div>
+      <div class="srow"><span class="ic" style="border-color:rgba(224,106,90,.4)"><span class="ico" style="color:var(--bad)"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></span></span>
+        <span class="tx"><b style="color:var(--bad)">Delete my account</b><span>Erases the server and this phone</span></span></div>
+
+      <div class="eb">About</div>
+      <div class="srow"><span class="tx" style="margin-left:2px"><b>torq 1.0.0</b><span>Privacy policy · Open-source licences</span></span></div>
+    </div></div></div>
+    <p class="caption">Nine rows, six words each. The whole page fits one screen and a bit.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 2</p><span class="tag">Most disciplined</span><span class="tag">Small–medium build</span></div>
+    <h2 style="font-size:26px">Settings hub</h2>
+    <p class="thesis">
+      The opposite bet: accept that this is the <b class="accent">settings screen</b> and make it a great
+      one. A compact identity row on top, then grouped rows that each show their <i>current value</i>
+      and open a focused sub-page. The rank leaves entirely — it already has a whole tab.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>Everything is visible without opening anything.</b> Each row previews its value, so "what unit am I on" is answered by scanning, not tapping.</li>
+        <li><b>It scales.</b> New settings are new rows, not new 200-line blocks in one file.</li>
+        <li><b>No duplication left</b> — one shield in the app, on the Ranks tab.</li>
+        <li>Toggles that belong inline (sound, notifications) stay inline; everything heavier gets a page.</li>
+        <li>Cheapest of the three: mostly moving existing blocks into sub-pages.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>No identity, no pride.</b> This page will never be screenshotted, and a rank app arguably wants one screen that is about you.</li>
+        <li>Several sub-pages to build, each needing its own back handling.</li>
+        <li>Notifications toggle implies a settings switch that does not exist yet — it is currently permission-only.</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── IDEA 3 ───────────────────────────────────────────── -->
+<hr class="hair" />
+<div class="opt">
+  <div>
+    <div class="phone"><div class="screen"><div class="pad">
+      <div class="app-h" style="margin-bottom:0">
+        <span class="ico" style="width:24px;height:24px"><svg viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></span>
+        <span class="ttl" style="font-size:0"></span>
+        <span style="font-size:11px;font-weight:700;color:var(--inkSoft);border:1px solid var(--line);
+                     border-radius:999px;padding:5px 11px">Preview as friend</span>
+        <span class="ico" style="width:21px;height:21px;color:var(--inkSoft)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg></span>
+      </div>
+
+      <div class="hero3">
+        <span class="avring" style="background:linear-gradient(140deg,#FFDF5E,#B08812)">
+          <span class="av" style="width:92px;height:92px;font-size:38px;background:var(--page2);color:var(--ink)">A</span></span>
+        <div style="margin-top:-26px;margin-left:62px;position:relative;z-index:2">
+          <svg viewBox="0 0 170 136" style="width:56px;height:45px"><use href="#shield-gold"/></svg>
+        </div>
+        <div style="font-size:25px;font-weight:700;letter-spacing:-.03em;margin-top:2px">Adilzhan</div>
+        <div style="font-size:13px;color:var(--accent);font-weight:600">@adilzhan</div>
+        <div style="display:inline-flex;align-items:center;gap:7px;margin-top:8px;background:rgba(233,185,32,.14);
+                    border:1px solid rgba(233,185,32,.35);border-radius:999px;padding:5px 13px">
+          <span style="font-size:12px;font-weight:700;color:var(--gold)">Gold III</span>
+          <span style="font-size:12px;color:var(--inkSoft)">284 pts</span>
+        </div>
+      </div>
+
+      <div class="stat3" style="margin-top:16px;text-align:center">
+        <div><b>128</b><span>WORKOUTS</span></div>
+        <div><b>14</b><span>DAY STREAK</span></div>
+        <div><b>#312</b><span>ARENA</span></div>
+      </div>
+
+      <div class="eb">Trophy shelf · 7 of 24</div>
+      <div class="shelf">
+        <div class="tro on"><div class="d"><span class="ico"><svg viewBox="0 0 24 24"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><circle cx="12" cy="17" r="5"/></svg></span></div><b>Gold tier</b><span>Aug 2026</span></div>
+        <div class="tro on"><div class="d" style="color:var(--warn)"><span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg></span></div><b>14-day streak</b><span>Aug 2026</span></div>
+        <div class="tro on"><div class="d" style="color:var(--accent)"><span class="ico"><svg viewBox="0 0 24 24"><path d="M17.596 12.768a2 2 0 1 0 2.829-2.829l-1.768-1.767a2 2 0 0 0 2.828-2.829l-2.828-2.828a2 2 0 0 0-2.829 2.828l-1.767-1.768a2 2 0 1 0-2.829 2.829z"/><path d="m2.5 21.5 1.4-1.4"/><path d="m20.1 3.9 1.4-1.4"/><path d="M5.343 21.485a2 2 0 1 0 2.829-2.828l1.767 1.768a2 2 0 1 0 2.829-2.829l-6.364-6.364a2 2 0 1 0-2.829 2.829l1.768 1.767a2 2 0 0 0-2.828 2.829z"/></svg></span></div><b>100 kg bench</b><span>Jul 2026</span></div>
+        <div class="tro off"><div class="d"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></div><b>200 workouts</b><span>128 / 200</span></div>
+        <div class="tro off"><div class="d"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span></div><b>Platinum</b><span>31 pts to go</span></div>
+      </div>
+
+      <div class="eb">Best lifts</div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:44px;height:35px"><use href="#shield-gold"/></svg>
+        <span><span class="nm" style="display:block">Barbell Bench Press</span><span class="tr" style="color:var(--inkSoft)">Stronger than 66% of competitive lifters</span></span><span class="vl">122</span></div>
+      <div class="dv"></div>
+      <div class="lrow"><svg viewBox="0 0 170 136" style="width:44px;height:35px"><use href="#shield-silver"/></svg>
+        <span><span class="nm" style="display:block">Barbell Squat</span><span class="tr" style="color:var(--inkSoft)">Stronger than 49% of competitive lifters</span></span><span class="vl">160</span></div>
+
+      <div class="eb">Friends</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="friends">
+          <span class="av" style="width:34px;height:34px;font-size:14px">M</span>
+          <span class="av" style="width:34px;height:34px;font-size:14px;background:var(--pr);color:#fff">K</span>
+          <span class="av" style="width:34px;height:34px;font-size:14px;background:var(--good);color:#08211a">S</span>
+          <span class="av" style="width:34px;height:34px;font-size:12px;background:var(--page2);color:var(--inkSoft);border-color:var(--page)">+4</span>
+        </div>
+        <span style="font-size:12.5px;color:var(--inkSoft);flex:1">7 friends · 2 want to add you</span>
+        <span class="ico ch" style="width:17px;height:17px"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>
+      </div>
+
+      <div class="btn" style="margin-top:20px">Share my card</div>
+    </div></div></div>
+    <p class="caption">The page you'd post. Settings hide behind the gear.</p>
+  </div>
+  <div>
+    <div class="opt-head"><p class="eyebrow">Idea 3</p><span class="tag">Most motivating</span><span class="tag">Large build</span></div>
+    <h2 style="font-size:26px">Trophy room</h2>
+    <p class="thesis">
+      Profile as a <b class="accent">public showcase</b>: tier-tinted hero, shield overlapping the avatar,
+      a shelf of earned and still-locked trophies, percentile lines on your best lifts, your friends'
+      faces, and a "Preview as friend" switch that shows exactly what other people see. The strongest
+      reason to open the app on a rest day.
+    </p>
+    <div class="cols">
+      <div class="win"><h4>What you gain</h4><ul>
+        <li><b>A retention surface.</b> Locked trophies with progress ("128 / 200") are the only thing here that pulls someone back mid-week.</li>
+        <li><b>"Preview as friend" makes the privacy model visible</b> — the opt-in design finally has a place where you can check it, not just trust it.</li>
+        <li><b>The most shareable screen you could build</b>, and it feeds the existing share card directly.</li>
+        <li>Percentiles get a home on the profile, where the claim is most persuasive.</li>
+      </ul></div>
+      <div class="cost"><h4>What it costs</h4><ul>
+        <li><b>Achievements do not exist.</b> They need defining, storing, unlock detection, sync, and a notification — a feature in their own right, not a redesign.</li>
+        <li><b>Badge inflation is a real risk.</b> Cheap trophies would undercut the tier system, which is the thing the whole app is built on.</li>
+        <li>Two profile states (yours / as-a-friend) doubles what has to be tested.</li>
+        <li>Settings still need somewhere to go, so this is Idea 1's settings page <i>plus</i> the shelf.</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── comparison ───────────────────────────────────────── -->
+<hr class="hair" />
+<p class="eyebrow">Side by side</p>
+<h2 style="font-size:22px;margin:6px 0 18px">What each one decides</h2>
+<div class="tablewrap">
+  <table>
+    <thead><tr><th>&nbsp;</th><th>Today</th><th>1 · Athlete card</th><th>2 · Settings hub</th><th>3 · Trophy room</th></tr></thead>
+    <tbody>
+      <tr><td>What Profile <i>is</i></td><td class="no">All four things</td><td><b>Your identity</b></td><td><b>The settings screen</b></td><td><b>A public showcase</b></td></tr>
+      <tr><td>Where settings live</td><td class="no">Same scroll</td><td>One Settings page</td><td class="yes">Here, grouped + previewed</td><td>One Settings page</td></tr>
+      <tr><td>Scroll length</td><td class="no">~2 400 px</td><td class="yes">~1 100 px</td><td class="yes">~900 px</td><td class="mid">~1 400 px</td></tr>
+      <tr><td>Rank duplicated with Ranks tab</td><td class="no">Yes, fully</td><td class="yes">No — a linked summary</td><td class="yes">No — gone</td><td class="mid">Partly, as the hero</td></tr>
+      <tr><td>Shows handle / friends</td><td class="no">Neither</td><td class="yes">Both</td><td class="yes">Both</td><td class="yes">Both, prominently</td></tr>
+      <tr><td>New concepts needed</td><td>—</td><td class="yes">Join date only</td><td class="mid">Notification setting</td><td class="no">A whole achievement system</td></tr>
+      <tr><td>Reuses ShareRankCard</td><td class="no">No</td><td class="yes">Yes</td><td class="no">No</td><td class="yes">Yes</td></tr>
+      <tr><td>Build effort</td><td>—</td><td class="mid">Medium · profile + settings page</td><td class="yes">Small–medium · mostly moves</td><td class="no">Large · new feature underneath</td></tr>
+      <tr><td>Risk if it's wrong</td><td>—</td><td class="yes">Low — content moves, nothing new to maintain</td><td class="yes">Low</td><td class="mid">Medium — badges are hard to take back</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<p class="lede" style="margin-top:22px">
+  <b class="accent">My read:</b> 1 and 2 are not really rivals — 1 <i>contains</i> 2, because the athlete
+  card needs a settings page and that page should be built the way idea 2 describes. So the honest
+  question is whether Profile should be about you at all, or stay a drawer of knobs. In a rank app
+  with friends and an Arena, it should be about you: build 1, and make its Settings page look like 2.
+  3 is the right destination but the wrong next step — trophies are a feature to design on their own
+  terms, and shipping shallow ones would cheapen the tier ladder the whole product rests on.
+</p>
+
+<!-- ── choice ───────────────────────────────────────────── -->
+<hr class="hair" />
+<p class="eyebrow">Your call</p>
+<h2 style="font-size:22px;margin:6px 0 0">Which do I build?</h2>
+<form class="pick" data-lavish-question="profile" onsubmit="
+  event.preventDefault();
+  const f = new FormData(event.currentTarget);
+  const choice = f.get('design');
+  const notes = (f.get('notes') || '').toString().trim();
+  if (!choice) return;
+  window.lavish.queuePrompt(
+    'Redesign the profile page using: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
+    { tag: 'choice', text: 'Profile: ' + choice + (notes ? ' — ' + notes : ''),
+      element: event.currentTarget, queueKey: 'profile',
+      data: { question: 'profile', answer: choice, notes } }
+  );
+">
+  <p class="soft" style="font-size:13.5px">
+    Pick one and I implement it end to end. Annotate any block above first if you want it changed —
+    the mocks are real markup, so you can mark the exact row.
+  </p>
+  <div class="picks">
+    <label><input type="radio" name="design" value="1 — Athlete card">
+      <span><span class="nm">1 · Athlete card</span><span class="ds">Identity + rank summary + share. Settings move to their own page.</span></span></label>
+    <label><input type="radio" name="design" value="2 — Settings hub">
+      <span><span class="nm">2 · Settings hub</span><span class="ds">Grouped rows with value previews. Rank leaves the page.</span></span></label>
+    <label><input type="radio" name="design" value="3 — Trophy room">
+      <span><span class="nm">3 · Trophy room</span><span class="ds">Showcase with achievements and "preview as friend".</span></span></label>
+    <label><input type="radio" name="design" value="1 now with a settings page built like 2">
+      <span><span class="nm">1 + 2 together</span><span class="ds">Athlete card, and its Settings page built as the grouped hub.</span></span></label>
+  </div>
+  <textarea name="notes" placeholder="Anything to change first — what belongs above the fold, which settings stay inline, whether the rank strip should link to Ranks…"></textarea>
+  <button class="send" type="submit">Queue this answer</button>
+  <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
+</form>
+</div>
+
+<!-- shared shield sprites, geometry from src/components/RankBadge.tsx -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFDF5E"/><stop offset="1" stop-color="#E9B920"/></linearGradient>
+    <linearGradient id="ms" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EDF2F7"/><stop offset="1" stop-color="#C9D2DA"/></linearGradient>
+    <g id="shield-gold">
+      <path d="M85 25 116 43 116 79 85 97 54 79 54 43z" fill="#6E550A" transform="translate(0,4)"/>
+      <path d="M85 25 116 43 116 79 85 97 54 79 54 43z" fill="#131510" stroke="#131510" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M85 28 113 44.5 113 77.5 85 94 57 77.5 57 44.5z" fill="none" stroke="url(#mg)" stroke-width="8" stroke-linejoin="round"/>
+      <g transform="translate(85 62) scale(0.048) translate(-512 -512) translate(0,1024) scale(0.1,-0.1)"><path fill="#FFDF5E" d="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z"/></g>
+      <circle cx="141" cy="49" r="6" fill="url(#mg)"/><circle cx="140" cy="46.5" r="1.7" fill="#FAFDF3"/>
+    </g>
+    <g id="shield-silver">
+      <path d="M85 25 116 43 116 79 85 97 54 79 54 43z" fill="#616B75" transform="translate(0,4)"/>
+      <path d="M85 25 116 43 116 79 85 97 54 79 54 43z" fill="#131510" stroke="#131510" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M85 28 113 44.5 113 77.5 85 94 57 77.5 57 44.5z" fill="none" stroke="url(#ms)" stroke-width="8" stroke-linejoin="round"/>
+      <g transform="translate(85 62) scale(0.048) translate(-512 -512) translate(0,1024) scale(0.1,-0.1)"><path fill="#EDF2F7" d="M3601 8405 c3 -2 63 -26 134 -54 814 -310 1529 -776 1942 -1266 365 -434 583 -993 583 -1497 l0 -100 -59 114 c-119 234 -259 409 -432 541 -50 38 -53 34 -24 -23 189 -374 243 -748 165 -1150 -10 -52 -16 -97 -14 -99 2 -2 47 28 101 66 54 38 112 79 130 91 l31 22 21 -68 c11 -37 45 -161 76 -277 70 -265 74 -277 87 -269 16 10 132 256 172 365 160 435 176 945 46 1453 -82 324 -208 589 -425 895 -44 61 -87 122 -95 134 -9 13 16 0 64 -33 500 -348 923 -866 1161 -1422 16 -37 31 -66 33 -64 7 8 -67 273 -111 396 -448 1262 -1752 2136 -3342 2240 -164 11 -251 13 -244 5z M3695 8292 c6 -5 66 -56 135 -113 220 -182 476 -455 633 -675 l37 -52 -57 -7 c-1027 -123 -2067 -848 -2580 -1795 -87 -161 -257 -560 -239 -560 2 0 23 33 47 73 557 942 1495 1630 2500 1832 371 74 799 78 1127 10 34 -7 62 -10 62 -6 0 13 -183 233 -293 352 -258 280 -571 525 -937 733 -202 115 -471 244 -435 208z M7086 8034 c408 -866 512 -1934 277 -2849 -115 -448 -310 -856 -583 -1216 -103 -137 -108 -131 72 -93 572 121 1160 427 1575 820 l78 74 -160 -78 c-181 -87 -327 -147 -495 -202 -137 -44 -339 -95 -346 -87 -4 3 13 53 35 111 287 735 335 1549 137 2317 -109 421 -307 853 -551 1205 -92 132 -102 131 -39 -2z M3525 6574 c-520 -431 -881 -1084 -1010 -1827 -66 -382 -60 -896 16 -1302 67 -363 198 -742 371 -1075 77 -148 210 -381 215 -377 1 2 -20 92 -47 201 -108 426 -144 720 -145 1176 0 367 10 479 66 765 150 773 542 1351 1137 1678 45 25 82 43 82 40 0 -3 -17 -26 -38 -52 -152 -185 -255 -394 -306 -621 -14 -62 -24 -115 -22 -117 1 -1 25 30 53 70 226 323 553 553 920 648 48 12 92 26 97 30 5 4 -38 31 -94 59 -57 29 -121 63 -143 77 l-40 25 219 220 219 220 -170 -5 c-498 -15 -974 -210 -1388 -567 -250 -216 -427 -446 -606 -790 -45 -85 -79 -141 -76 -125 2 17 12 79 21 139 78 533 335 1083 701 1503 80 90 71 92 -32 7z M8440 4618 c-1088 -1046 -2270 -1376 -3235 -904 -112 55 -313 175 -293 176 3 0 59 -9 125 -21 228 -40 467 -25 693 44 l74 23 -134 23 c-408 70 -717 224 -997 494 l-94 91 5 -49 c11 -107 17 -275 8 -275 -4 0 -143 38 -307 85 -164 47 -300 83 -302 82 -7 -7 105 -184 181 -285 103 -138 342 -377 476 -476 424 -315 901 -478 1440 -493 l205 -6 -55 -19 c-559 -195 -1190 -191 -1821 12 -141 45 -141 41 1 -34 670 -353 1441 -409 2171 -157 740 255 1449 852 1890 1590 141 235 134 257 -31 99z M3261 4206 c-230 -606 -277 -1237 -144 -1936 l18 -95 7 100 c30 383 61 595 118 811 31 116 87 284 99 297 4 4 47 -41 96 -100 670 -812 1696 -1350 2725 -1432 198 -16 360 -22 360 -13 0 4 -51 18 -112 31 -62 12 -197 47 -300 76 -1284 368 -2343 1241 -2754 2273 -27 67 -52 122 -55 122 -4 0 -30 -60 -58 -134z"/></g>
+      <circle cx="141" cy="49" r="6" fill="url(#ms)"/><circle cx="140" cy="46.5" r="1.7" fill="#FAFDF3"/>
+    </g>
+  </defs>
+</svg>
+</body>
+</html>
