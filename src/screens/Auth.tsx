@@ -31,6 +31,7 @@ import { PopIn } from "../components/anim";
 import { PrimaryButton, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
 import { emailOk, passwordOk, passwordRules, passwordStrength } from "../lib/password";
+import { handleOk, handleTaken, rememberSignupHandle } from "../lib/social";
 
 type Mode = "in" | "up";
 
@@ -172,12 +173,17 @@ export function Auth() {
   const { signIn, signUp, continueAsGuest } = useAuth();
   const [mode, setMode] = useState<Mode>("in");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  /** null = not checked yet (or too short / offline). */
+  const [taken, setTaken] = useState<boolean | null>(null);
+  const [checking, setChecking] = useState(false);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /** Set after a sign-up that has to wait on an emailed link. */
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const usernameRef = useRef<TextInput | null>(null);
   const passwordRef = useRef<TextInput | null>(null);
   const confirmRef = useRef<TextInput | null>(null);
 
@@ -195,16 +201,49 @@ export function Auth() {
   }, [sentTo]);
 
   const signingUp = mode === "up";
+  const nameOk = handleOk(username);
+
+  // Availability check, debounced so typing a name is one request, not ten.
+  // It runs while still anonymous — handle_taken is granted to `anon` for
+  // exactly this screen (see supabase/social.sql) and answers nothing beyond
+  // "that one is gone".
+  useEffect(() => {
+    if (!signingUp || !nameOk) {
+      setTaken(null);
+      setChecking(false);
+      return;
+    }
+    let alive = true;
+    setChecking(true);
+    const t = setTimeout(() => {
+      void handleTaken(username).then((t2) => {
+        if (!alive) return;
+        setTaken(t2);
+        setChecking(false);
+      });
+    }, 400);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+    };
+  }, [username, nameOk, signingUp]);
+
   const matches = !signingUp || (confirm.length > 0 && confirm === password);
   const canSubmit =
     emailOk(email) &&
     !busy &&
-    (signingUp ? passwordOk(password, email) && matches : password.length > 0);
+    (signingUp
+      ? passwordOk(password, email) && matches && nameOk && taken !== true
+      : password.length > 0);
 
   const submit = async () => {
     if (!canSubmit) return;
     setBusy(true);
     setError(null);
+    // Park the username BEFORE the request: sign-up returns no session here
+    // (email confirmation is on), so there is no authenticated moment to
+    // write the profile in. It is claimed on the first sign-in that lands.
+    if (signingUp) await rememberSignupHandle(username);
     const res = signingUp ? await signUp(email, password) : await signIn(email, password);
     setBusy(false);
     if (res.error) {
@@ -317,8 +356,66 @@ export function Auth() {
           placeholder="you@example.com"
           keyboard="email-address"
           autoComplete="email"
-          onSubmit={() => passwordRef.current?.focus()}
+          onSubmit={() => (signingUp ? usernameRef : passwordRef).current?.focus()}
         />
+
+        {signingUp ? (
+          <View style={{ gap: 6 }}>
+            <Field
+              icon="UserRound"
+              label="USERNAME"
+              value={username}
+              // Sanitised as you type rather than rejected on submit: the
+              // rules are the DB's check constraint, so an unusable character
+              // simply never lands in the box.
+              onChange={(v) => {
+                setUsername(v.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 20));
+                setError(null);
+              }}
+              placeholder="yourname"
+              inputRef={usernameRef}
+              onSubmit={() => passwordRef.current?.focus()}
+              tone={
+                username.length === 0
+                  ? C.line
+                  : !nameOk || taken === true
+                    ? C.badAcc
+                    : taken === false
+                      ? C.accent
+                      : C.line
+              }
+            />
+            <Txt
+              size={11}
+              weight={taken === true ? "bold" : "medium"}
+              color={
+                username.length === 0
+                  ? C.inkFaint
+                  : !nameOk
+                    ? C.inkFaint
+                    : checking
+                      ? C.inkFaint
+                      : taken === true
+                        ? C.badAcc
+                        : taken === false
+                          ? C.accent
+                          : C.inkFaint
+              }
+            >
+              {username.length === 0
+                ? "How friends find you. 3–20 characters: a–z, 0–9 and _."
+                : !nameOk
+                  ? "3–20 characters: lowercase letters, numbers and _."
+                  : checking
+                    ? "Checking…"
+                    : taken === true
+                      ? `@${username} is taken — pick another.`
+                      : taken === false
+                        ? `@${username} is free.`
+                        : `@${username}`}
+            </Txt>
+          </View>
+        ) : null}
 
         <Field
           icon="Lock"

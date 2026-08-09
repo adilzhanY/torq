@@ -14,7 +14,10 @@ import { isPro, setPro } from "../lib/entitlements";
 import { ConfirmDialog } from "../components/Dialog";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
 import { bodyProfileAt } from "../lib/calories";
-import { overallRank, rankLifts, TIER_COLORS, TIER_SHORT, type TierName } from "../lib/rank";
+import { overallRank, rankLifts, stageOf, tierLabel, TIER_COLORS } from "../lib/rank";
+import { RankBadge } from "../components/RankBadge";
+import { Avatar } from "../components/Avatar";
+import { avatarSource, pickAvatar, removeAvatar, uploadAvatar } from "../lib/avatar";
 import { workoutVolume, type Settings, type Unit } from "../types";
 
 function Stat({ label, value }: { label: string; value: string }) {
@@ -26,30 +29,112 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-/** Translucent tier pill ("GOLD" / "PLAT"), per the rank-card concept. */
-function TierPill({ tier }: { tier: TierName }) {
-  const color = TIER_COLORS[tier];
+/**
+ * Identity: the profile picture, the name, and the body line the rank is
+ * normalized against. It sits ABOVE the rank block rather than inside it so
+ * a brand-new user — who has no ranked lift yet — still has a face and a
+ * name on this screen.
+ *
+ * The picture is kept on the phone first and uploaded second (see
+ * lib/avatar.ts): a guest gets an avatar too, and a failed upload never
+ * costs the user their choice.
+ */
+function IdentityRow() {
+  const { settings, updateSettings, measurements } = useStore();
+  const body = bodyProfileAt(settings, measurements, Date.now());
+  const displayName = settings.name?.trim() || "Athlete";
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
+
+  const choose = async () => {
+    setBusy(true);
+    setNote(null);
+    const picked = await pickAvatar();
+    if (picked.error) {
+      setBusy(false);
+      setNote(picked.error);
+      return;
+    }
+    if (!picked.uri) {
+      setBusy(false);
+      return;
+    }
+    // Show it immediately; the upload is what can be slow or fail.
+    updateSettings({ avatarUri: picked.uri, avatarUrl: undefined });
+    const up = await uploadAvatar(picked.uri);
+    if (up.url) updateSettings({ avatarUrl: up.url });
+    else if (up.error) setNote(`Saved on this phone, but not uploaded: ${up.error}`);
+    setBusy(false);
+  };
+
+  const clear = async () => {
+    setBusy(true);
+    setNote(null);
+    updateSettings({ avatarUri: undefined, avatarUrl: undefined });
+    await removeAvatar();
+    setBusy(false);
+  };
+
+  const uri = avatarSource(settings);
+
   return (
-    <View
-      style={{
-        backgroundColor: `${color}26`, // ~15% alpha
-        borderRadius: R.pill,
-        paddingHorizontal: 10,
-        paddingVertical: 4,
-      }}
-    >
-      <Txt size={11} weight="extrabold" color={color} style={{ letterSpacing: 0.8 }}>
-        {TIER_SHORT[tier]}
-      </Txt>
+    <View style={{ gap: 8 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
+        <Pressable onPress={() => void choose()} disabled={busy}>
+          <Avatar uri={uri} name={displayName} size={76} />
+          {/* Camera badge — the affordance that says the picture is tappable. */}
+          <View
+            style={{
+              position: "absolute",
+              right: -2,
+              bottom: -2,
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              backgroundColor: C.accent,
+              borderWidth: 2,
+              borderColor: C.page,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon name="Camera" size={14} color={C.accentInk} />
+          </View>
+        </Pressable>
+        <View style={{ flex: 1, gap: 3 }}>
+          <Txt size={20} weight="extrabold" numberOfLines={1}>{displayName}</Txt>
+          <Txt size={12} color={C.inkSoft}>
+            {Math.round(body.weightKg)} kg · {body.sex === "male" ? "M" : "F"}
+          </Txt>
+          <View style={{ flexDirection: "row", gap: 14, marginTop: 2 }}>
+            <Pressable onPress={() => void choose()} disabled={busy} hitSlop={6}>
+              <Txt size={12} weight="bold" color={C.accent}>
+                {busy ? "Working…" : uri ? "Change photo" : "Add a photo"}
+              </Txt>
+            </Pressable>
+            {uri ? (
+              <Pressable onPress={() => void clear()} disabled={busy} hitSlop={6}>
+                <Txt size={12} weight="bold" color={C.inkFaint}>Remove</Txt>
+              </Pressable>
+            ) : null}
+          </View>
+        </View>
+      </View>
+      {note ? (
+        <Txt size={11} color={C.warnAcc}>{note}</Txt>
+      ) : null}
     </View>
   );
 }
 
 /**
- * The Rank Card (PATH.md Phase 1 concept, cardless build): identity row
- * with the overall tier, big DOTS points, progress to the next tier, and
- * the top-3 best lifts the score is built from. Points/tiers only — no
- * percentile claims until the real dataset ships.
+ * The Rank block (PATH.md Phase 1 concept, cardless build): the overall
+ * shield, big DOTS points, progress to the next tier, and the top-3 best
+ * lifts the score is built from — each with its own badge.
+ *
+ * Badges, not text chips (Adilzhan, 2026-08-09): the shield IS the rank in
+ * this app, and "GOLD" spelled out in a pill threw away the one piece of art
+ * the rank system has. Points/tiers only — no percentile claims here.
  */
 function RankCard() {
   const { workouts, exercises, measurements, settings } = useStore();
@@ -57,7 +142,6 @@ function RankCard() {
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
-  const displayName = settings.name?.trim() || "Athlete";
 
   if (lifts.length === 0) {
     return (
@@ -75,29 +159,12 @@ function RankCard() {
   return (
     <View>
       <Eyebrow>Rank</Eyebrow>
-      {/* Identity row */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: 22,
-            backgroundColor: C.accent,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Txt size={18} weight="extrabold" color={C.accentInk}>
-            {displayName[0].toUpperCase()}
-          </Txt>
-        </View>
-        <View style={{ flex: 1, gap: 1 }}>
-          <Txt size={17} weight="extrabold" numberOfLines={1}>{displayName}</Txt>
-          <Txt size={12} color={C.inkSoft}>
-            {Math.round(profile.weightKg)} kg · {profile.sex === "male" ? "M" : "F"}
-          </Txt>
-        </View>
-        <TierPill tier={s.tier} />
+      {/* The shield carries the tier; the words underneath just name it. */}
+      <View style={{ alignItems: "center", gap: 4, marginTop: 2 }}>
+        <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={168} />
+        <Txt size={16} weight="extrabold" color={TIER_COLORS[s.tier]} style={{ letterSpacing: 0.4 }}>
+          {tierLabel(s)}
+        </Txt>
       </View>
 
       {/* Points + progress to the next tier */}
@@ -105,7 +172,7 @@ function RankCard() {
         <Txt size={40} weight="extrabold">{Math.round(s.points)}</Txt>
         <Txt size={14} weight="extrabold" color={C.accent}>pts</Txt>
       </View>
-      <Txt size={12} color={C.inkSoft}>overall · {s.tier} tier</Txt>
+      <Txt size={12} color={C.inkSoft}>overall</Txt>
       <View
         style={{
           height: 6,
@@ -139,13 +206,18 @@ function RankCard() {
                 flexDirection: "row",
                 alignItems: "center",
                 gap: 10,
-                paddingVertical: 10,
+                paddingVertical: 8,
               }}
             >
-              <Txt size={14} weight="semibold" style={{ flex: 1 }} numberOfLines={1}>
-                {name(l.exerciseId)}
-              </Txt>
-              <TierPill tier={l.tier.tier} />
+              <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={52} />
+              <View style={{ flex: 1, gap: 1 }}>
+                <Txt size={14} weight="semibold" numberOfLines={1}>
+                  {name(l.exerciseId)}
+                </Txt>
+                <Txt size={11.5} weight="bold" color={TIER_COLORS[l.tier.tier]}>
+                  {tierLabel(l.tier)}
+                </Txt>
+              </View>
               <Txt size={15} weight="extrabold" style={{ minWidth: 44, textAlign: "right" }}>
                 {l.e1RM}
               </Txt>
@@ -519,6 +591,8 @@ export function Profile({
         </Pressable>
         <Txt size={26} weight="extrabold" style={{ flex: 1 }}>Profile</Txt>
       </View>
+
+      <IdentityRow />
 
       <View style={{ flexDirection: "row", gap: 10 }}>
         <Stat label="WORKOUTS" value={String(workouts.length)} />

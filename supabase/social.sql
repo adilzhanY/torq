@@ -479,3 +479,63 @@ alter table public.push_tokens enable row level security;
 drop policy if exists "own tokens" on public.push_tokens;
 create policy "own tokens" on public.push_tokens
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ── profile pictures (appended 2026-08-09) ────────────────────────────────
+-- The avatar itself lives in Storage; the profile row only carries the URL,
+-- so reading a friend's picture needs no extra permission beyond the
+-- profiles policies that already exist.
+alter table public.profiles add column if not exists avatar_url text;
+
+-- Public bucket: an avatar is shown next to a handle that is already public,
+-- and a signed URL would expire in the middle of a friends list.
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true)
+on conflict (id) do update set public = true;
+
+-- Writes are folder-scoped to the owner: the client uploads to
+-- "<user_id>/avatar.jpg", and the first path segment must be the caller.
+-- Without this, any signed-in user could overwrite anyone's picture.
+drop policy if exists "avatars are readable" on storage.objects;
+create policy "avatars are readable" on storage.objects
+  for select using (bucket_id = 'avatars');
+
+drop policy if exists "write own avatar" on storage.objects;
+create policy "write own avatar" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "update own avatar" on storage.objects;
+create policy "update own avatar" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "delete own avatar" on storage.objects;
+create policy "delete own avatar" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ── handle availability on the SIGN-UP screen (appended 2026-08-09) ────────
+-- The register form asks for a username before an account exists, so the
+-- check has to be callable while still anonymous. This is the same fact
+-- every sign-up form on the internet leaks ("that name is taken") and it
+-- exposes nothing else: no owner, no id, no profile.
+--
+-- handle_taken compares against auth.uid(), which is null for anon — the
+-- "and p.user_id <> auth.uid()" clause would then drop every row, so it is
+-- rewritten here to only exclude the caller when there IS one.
+create or replace function public.handle_taken(p_handle text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles p
+    where p.handle = lower(trim(p_handle))::citext
+      and (auth.uid() is null or p.user_id <> auth.uid())
+  );
+$$;
+
+revoke all on function public.handle_taken(text) from public;
+grant execute on function public.handle_taken(text) to authenticated, anon;

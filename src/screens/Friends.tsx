@@ -17,6 +17,7 @@ import { KeyboardAwareScrollView } from "../components/KeyboardAware";
 import { C, FONT, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
+import { Avatar } from "../components/Avatar";
 import { PopIn } from "../components/anim";
 import { ConfirmDialog } from "../components/Dialog";
 import { FriendCompare } from "../components/FriendCompare";
@@ -480,7 +481,8 @@ export function Friends() {
                   delayLongPress={400}
                   style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 }}
                 >
-                  <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={62} />
+                  <Avatar uri={f.avatarUrl} name={f.displayName} size={38} />
+                  <RankBadge tier={asTier(s?.tier ?? "Rust")} stage={s?.stage ?? 1} size={58} />
                   <View style={{ flex: 1, gap: 1 }}>
                     <Txt size={15} weight="bold" numberOfLines={1}>{f.displayName}</Txt>
                     <Txt size={12} color={C.inkSoft} numberOfLines={1}>

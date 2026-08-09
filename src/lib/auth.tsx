@@ -9,6 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase, supabaseConfigured } from "./supabase";
 import { unregisterPush } from "./notifications";
+import { claimPendingHandle } from "./social";
 
 type AuthResult = { error: string | null };
 /** Sign-up either lands a session or waits on an emailed confirm link. */
@@ -79,6 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // A username picked on the register screen has nowhere to live until a
+  // session exists (sign-up returns none while email confirmation is on), so
+  // it is claimed here — on whichever sign-in finally produces one.
+  const userId = session?.user?.id ?? null;
+  useEffect(() => {
+    if (!userId) return;
+    void claimPendingHandle().catch(() => {});
+  }, [userId]);
 
   const signUp = useCallback(async (email: string, password: string): Promise<SignUpResult> => {
     const sb = supabase();

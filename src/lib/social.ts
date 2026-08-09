@@ -9,6 +9,7 @@
  * Every call returns `{ data, error }` with an already-friendly error
  * string, so screens can render failures without a try/catch dance.
  */
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./supabase";
 import { bodyProfileAt } from "./calories";
 import { overallRank, rankLifts, stageOf, TIER_NAMES, type BestLift } from "./rank";
@@ -25,6 +26,8 @@ export interface Profile {
   arena?: boolean;
   /** Numbers checked by a human. Nothing sets this yet — see social.sql. */
   verified?: boolean;
+  /** Public URL of the uploaded profile picture, if any. */
+  avatarUrl?: string | null;
 }
 
 /** One row of the global board. */
@@ -70,6 +73,7 @@ export interface Friend {
   userId: string;
   handle: string;
   displayName: string;
+  avatarUrl: string | null;
   snapshot: RankSnapshot | null;
 }
 
@@ -147,7 +151,7 @@ export async function myProfile(): Promise<Result<Profile | null>> {
   if (!auth.user) return fail("Sign in first.");
   const { data, error } = await sb
     .from("profiles")
-    .select("user_id, handle, display_name, visible, arena, verified")
+    .select("user_id, handle, display_name, visible, arena, verified, avatar_url")
     .eq("user_id", auth.user.id)
     .maybeSingle();
   if (error) return fail(friendly(error.message));
@@ -160,6 +164,7 @@ export async function myProfile(): Promise<Result<Profile | null>> {
           visible: data.visible,
           arena: data.arena ?? false,
           verified: data.verified ?? false,
+          avatarUrl: data.avatar_url ?? null,
         }
       : null,
     error: null,
@@ -190,7 +195,7 @@ export async function saveProfile(
       },
       { onConflict: "user_id" },
     )
-    .select("user_id, handle, display_name, visible")
+    .select("user_id, handle, display_name, visible, avatar_url")
     .single();
   if (error) return fail(friendly(error.message));
   return {
@@ -199,9 +204,54 @@ export async function saveProfile(
       handle: data.handle,
       displayName: data.display_name,
       visible: data.visible,
+      avatarUrl: data.avatar_url ?? null,
     },
     error: null,
   };
+}
+
+/**
+ * The username chosen on the SIGN-UP screen, parked until there is a session
+ * to attach it to.
+ *
+ * This project has email confirmation on, so `signUp` returns no session:
+ * there is no authenticated moment during registration in which the profile
+ * row could be written. Rather than drop the name the user just picked (and
+ * ask for it again later), it waits here and is claimed the first time a
+ * session appears — which may be minutes later, on the sign-in after the
+ * confirmation link.
+ */
+const PENDING_HANDLE_KEY = "torq.pending_handle.v1";
+
+export async function rememberSignupHandle(handle: string): Promise<void> {
+  await AsyncStorage.setItem(PENDING_HANDLE_KEY, handle.trim().toLowerCase());
+}
+
+/**
+ * Claim the parked username. Safe to call on every sign-in: it does nothing
+ * when there is nothing parked, and it never overwrites a profile the user
+ * already has.
+ *
+ * Registering with a username is an explicit "this is how friends find me",
+ * so the profile is published (`visible`) — the Friends screen's separate
+ * handle claim exists for people who signed up before this, or as a guest.
+ */
+export async function claimPendingHandle(): Promise<void> {
+  const pending = await AsyncStorage.getItem(PENDING_HANDLE_KEY);
+  if (!pending) return;
+  const mine = await myProfile();
+  // Offline or a server hiccup: leave it parked and try again next time.
+  if (mine.error) return;
+  if (mine.data) {
+    await AsyncStorage.removeItem(PENDING_HANDLE_KEY);
+    return;
+  }
+  const res = await saveProfile(pending, pending, true);
+  // Taken in the gap between sign-up and confirmation, or malformed: drop it
+  // rather than retrying a request that can only keep failing. The user picks
+  // another handle on the Friends screen.
+  if (!res.error || res.error.includes("taken") || res.error.includes("Handles are"))
+    await AsyncStorage.removeItem(PENDING_HANDLE_KEY);
 }
 
 export async function handleTaken(handle: string): Promise<boolean> {
@@ -497,7 +547,7 @@ async function profilesByIds(ids: string[]): Promise<Map<string, Profile>> {
   if (!sb || ids.length === 0) return out;
   const { data } = await sb
     .from("profiles")
-    .select("user_id, handle, display_name, visible")
+    .select("user_id, handle, display_name, visible, avatar_url")
     .in("user_id", ids);
   for (const p of data ?? [])
     out.set(p.user_id, {
@@ -505,6 +555,7 @@ async function profilesByIds(ids: string[]): Promise<Map<string, Profile>> {
       handle: p.handle,
       displayName: p.display_name,
       visible: p.visible,
+      avatarUrl: p.avatar_url ?? null,
     });
   return out;
 }
@@ -553,7 +604,14 @@ export async function loadFriends(): Promise<Result<FriendsView>> {
     const handle = p?.handle ?? "unknown";
     const displayName = p?.displayName || handle;
     if (e.status === "accepted") {
-      friends.push({ edgeId: e.id, userId: id, handle, displayName, snapshot: snaps.get(id) ?? null });
+      friends.push({
+        edgeId: e.id,
+        userId: id,
+        handle,
+        displayName,
+        avatarUrl: p?.avatarUrl ?? null,
+        snapshot: snaps.get(id) ?? null,
+      });
     } else if (e.status === "pending") {
       requests.push({
         edgeId: e.id,

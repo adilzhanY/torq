@@ -1402,6 +1402,41 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09: Four requested changes (Adilzhan).
+  (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
+  expo-image-picker (config plugin added to app.json). The picture is kept
+  on the PHONE first (copied out of the picker cache into the document dir,
+  `Settings.avatarUri`) and uploaded second (`Settings.avatarUrl` +
+  `profiles.avatar_url`), so a guest gets an avatar too and a failed upload
+  never costs the user their choice; display order is avatarUrl → avatarUri
+  → lime initial, with `onError` falling back so a stale URI renders as the
+  initial rather than an empty hole. Filenames and the public URL carry a
+  timestamp because expo-image caches by URI — reusing one path would keep
+  showing the old picture. Storage bucket `avatars` is public with
+  folder-scoped writes (`<user_id>/avatar.jpg`), so nobody can overwrite
+  someone else's face. Friend rows show the avatar next to the shield.
+  (2) PROFILE RANKS ARE BADGES, not "GOLD"/"SILVER" chips: TierPill is gone
+  from Profile — the overall rank is a 168px shield with the tier named
+  underneath, and each best-lift row carries its own 52px shield. Identity
+  (avatar + name + body line) moved OUT of RankCard into its own row above
+  it, so a user with no ranked lift yet still has a face and a name.
+  (3) HISTORY SEPARATION — the real cause was WorkoutCard ruling off its own
+  sections with the SAME hairline the caller uses BETWEEN cards, so a list
+  read as one continuous striped block. The card's two internal Dividers are
+  gone (grouping is spacing + type weight now), its title went 15/bold →
+  16/extrabold, and the only rule left on the page is the one that ends a
+  workout.
+  (4) USERNAME ON REGISTER — the Create-account tab asks for a handle with a
+  debounced live availability check. `handle_taken` is now granted to `anon`
+  as well (rewritten so its "not me" clause doesn't drop every row when
+  auth.uid() is null) because there is no session yet on that screen. Since
+  sign-up returns NO session (email confirmation is on), the name is parked
+  in AsyncStorage by `rememberSignupHandle()` and claimed by
+  `claimPendingHandle()` from an effect in AuthProvider on the first session
+  that appears — which may be minutes later, after the confirmation link. It
+  publishes (`visible: true`): asking for a username and saying "this is how
+  friends find you" IS the opt-in. RE-RUN supabase/social.sql for the avatar
+  column, the storage bucket/policies and the new grant.
 - 2026-08-08 (later): Play launch pack written (docs/launch/) — privacy
   policy, a data-safety answer sheet verified against the schema, store
   listing copy, and the ordered launch playbook. Key scheduling finding:

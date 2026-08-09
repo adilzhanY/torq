@@ -56,7 +56,7 @@ export function History() {
         </Txt>
       ) : (
         monthSections(sorted).map((section) => (
-          <View key={section.title} style={{ gap: 2 }}>
+          <View key={section.title}>
             <View
               style={{
                 flexDirection: "row",
@@ -70,7 +70,9 @@ export function History() {
                 {section.workouts.length} workout{section.workouts.length === 1 ? "" : "s"}
               </Txt>
             </View>
-            {/* CARDLESS: entries are separated by hairlines, not boxes. */}
+            {/* CARDLESS: entries are separated by hairlines, not boxes — and
+                the hairline between two workouts is now the ONLY rule on the
+                page, since WorkoutCard stopped drawing its own. */}
             {section.workouts.map((w, i) => (
               <View key={w.id}>
                 {i > 0 ? <Divider /> : null}

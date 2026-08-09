@@ -140,6 +140,12 @@ export interface Settings {
   /** Day (local midnight ms) whose streak celebration was already shown —
    *  the Home modal auto-pops once per trained day. */
   streakCelebratedDay?: number;
+  /** Profile picture kept on this phone (document dir). Always set once a
+   *  picture is chosen, even with no account. */
+  avatarUri?: string;
+  /** Public URL of the uploaded copy (Supabase Storage). Preferred for
+   *  display, because it is the one that is valid on every device. */
+  avatarUrl?: string;
   /** Sound effects on set-done / rest countdown / finish. Default ON
    *  (undefined counts as on, so existing installs get them). */
   sound?: boolean;

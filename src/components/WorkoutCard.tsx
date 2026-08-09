@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { Pressable, View } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
-import { Divider, Txt } from "./ui";
+import { Txt } from "./ui";
 import { useStore } from "../lib/store";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
 import { computePRs, fmtDuration } from "../lib/stats";
@@ -64,10 +64,17 @@ export function WorkoutCard({
   return (
     <Pressable onPress={onPress} disabled={!onPress}>
       {/* CARDLESS: bare block aligned to the page gutter; callers separate
-          entries with Divider. */}
-      <View style={{ paddingVertical: 12, gap: 10 }}>
+          entries with Divider.
+          NO internal hairlines (2026-08-09): the card used to rule off its
+          own sections with the same line the caller uses BETWEEN cards, so a
+          list of workouts read as one continuous striped block. Inside a
+          card, grouping is spacing and type weight; the only hairline on the
+          page is the one that ends a workout. */}
+      <View style={{ paddingVertical: 14, gap: 10 }}>
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-          <Txt size={15} weight="bold">{w.name}</Txt>
+          {/* The strongest thing in the block, so the eye finds where each
+              workout starts without needing a box around it. */}
+          <Txt size={16} weight="extrabold">{w.name}</Txt>
           {onDelete ? (
             <Pressable hitSlop={8} onPress={onDelete}>
               <Icon name="Trash2" size={16} color={C.badAcc} />
@@ -86,7 +93,6 @@ export function WorkoutCard({
           ) : null}
         </View>
 
-        <Divider />
         <View style={{ gap: 4 }}>
           {w.entries.map((e, i) => (
             <View key={i} style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -99,7 +105,6 @@ export function WorkoutCard({
             </View>
           ))}
         </View>
-        <Divider />
 
         {/* The work itself: sets · volume · calories */}
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>

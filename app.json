@@ -35,6 +35,12 @@
         }
       ],
       "expo-sharing",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "torq needs access to your photos so you can set a profile picture."
+        }
+      ],
       "expo-audio",
       [
         "expo-notifications",
