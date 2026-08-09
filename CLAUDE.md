@@ -1402,6 +1402,26 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   section above) — client token registration, push_tokens table, and the
   notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
   until the FCM credentials, function deploy and two webhooks are done.
+- 2026-08-09 (later): BOTTOM NAV redesigned — "Five, spelled out" (Adilzhan
+  picked it from the lavish review `.lavish/torq-navbar.html`, which put the
+  current morphing dock next to three interactive alternatives). The
+  diagnosis was measured, not guessed: on a 360 dp screen the dock's 6 tabs
+  plus the profile button shared 274 dp, and with the active tab at 2.6x the
+  flex of the others an IDLE tab was ~36 dp — under Android's 48 dp minimum
+  touch target, unlabelled, and it slid sideways on every tap. Now:
+  FIVE fixed fifths (~70 dp) that never resize, each with its NAME under the
+  icon, active = lime + a 3px rail on the dock's top edge (scaleX + opacity,
+  so the only animation left runs on the native driver and touches no
+  layout), and Profile as the fifth slot rendered with the user's AVATAR
+  instead of a generic glyph. Dock height 62 → 64.
+  History and Exercises LEFT the dock and became sub-pages: History opens
+  from Home's "Recent workouts · See all" and has a back chevron plus a
+  hardware-back handler to Home; Exercises opens from a new "Exercise
+  library" row on the Workout tab and passes ExerciseBrowser's existing
+  `onBack`. `PARENT` in BottomNav keeps the parent tab lit while a sub-page
+  is open, so the dock never shows nothing selected. Options B (centre lime
+  action button) and C (adaptive session bar) are described in the artifact
+  if the workout-first direction is ever wanted.
 - 2026-08-09: Four requested changes (Adilzhan).
   (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
   expo-image-picker (config plugin added to app.json). The picture is kept

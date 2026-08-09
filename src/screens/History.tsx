@@ -2,14 +2,16 @@
  * (Strong-style: month name left, workout count right). Tap a card to open
  * the full summary (sets, 1RMs, PR badges — same screen as after
  * finishing). */
-import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import { useEffect, useState } from "react";
+import { BackHandler, Pressable, ScrollView, View } from "react-native";
 import { C, TOP_BAR_SPACE } from "../theme";
 import { Divider, Txt } from "../components/ui";
 import { ConfirmDialog } from "../components/Dialog";
 import { WorkoutCard } from "../components/WorkoutCard";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { useStore } from "../lib/store";
+import { useUi } from "../lib/ui";
+import { Icon } from "../components/Icon";
 import type { Workout } from "../types";
 
 const MONTHS = [
@@ -41,14 +43,31 @@ function monthSections(sorted: Workout[]): { title: string; workouts: Workout[] 
 
 export function History() {
   const { workouts, deleteWorkout } = useStore();
+  const { setTab } = useUi();
   const [selected, setSelected] = useState<Workout | null>(null);
   const [confirming, setConfirming] = useState<Workout | null>(null);
   const sorted = [...workouts].sort((a, b) => b.startedAt - a.startedAt);
 
+  // A sub-page of Home since the dock redesign, so hardware back walks up to
+  // its parent instead of leaving the app.
+  useEffect(() => {
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      if (selected || confirming) return false;
+      setTab("home");
+      return true;
+    });
+    return () => sub.remove();
+  }, [setTab, selected, confirming]);
+
   return (
     <View style={{ flex: 1 }}>
     <ScrollView contentContainerStyle={{ padding: 16, paddingTop: TOP_BAR_SPACE + 16, paddingBottom: 120, gap: 14 }}>
-      <Txt size={26} weight="extrabold">History</Txt>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <Pressable hitSlop={8} onPress={() => setTab("home")}>
+          <Icon name="ChevronLeft" size={24} color={C.ink} />
+        </Pressable>
+        <Txt size={26} weight="extrabold" style={{ flex: 1 }}>History</Txt>
+      </View>
 
       {sorted.length === 0 ? (
         <Txt size={13} color={C.inkFaint}>

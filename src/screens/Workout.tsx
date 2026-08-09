@@ -21,6 +21,7 @@ import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { DB_BY_ID, DB_GIF_BY_ID, titleCase } from "../lib/exercisedb";
 import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
+import { useUi } from "../lib/ui";
 import { computePRs, lastSetsFor } from "../lib/stats";
 import { targetRepsOf } from "../lib/suggest";
 import { ExercisePicker } from "../components/ExercisePicker";
@@ -1452,6 +1453,7 @@ export function Workout() {
     deleteRoutine,
     importRecommended,
   } = useStore();
+  const { setTab } = useUi();
   /** The just-finished session, shown as the post-workout summary. */
   const [summary, setSummary] = useState<WorkoutModel | null>(null);
   const [confirmRoutine, setConfirmRoutine] = useState<{ id: string; name: string } | null>(null);
@@ -1509,6 +1511,34 @@ export function Workout() {
           <Txt size={16} weight="bold">Empty workout</Txt>
           <Txt size={12} color={C.inkSoft}>Begin from scratch</Txt>
         </View>
+      </Pressable>
+
+      {/* Exercises left the dock in the "Five, spelled out" redesign. This is
+          its entry point: the browser already lives inside this flow as the
+          session's exercise picker, so the library belongs here too. */}
+      <Pressable
+        onPress={() => setTab("exercises")}
+        style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 }}
+      >
+        <View
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: R.ctrl,
+            backgroundColor: C.page2,
+            borderWidth: 1,
+            borderColor: C.line,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Icon name="BicepsFlexed" size={18} color={C.ink} />
+        </View>
+        <View style={{ gap: 1, flex: 1 }}>
+          <Txt size={16} weight="bold">Exercise library</Txt>
+          <Txt size={12} color={C.inkSoft}>Browse, search and add movements</Txt>
+        </View>
+        <Icon name="ChevronRight" size={18} color={C.inkFaint} />
       </Pressable>
 
       <Eyebrow>Routines ({visible.length})</Eyebrow>

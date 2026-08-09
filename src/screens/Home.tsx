@@ -11,7 +11,7 @@
  *  - Day-aware workout list (Today → recents; other days → that day).
  */
 import { useEffect, useState } from "react";
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { PopIn, Squish } from "../components/anim";
@@ -218,6 +218,7 @@ function TodayHero({
 export function Home() {
   const { workouts, activeWorkout, exercises, measurements, routines, settings, updateSettings } =
     useStore();
+  const { setTab } = useUi();
   const [selected, setSelected] = useState<Workout | null>(null);
   const [day, setDay] = useState(() => dayStart(Date.now()));
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -470,9 +471,28 @@ export function Home() {
         </View>
       </View>
 
-      <Eyebrow>
-        {isToday ? "Recent workouts" : `Workouts · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`}
-      </Eyebrow>
+      {/* History left the dock in the "Five, spelled out" redesign, so this
+          is now its entry point — the one place a user is already looking at
+          past sessions. */}
+      {/* Margins live on the ROW, not the Eyebrow: Yoga centres a row's
+          children by their margin boxes, so an 18px marginTop on one of them
+          would push it off the baseline of the link beside it. */}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginTop: 18,
+        }}
+      >
+        <Eyebrow style={{ marginTop: 0, marginBottom: 0 }}>
+          {isToday ? "Recent workouts" : `Workouts · ${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`}
+        </Eyebrow>
+        <Pressable hitSlop={8} onPress={() => setTab("history")} style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+          <Txt size={12} weight="bold" color={C.accent}>See all</Txt>
+          <Icon name="ChevronRight" size={14} color={C.accent} />
+        </Pressable>
+      </View>
       {listed.length === 0 ? (
         <Txt size={13} color={C.inkFaint}>
           {isToday
