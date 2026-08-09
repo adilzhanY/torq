@@ -56,6 +56,7 @@ export function TierCarousel({
   state,
   dates,
   scale = 3,
+  window: windowSize = 2,
 }: {
   /** The user's own overall rank — decides what is earned and what is next. */
   state: TierState;
@@ -63,6 +64,9 @@ export function TierCarousel({
   dates: Map<TierName, number>;
   /** 1 for a single lift, 3 for the overall score. */
   scale?: number;
+  /** How many tiers either side of the focused one actually draw a badge.
+   *  Ranks passes 0 for the first frame and 2 once the tab has settled. */
+  window?: number;
 }) {
   const { width: screenW } = useWindowDimensions();
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -172,7 +176,7 @@ export function TierCarousel({
                     2 500-character traced path, and drawing all nine at once
                     was a measurable share of the tab's open time. */}
                 <View style={{ opacity: isEarned ? 1 : 0.5 }}>
-                  {Math.abs(i - focus) <= 2 ? (
+                  {Math.abs(i - focus) <= windowSize ? (
                     <RankBadge
                       tier={name}
                       stage={i === currentIndex ? stageOf(state.progress) : 4}

@@ -4,7 +4,7 @@
  * badge. Cardless — type, hairlines, and the badges do the work. Points
  * and tiers only; percentile lines arrive with the bundled dataset.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
@@ -36,6 +36,23 @@ export function Ranks() {
   const [sharing, setSharing] = useState(false);
   /** Paid surface the user reached for, if it is locked. */
   const [paywall, setPaywall] = useState<Feature | null>(null);
+  /**
+   * Ranks draws thirteen rank badges and each carries the traced vortex
+   * emblem — measured at 42 ms for the carousel and 33 ms for the lift rows
+   * out of a 113 ms tab open. Nothing below the fold needs to exist in the
+   * first frame, so the screen mounts a minimum and fills in once the tab
+   * transition has settled. Re-tracing the emblem was tried first and
+   * rejected: the simplified path came out no smaller than the original.
+   */
+  const [warm, setWarm] = useState(false);
+  useEffect(() => {
+    // A frame callback, NOT InteractionManager — that is deprecated in RN
+    // 0.86 and warns at runtime. One frame is all this needs: paint the
+    // screen, then fill in the badges nobody can see yet.
+    const h = requestAnimationFrame(() => setWarm(true));
+    return () => cancelAnimationFrame(h);
+  }, []);
+
   const profile = bodyProfileAt(settings, measurements, Date.now());
   const finishedWorkouts = useMemo(() => workouts.filter((w) => w.endedAt), [workouts]);
   /** Bodyweight AT A DATE — DOTS divides by it, so the tier a session earned
@@ -193,7 +210,7 @@ export function Ranks() {
                 The full-bleed negative margin lets neighbours run to the
                 screen edges instead of stopping at the page gutter. */}
             <View style={{ marginHorizontal: -16, marginTop: -4 }}>
-              <TierCarousel state={s} dates={tierDates_} />
+              <TierCarousel state={s} dates={tierDates_} window={warm ? 2 : 0} />
             </View>
 
             <View style={{ alignItems: "center", gap: 2, marginTop: 10 }}>
@@ -225,7 +242,7 @@ export function Ranks() {
             {/* Every ranked lift */}
             <Eyebrow>Lifts ({lifts.length})</Eyebrow>
             <View>
-              {lifts.map((l, i) => (
+              {(warm ? lifts : lifts.slice(0, 3)).map((l, i) => (
                 <View key={l.exerciseId}>
                   {i > 0 ? <Divider /> : null}
                   <Pressable

@@ -1457,6 +1457,21 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   a 2 500-char traced path), and `RankBadge` is `memo`-wrapped. Home
   memoised its two `rankLifts` calls and `computeStreak`.
   AFTER: Workout 38, Stats 56, History 80–118, Home 86–90, Ranks 125–165.
+  RANKS, a second pass — ablation, not guesswork. Baseline 113–115 ms;
+  removing the eight lift-row badges took it to 81, removing the carousel to
+  ~71. So the badges were ~75 ms of 113, and the emblem is the reason: a
+  2 500-character traced path drawn thirteen times.
+  Re-tracing the vortex was TRIED AND REJECTED — potrace at every tolerance
+  came back 2 021–3 050 chars against the original 2 502 (RMSE 0.008, so
+  visually identical but no cheaper). The original trace is already near
+  optimal; do not spend another afternoon on it.
+  What worked: nothing below the fold needs to exist in the first frame. A
+  `warm` flag flips on a frame callback, and until it does the carousel
+  mounts only the focused badge (`window={0}`) and the lift list only its
+  first three. 113 -> 55–68 ms.
+  Use `requestAnimationFrame`, NOT `InteractionManager` — the latter is
+  deprecated in RN 0.86 and shows a runtime warning toast (which also sat
+  over the dock and ate the taps in the middle of measuring this).
   Numbers are from the DEV bundle in Expo Go; a production build is faster.
   NOT DONE, deliberately: keeping visited tabs mounted. It would make
   revisits instant, but the RankBadge orbits and carousel loops would keep
