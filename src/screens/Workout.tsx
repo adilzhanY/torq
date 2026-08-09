@@ -24,8 +24,10 @@ import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
 import { useUi } from "../lib/ui";
 import { computePRs, lastSetsFor } from "../lib/stats";
 import { targetRepsOf } from "../lib/suggest";
+import { warmupSets } from "../lib/warmup";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { SwipeToDelete } from "../components/SwipeToDelete";
+import { WarmupDialog } from "../components/WarmupDialog";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
 import { Card, Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, TextField, Txt } from "../components/ui";
@@ -40,6 +42,7 @@ import {
   type Routine,
   type Workout as WorkoutModel,
   type WorkoutEntry,
+  type WarmupRow,
   type WorkoutSet,
 } from "../types";
 import { WorkoutSummary } from "../components/WorkoutSummary";
@@ -434,6 +437,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [stickyFor, setStickyFor] = useState<number | null>(null);
   const [restFor_, setRestForEntry] = useState<number | null>(null);
   const [replaceFor, setReplaceFor] = useState<number | null>(null);
+  /** Entry index whose warm-up dialog is open. */
+  const [warmupFor, setWarmupFor] = useState<number | null>(null);
   /** Draft text while a note dialog is open. */
   const [draftNote, setDraftNote] = useState("");
   /** "ei-si" keys of sets added via Add set this render lifetime — only
@@ -555,33 +560,27 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
    * numbers are actually loadable, and de-duplicated so a light working
    * weight doesn't produce three identical warm-ups.
    */
-  const addWarmups = (ei: number) => {
+  /**
+   * Insert the ramp the warm-up dialog previewed.
+   *
+   * REPLACES any warm-ups already on the exercise rather than stacking a
+   * second ramp on top — the dialog shows the whole ramp, so what you see is
+   * what the exercise ends up with however many times you open it. The rows
+   * are saved on the Exercise so the same ramp comes back next session.
+   */
+  const applyWarmups = (ei: number, rows: WarmupRow[], workWeight: number) => {
     const entry = w.entries[ei];
     if (!entry) return;
-    const top = Math.max(...entry.sets.filter((s) => s.type !== "warmup").map((s) => s.weight), 0);
-    if (top <= 0) return; // bodyweight or nothing typed yet — nothing to ramp to
-    const step = settings.unit === "lb" ? 5 : 2.5;
-    const round = (v: number) => Math.max(step, Math.round(v / step) * step);
-    const ramp = [0.4, 0.6, 0.8]
-      .map((pct) => round(top * pct))
-      .filter((kg, i, arr) => kg < top && arr.indexOf(kg) === i);
-    if (ramp.length === 0) return;
-    const warmups: WorkoutSet[] = ramp.map((weight, i) => ({
-      type: "warmup",
-      weight,
-      // Warm-ups descend in reps as the weight climbs.
-      reps: [8, 5, 3][i] ?? 3,
-      done: false,
-      restSec: 60,
-    }));
+    const exercise = exercises.find((e) => e.id === entry.exerciseId);
+    updateExercise(entry.exerciseId, { warmup: rows });
+    const sets = warmupSets(rows, workWeight, settings.unit, exercise?.equipment);
     setEntries(
       w.entries.map((e, i) =>
-        i !== ei ? e : { ...e, sets: [...warmups, ...e.sets.filter((s) => s.type !== "warmup")] },
+        i !== ei ? e : { ...e, sets: [...sets, ...e.sets.filter((s) => s.type !== "warmup")] },
       ),
     );
   };
 
-  /** Apply one rest period to every set of an exercise. */
   const setAllRest = (ei: number, sec: number) => {
     setEntries(
       w.entries.map((e, i) =>
@@ -1176,7 +1175,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                             setStickyFor(ei);
                             break;
                           case "Add warm-up sets":
-                            addWarmups(ei);
+                            setWarmupFor(ei);
                             break;
                           case "Update rest timers":
                             setRestForEntry(ei);
@@ -1339,6 +1338,27 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         />
       ) : null}
 
+      {warmupFor != null ? (
+        (() => {
+          const entry = w.entries[warmupFor];
+          const ex = exercises.find((e) => e.id === entry?.exerciseId);
+          const top = Math.max(
+            ...(entry?.sets ?? []).filter((s) => s.type !== "warmup").map((s) => s.weight),
+            0,
+          );
+          const ei = warmupFor;
+          return (
+            <WarmupDialog
+              workWeight={top}
+              unit={settings.unit}
+              equipment={ex?.equipment}
+              rows={ex?.warmup}
+              onInsert={(rows, work) => applyWarmups(ei, rows, work)}
+              onClose={() => setWarmupFor(null)}
+            />
+          );
+        })()
+      ) : null}
       {restFor_ != null ? (
         <RestAllDialog
           current={restFor(w.entries[restFor_]?.sets?.[0] ?? { restSec: undefined } as WorkoutSet)}

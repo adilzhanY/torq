@@ -38,7 +38,22 @@ export interface Exercise {
   /** ExerciseDB id when imported from the bundled catalog (keys DB_GIFS). */
   dbId?: string;
   notes?: string;
+  /** Per-exercise warm-up formula, remembered from the warm-up dialog. */
+  warmup?: WarmupRow[];
   updatedAt: number;
+}
+
+/**
+ * One row of a warm-up ramp: either the empty bar, or a percentage of the
+ * work set. Stored on the Exercise so the ramp you tuned for squats doesn't
+ * follow you to curls.
+ */
+export interface WarmupRow {
+  /** True for the "Bar x N" row — a fixed weight, not a percentage. */
+  bar?: boolean;
+  /** Percentage of the work set, when `bar` is not set. */
+  pct?: number;
+  reps: number;
 }
 
 /** One logged set: weight × reps (weight in the user's unit). */

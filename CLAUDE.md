@@ -1823,6 +1823,41 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-09 (later): WARM-UP SETS ARE NOW A DIALOG, Strong's (Adilzhan sent
+  the screenshot and asked "idk if you count it the way Strong counts warm up
+  sets. maybe there are different warm up set percentages for different
+  exercises?").
+  The old behaviour inserted a 40/60/80% ramp SILENTLY the moment you tapped
+  the menu item — the wrong shape for the decision twice over: warming up for
+  a heavy triple and warming up for lateral raises are not the same ramp, and
+  a menu item that rewrites your set list with no preview is a thing you undo
+  rather than a thing you use.
+  `src/components/WarmupDialog.tsx` + `src/lib/warmup.ts` (10 tests): work-set
+  field at the top, one row per warm-up with an editable formula and the REAL
+  kilos beside it, Add set, Restore, Cancel, Insert. Defaults are Strong's —
+  Bar × 5, 50% × 3, 80% × 3 — not the old 40/60/80: three loaded ascending
+  sets is a lot of work before the work, and Strong's ramp spends its first
+  set on the movement itself.
+  THE BAR IS A ROW TYPE, not a percentage, and that is the point: 50% of a
+  40 kg work set is 20 kg, which IS the bar, but 50% of 120 kg is 60 and the
+  bar is still 20. A ramp that cannot say "just the bar" has to fake it.
+  BAR_WEIGHT is 20 kg / 45 lb.
+  ANSWER TO THE QUESTION ASKED: there is no per-exercise default, because no
+  honest one exists — nothing in the catalog says whether an exercise is a
+  heavy barbell triple or a lateral raise. Instead the ramp is REMEMBERED on
+  the Exercise (`Exercise.warmup`, so it syncs), and one tuned for squats
+  stays with squats. The app learns yours rather than guessing.
+  Percentages round to the loadable step for the equipment via the existing
+  `getWeightStep` (2.5 kg barbell, 1 kg dumbbell) — which is how Strong's
+  screenshot gets 92.5 from 80% of 115. Rows that land at or above the work
+  set are dropped: they are not a warm-up any more. Insert REPLACES existing
+  warm-ups rather than stacking, so the preview is always what you end up
+  with however many times you open it.
+  GOTCHA, hit and fixed the same hour: `useDialogClose()` reads a context
+  CenterDialog provides, so calling it in the component that RENDERS the
+  dialog is outside the provider and silently returns the no-op fallback —
+  Insert inserted and the dialog stayed open. The footer is its own child
+  component now, the same reason ConfirmButtons is one in Dialog.tsx.
 - 2026-08-09: Four requested changes (Adilzhan).
   (1) PROFILE PICTURES — `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
   expo-image-picker (config plugin added to app.json). The picture is kept
