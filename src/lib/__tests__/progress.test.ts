@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { liftMovement, rankHistory, recentRecords } from "../progress";
+import { liftMovement, rankHistory, recentRecords, tierDates } from "../progress";
 import type { Workout, WorkoutSet } from "../../types";
 
 const DAY = 86400000;
@@ -185,5 +185,47 @@ describe("recentRecords", () => {
     const ev = recentRecords(ws);
     expect(ev).toHaveLength(1);
     expect(ev[0].exerciseId).toBe("b");
+  });
+});
+
+describe("tierDates", () => {
+  it("records the workout that first crossed each threshold", () => {
+    const ws = [
+      workout(0, [{ exerciseId: "a", sets: [set(60, 5)] }]),
+      workout(10, [
+        { exerciseId: "a", sets: [set(140, 3)] },
+        { exerciseId: "b", sets: [set(140, 3)] },
+        { exerciseId: "c", sets: [set(140, 3)] },
+      ]),
+    ];
+    const d = tierDates(ws, "kg", body);
+    expect(d.get("Rust")).toBe(T0 + 3600000);
+    // The big session is what lifted the overall score past the middle tiers.
+    expect(d.get("Silver")).toBe(T0 + 10 * DAY + 3600000);
+  });
+
+  it("keeps a tier once reached, even if points later fall", () => {
+    const ws = [
+      workout(0, [
+        { exerciseId: "a", sets: [set(140, 3)] },
+        { exerciseId: "b", sets: [set(140, 3)] },
+        { exerciseId: "c", sets: [set(140, 3)] },
+      ]),
+      workout(60, [{ exerciseId: "a", sets: [set(60, 5)] }]),
+    ];
+    // Bodyweight balloons, so DOTS for the same lifts drops hard.
+    const growing = (ms: number) => ({
+      weightKg: 80 + ((ms - T0) / DAY) * 1.2,
+      sex: "male" as const,
+    });
+    const d = tierDates(ws, "kg", growing);
+    const reached = d.get("Silver");
+    expect(reached).toBe(T0 + 3600000);
+  });
+
+  it("leaves unreached tiers absent", () => {
+    const ws = [workout(0, [{ exerciseId: "a", sets: [set(60, 5)] }])];
+    const d = tierDates(ws, "kg", body);
+    expect(d.has("World Class")).toBe(false);
   });
 });

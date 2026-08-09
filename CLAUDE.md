@@ -1459,14 +1459,30 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   The Ranks hero went 170 → 248 px with negative vertical margins, because
   the artwork only occupies y 25–104 of the 136-unit viewBox and at that
   size the empty bands are ~45 px at each end.
-  NEW `src/components/TierLadder.tsx`: all nine tiers as a 3×3 board.
-  Earned = full colour and orbiting; current = lime frame; LOCKED = the real
-  badge art at 45% opacity with a lock and the points still needed — not a
-  silhouette and not a "?", because the entire point is seeing what Diamond
-  looks like while you are still Silver. Motion is the reward: locked badges
-  stand still. Verified on the emulator by capturing three frames 1.4 s
-  apart and montaging them — the ball visibly crosses in front of the
-  shield.
+  NEW `src/components/TierCarousel.tsx`: all nine tiers as a horizontally
+  scrollable ladder (a 3×3 grid shipped first and Adilzhan replaced it the
+  same day). It IS the hero — it opens centred on your own tier at 240 px,
+  and swiping walks the ladder. Earned tiers show the DATE they were reached
+  and keep orbiting; locked ones carry a lock, the points required and how
+  many to go, and stand still at 50% opacity — the real art, never a
+  silhouette, because the point is seeing what Diamond looks like while you
+  are still Silver.
+  Mechanics follow DateRuler: one scrollX Animated.Value drives every item's
+  scale and opacity on the NATIVE driver, so flicking through nine badges
+  never touches the JS thread; only the caption needs JS, and its listener
+  is guarded on the centred index actually changing. Slot geometry is solved
+  rather than guessed — the centred badge renders 240 wide (edge 120 from
+  centre) against a neighbour's inner edge at 133, so the cards never
+  overlap into a stack. GOTCHA fixed: the carousel is full-bleed, so the
+  side padding must NOT subtract the page gutter, or every centred badge
+  sits 16 px left of centre.
+  `tierDates` in progress.ts supplies the achieved dates: it walks the same
+  running-best map and records the FIRST crossing of each threshold. First
+  reached, not currently held — points fall when bodyweight rises, and a
+  badge that un-earns itself is a promise broken; games don't take tiers
+  back and neither does this.
+  Orbit verified on the emulator by capturing three frames 1.4 s apart and
+  montaging them — the ball visibly crosses in front of the shield.
 - 2026-08-09 (later): STATS REBUILT as "the climb" (Adilzhan: "I don't like
   that it shows the volume, not rank advancement, or weight increasing in
   exercises" — he picked idea 1 plus the dumbbell chart from idea 2 in the

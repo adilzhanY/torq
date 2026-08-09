@@ -17,7 +17,7 @@
  *
  * All pure and React-free, so vitest runs them directly.
  */
-import { dotsPoints, tierFor, type TierState } from "./rank";
+import { dotsPoints, tierFor, TIER_NAMES, type TierName, type TierState } from "./rank";
 import { est1RM } from "./stats";
 import { LB_TO_KG } from "./units";
 import type { Workout } from "../types";
@@ -117,13 +117,6 @@ export function rankHistory(
   return out;
 }
 
-/** The tier band a points value falls in, plus where the bands sit. */
-export interface Band {
-  tier: TierState["tier"];
-  /** Overall-scale floor, i.e. the per-lift threshold × 3. */
-  floor: number;
-}
-
 export interface LiftMove {
   exerciseId: string;
   /** Best e1RM (display unit) as of the window's start. */
@@ -208,4 +201,49 @@ export function recentRecords(workouts: Workout[], limit = 8): RecordEvent[] {
 /** Overall tier state for a points value (the ×3 ladder). */
 export function overallTier(points: number): TierState {
   return tierFor(points, 3);
+}
+
+/** Per-lift DOTS thresholds, mirrored from rank.ts (overall multiplies ×3). */
+export const TIER_FLOOR: Record<TierName, number> = {
+  Rust: 0,
+  Iron: 30,
+  Bronze: 45,
+  Silver: 60,
+  Gold: 75,
+  Platinum: 95,
+  Diamond: 115,
+  Elite: 140,
+  "World Class": 165,
+};
+
+/**
+ * When each tier was FIRST reached, for the "reached 12 Jun" line on the
+ * ladder.
+ *
+ * First reached, not currently held: points can fall (gaining bodyweight
+ * lowers DOTS for the same lift), and a badge that un-earns itself because
+ * you had a heavy week is a promise broken. Games don't take tiers back and
+ * neither does this.
+ */
+export function tierDates(
+  workouts: Workout[],
+  unit: string,
+  bodyAt: (ms: number) => BodyAt,
+  scale = 3,
+): Map<TierName, number> {
+  const toKg = unit === "lb" ? LB_TO_KG : 1;
+  const out = new Map<TierName, number>();
+  const running = new Map<string, number>();
+
+  for (const w of bestsPerWorkout(workouts)) {
+    for (const [id, rm] of w.bests) {
+      if (rm > (running.get(id) ?? 0)) running.set(id, rm);
+    }
+    const points = pointsFrom(running, toKg, bodyAt(w.at));
+    for (const name of TIER_NAMES) {
+      if (out.has(name)) continue;
+      if (points >= TIER_FLOOR[name] * scale) out.set(name, w.at);
+    }
+  }
+  return out;
 }

@@ -4,13 +4,13 @@
  * badge. Cardless — type, hairlines, and the badges do the work. Points
  * and tiers only; percentile lines arrive with the bundled dataset.
  */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Divider, Eyebrow, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
-import { TierLadder } from "../components/TierLadder";
+import { TierCarousel } from "../components/TierCarousel";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { ShareRankCard } from "../components/ShareCard";
 import { LockedPanel, Paywall } from "../components/Paywall";
@@ -23,6 +23,7 @@ import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
 import { percentileForExercise, percentileLabel } from "../lib/percentile";
 import { useStore } from "../lib/store";
+import { tierDates } from "../lib/progress";
 import { useUi } from "../lib/ui";
 
 export function Ranks() {
@@ -37,6 +38,16 @@ export function Ranks() {
   /** Paid surface the user reached for, if it is locked. */
   const [paywall, setPaywall] = useState<Feature | null>(null);
   const profile = bodyProfileAt(settings, measurements, Date.now());
+  const finishedWorkouts = useMemo(() => workouts.filter((w) => w.endedAt), [workouts]);
+  /** Bodyweight AT A DATE — DOTS divides by it, so the tier a session earned
+   *  has to be scored with the body you had that day. */
+  const bodyAt = useMemo(
+    () => (ms: number) => {
+      const p = bodyProfileAt(settings, measurements, ms);
+      return { weightKg: p.weightKg, sex: p.sex };
+    },
+    [settings, measurements],
+  );
   const lifts = rankLifts(workouts, settings.unit, profile.weightKg, profile.sex);
   const overall = overallRank(lifts);
   const name = (id: string) => exercises.find((e) => e.id === id)?.name ?? "Exercise";
@@ -170,23 +181,21 @@ export function Ranks() {
           <>
             {/* Overall */}
             <Eyebrow>Overall</Eyebrow>
-            <View style={{ alignItems: "center", gap: 2 }}>
-              {/* The headline badge: as big as the gutter allows, and the one
-                  place the orbit actually turns on this screen. The negative
-                  margins claw back the viewBox's empty top and bottom bands —
-                  the artwork only occupies y 25–104 of 136, and at this size
-                  that padding is ~45 px of nothing at each end. */}
-              <View style={{ marginTop: -22, marginBottom: -34 }}>
-                <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={248} animated />
-              </View>
+            {/* The ladder IS the hero: it opens centred on your own tier at
+                full size, and swiping walks the whole ladder — earned tiers
+                with the date you got them, locked ones with what they cost.
+                The full-bleed negative margin lets neighbours run to the
+                screen edges instead of stopping at the page gutter. */}
+            <View style={{ marginHorizontal: -16, marginTop: -4 }}>
+              <TierCarousel state={s} dates={tierDates(finishedWorkouts, settings.unit, bodyAt)} />
+            </View>
+
+            <View style={{ alignItems: "center", gap: 2, marginTop: 10 }}>
               <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6 }}>
                 <Txt size={44} weight="extrabold" color={C.accent}>{Math.round(s.points)}</Txt>
                 <Txt size={16} weight="extrabold" color={C.accent}>pts</Txt>
               </View>
-              <Txt size={13.5} color={C.inkSoft}>
-                {tierLabel(s)}
-                {s.next ? ` · ${Math.ceil(s.toNext)} pts to ${s.next}` : " · top of the ladder"}
-              </Txt>
+              <Txt size={13.5} color={C.inkSoft}>{tierLabel(s)}</Txt>
             </View>
             <View
               style={{
@@ -206,16 +215,6 @@ export function Ranks() {
                 }}
               />
             </View>
-
-            {/* The board: every tier, including the ones you have not earned */}
-            <Eyebrow>The ladder</Eyebrow>
-            <View style={{ marginHorizontal: -4 }}>
-              <TierLadder points={s.points} scale={3} />
-            </View>
-            <Txt size={10.5} color={C.inkFaint} style={{ marginTop: 6 }}>
-              Overall points are the sum of your best three lifts, so each tier
-              here needs three times a single lift's threshold.
-            </Txt>
 
             {/* Every ranked lift */}
             <Eyebrow>Lifts ({lifts.length})</Eyebrow>
