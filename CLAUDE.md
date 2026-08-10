@@ -327,8 +327,8 @@ genuinely right. Em dashes read as AI-written text and the user does not want
 their work to look generated.
 
 The whole repo is clean as of 2026-08-10: 1,144 em dashes were replaced
-across every tracked file, and `git grep "—"` should keep returning nothing.
-Check it before committing prose.
+across every tracked file. A grep for the character should only ever find
+the two notes below that name it. Check before committing prose.
 
 ## Screenshots + the README product page
 
@@ -1910,7 +1910,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   is unchanged, tap either to open the existing dialog.
 - 2026-08-10 (later): EVERY EM DASH IS GONE, all 1,144 of them, across every
   tracked file (Adilzhan: "rewrite the CLAUDE.md and everything inside an app
-  so it doesn't use em dashes"). `git grep "—"` now returns nothing.
+  so it doesn't use em dashes"). Nothing carries one now except the two
+  lines that have to name the character.
   NOT a character swap. A scratchpad script classified each occurrence and
   picked the punctuation that actually belongs: a dash PAIR became
   parentheses (including pairs that wrap across two lines), a label followed
