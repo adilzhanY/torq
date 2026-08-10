@@ -1853,6 +1853,27 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10 (later): THE STREAK PILL, LEVEL FOR REAL (Adilzhan: "doesn't
+  look equal isn't it? place them on the same line"). Measured before
+  touching anything, and the pill was geometrically PERFECT: centred on
+  "Monday"'s cap block to within 0.17 dp, its flame and digits within 0.33 dp
+  of each other, padding 10.7 left / 11.0 right, 8.3 top / 8.0 bottom.
+  It still looked high, and the reason is that `alignItems: "center"` centres
+  on the text's BOX — cap top to descender bottom — while the eye centres on
+  the word's INK. "Monday" hangs a "y" 13 px below the baseline, which pulls
+  its visual mass 2.33 dp below the box centre. Every weekday name ends in
+  "day", so that correction is the same all seven days and can be a constant.
+  Fixed with `translateY: 2.3` on the pill; after, the gaps above and below
+  the word's ink are 9 px and 8 px and the pill is 0.17 dp off its optical
+  centre.
+  A TRANSFORM, not a margin, and this is the trap worth remembering:
+  `alignItems: "center"` centres the MARGIN box, so `marginTop: 2.5` moved
+  the pill only 1.25 dp — half of what the number says. Measured, corrected,
+  re-measured.
+  BASELINE ALIGNMENT WAS CONSIDERED AND REJECTED: putting the digits on the
+  word's baseline needs +4 dp, which leaves the pill's box hanging 13 px
+  below the descender. Optical centring gives symmetry; baseline alignment
+  gives a bottom-heavy badge.
 - 2026-08-10 (later): THE VORTEX AS A WATERMARK on Home's hero (Adilzhan saw
   a dimmed shape behind the training-day card and asked for it to be our
   logo — what he was actually seeing was the lime gradient falling off, so

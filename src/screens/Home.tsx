@@ -605,11 +605,25 @@ export function Home() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <PageTitle>{heading}</PageTitle>
               {streak.hasPlan ? (
-                <StreakPill
-                  streak={streak}
-                  todayPending={streakTodayPending}
-                  onPress={() => setStreakOpen(true)}
-                />
+                /* Nudged down by half the title's descender depth.
+                 * `alignItems: "center"` centres the pill on the text's BOX,
+                 * which is measured from the cap top to the descender bottom;
+                 * the eye centres on the word's INK instead, and every weekday
+                 * name ends in "day", so there is always exactly one descender
+                 * pulling the word's visual mass ~2.3 dp below the box centre.
+                 * Without this the pill measures perfectly centred and still
+                 * looks high — which is exactly what Adilzhan saw.
+                 *
+                 * A TRANSFORM, not a margin: `alignItems: "center"` centres the
+                 * MARGIN box, so a marginTop of n only moves the pill n/2 and
+                 * the number stops meaning what it says. */
+                <View style={{ transform: [{ translateY: 2.3 }] }}>
+                  <StreakPill
+                    streak={streak}
+                    todayPending={streakTodayPending}
+                    onPress={() => setStreakOpen(true)}
+                  />
+                </View>
               ) : null}
             </View>
             <Txt size={13} weight="bold" color={C.inkFaint}>{subtitle}</Txt>
