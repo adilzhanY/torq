@@ -53,7 +53,7 @@ export function WorkoutCard({
   onPress?: () => void;
   onDelete?: () => void;
   /** Precomputed PR count. A LIST of cards must pass this (see stats
-   *  `prTotals`) — computing it per card rescans the whole history and is
+   *  `prTotals`), computing it per card rescans the whole history and is
    *  quadratic, which cost History 601 ms to open. */
   prCount?: number;
 }) {

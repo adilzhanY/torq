@@ -22,7 +22,7 @@ create extension if not exists "pgcrypto";
 
 -- The server owns updated_at: this trigger stamps it on every insert AND update
 -- so delta sync is immune to client clock skew (clients no longer decide the
--- row version — Postgres does, monotonically, via now()).
+-- row version, Postgres does, monotonically, via now()).
 create or replace function public.set_updated_at()
 returns trigger language plpgsql as $fn$
 begin

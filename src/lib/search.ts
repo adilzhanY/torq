@@ -4,7 +4,7 @@ export function tokenize(q: string): string[] {
   return q.trim().toLowerCase().split(/\s+/).filter(Boolean);
 }
 
-/** Every query word must appear somewhere in the haystack, in any order —
+/** Every query word must appear somewhere in the haystack, in any order,
  * so "bicep curl" finds "Cable Biceps Curl". */
 export function matches(q: string, hay: string[]): boolean {
   return matchesText(tokenize(q), haystack(hay));

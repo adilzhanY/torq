@@ -1,5 +1,5 @@
 /**
- * Onboarding — the premium welcome flow, dark brand look (logo dark +
+ * Onboarding: the premium welcome flow, dark brand look (logo dark +
  * lime). Paged steps, each sliding in (direction-aware StepSlide):
  *
  *   0 welcome → 1 units → 2 about you → 3 goal → 4 days/week → 5 focus
@@ -298,7 +298,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         onDone();
         return true;
       }
-      return true; // swallow — first-run onboarding isn't dismissable via Back
+      return true; // swallow, first-run onboarding isn't dismissable via Back
     });
     return () => sub.remove();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -426,7 +426,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           <KeyboardAwareScrollView contentContainerStyle={{ padding: 24, gap: 18 }}>
             <StepTitle title="About you" sub="Powers your personal calorie estimates." />
             <View style={{ flexDirection: "row", gap: 10 }}>
-              {/* Squish styles its INNER view — flex:1 must live on a wrapper
+              {/* Squish styles its INNER view, flex:1 must live on a wrapper
                   (the dock/rest-pad gotcha) or the chip collapses to 0 width. */}
               {(["male", "female"] as const).map((s) => (
                 <View key={s} style={{ flex: 1 }}>
@@ -499,7 +499,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
           <View style={{ flex: 1, padding: 24 }}>
             <StepTitle
               title="Which days do you train?"
-              sub="Pick your training days — the rest become rest days. Your split follows from the count."
+              sub="Pick your training days, the rest become rest days. Your split follows from the count."
             />
             <View style={{ gap: 8 }}>
               {/* Monday-first; js getDay(): Sun 0 … Sat 6 */}
@@ -539,9 +539,9 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               {weekdays.length === 0
                 ? "Pick at least 2 days"
                 : weekdays.length === 1
-                  ? "One more — you need at least 2 days"
+                  ? "One more, you need at least 2 days"
                   : weekdays.length >= 6
-                    ? "6 training days · 1 rest day (that's the max — recovery counts)"
+                    ? "6 training days · 1 rest day (that's the max, recovery counts)"
                     : `${weekdays.length} training days · ${7 - weekdays.length} rest days`}
             </Txt>
             <View style={{ marginTop: "auto" }}>
@@ -554,7 +554,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       {step === 5 ? (
         <StepSlide key={5} dir={dir.current}>
           <View style={{ flex: 1, padding: 24 }}>
-            <StepTitle title="Any muscle focus?" sub="Optional — focused groups get extra sets and an extra exercise." />
+            <StepTitle title="Any muscle focus?" sub="Optional, focused groups get extra sets and an extra exercise." />
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
               {FOCUS_PARTS.map(({ part, label }) => {
                 const on = focus.includes(part);

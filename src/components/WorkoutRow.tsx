@@ -1,11 +1,11 @@
 /**
- * One session on the timeline rail — History's row, extracted so Home's
+ * One session on the timeline rail: History's row, extracted so Home's
  * "Recent workouts" is the same object rather than a second design of it
  * (Adilzhan, 2026-08-10: "recent workouts on the home page have an old
  * design, change it to what is shown now in History page").
  *
- * The row says what the session DID — records, points gained, muscles
- * worked — instead of listing its exercises, which is the whole argument
+ * The row says what the session DID (records, points gained, muscles
+ * worked) instead of listing its exercises, which is the whole argument
  * from the History redesign. The full inventory is one tap away in the
  * summary.
  *

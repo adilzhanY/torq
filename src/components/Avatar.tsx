@@ -1,5 +1,5 @@
 /**
- * Avatar — the round profile picture, with the lime initial as the fallback.
+ * Avatar: the round profile picture, with the lime initial as the fallback.
  *
  * The fallback is not just for "no picture yet": a stored URI can go stale
  * (a local file the OS cleaned up, a remote URL that 404s after an account

@@ -1,14 +1,14 @@
 /**
- * StreakMark — torq's own streak icon (Adilzhan picked concept A, "Cut
+ * StreakMark: torq's own streak icon (Adilzhan picked concept A, "Cut
  * flame", from the lavish review `.lavish/torq-streak.html`, 2026-08-09).
  *
  * It replaces the icon pack's `Flame`, which was a stroked outline on a
  * screen where every other mark is solid, and the same flame that ships in a
  * few thousand other apps. This one is drawn in the app's own geometry: a solid
  * flame silhouette with two tapered BLADES cut out of it, curving the way
- * the vortex logo's blades curve. The silhouette stays legible at 14 px —
+ * the vortex logo's blades curve. The silhouette stays legible at 14 px (
  * every candidate was rasterised at icon sizes before it was proposed,
- * because that is where icons die — and the vortex only shows itself once
+ * because that is where icons die) and the vortex only shows itself once
  * the mark is big enough to reward a look.
  *
  * The geometry is generated, not hand-tweaked: the two cuts come from the
@@ -29,7 +29,7 @@ import { C } from "../theme";
  * the flame occupies x 5.07–19.02, y 1.80–22.18 of the 24-unit box. Drawing
  * it in a square therefore left 3.15 units of dead air down each side, which
  * is why the streak pill's padding LOOKED lopsided while being geometrically
- * equal — the visual gap was 15.2 px on the left against 12 px on the right.
+ * equal. The visual gap was 15.2 px on the left against 12 px on the right.
  * The default render is now the tight box at its true aspect, so `size` is
  * the flame's real height and padding maths means what it says.
  */
@@ -49,7 +49,7 @@ export function StreakMark({
   /** The flame's HEIGHT in px (its width follows STREAK_ASPECT). */
   size?: number;
   color?: string;
-  /** Keep the original 24×24 box — only the animated version needs it, so
+  /** Keep the original 24×24 box: only the animated version needs it, so
    *  its embers can be positioned in the same coordinate space. */
   square?: boolean;
 }) {
@@ -75,7 +75,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
  *
  * This replaces the hand-authored Lottie (assets/flame.json). Keeping the
  * Lottie would have meant the dialog celebrating with a DIFFERENT flame from
- * the pill that opened it — and the whole point of drawing our own mark is
+ * the pill that opened it, and the whole point of drawing our own mark is
  * that there is only one. The motion keeps what the Lottie had that mattered:
  * a squash-and-stretch flicker and rising embers, both on the native driver.
  */

@@ -1,5 +1,5 @@
 /**
- * Next-weight suggestions — double progression, the way a coach runs it:
+ * Next-weight suggestions: double progression, the way a coach runs it:
  *
  *  - Hit the target reps on every top-weight working set last session →
  *    INCREASE by one step (2.5 kg / 5 lb).
@@ -10,7 +10,7 @@
  * Suggestions need a prescription to judge against, so they run only when
  * a routine start has target reps but no hand-typed weights (plan routines
  * are generated weight-less). Ad-hoc exercise adds keep replaying the last
- * session verbatim — without a target, "progress" can't be judged honestly.
+ * session verbatim, without a target, "progress" can't be judged honestly.
  * Warmup sets never count; bodyweight history (no logged weight) yields no
  * suggestion.
  */
@@ -76,7 +76,7 @@ export function targetRepsOf(sets: WorkoutSet[]): number {
 /**
  * Suggested working weight for the next session of `exerciseId` given the
  * prescribed `targetReps`. Null when there's no usable history (first time,
- * or bodyweight-only) — the caller keeps its own defaults.
+ * or bodyweight-only), so the caller keeps its own defaults.
  */
 export function suggestWeight(
   exerciseId: string,

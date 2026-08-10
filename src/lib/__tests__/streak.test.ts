@@ -61,9 +61,9 @@ describe("computeStreak", () => {
     expect(s.current).toBe(2);
   });
 
-  it("tolerates scattered misses — one skipped day does not reset it", () => {
+  it("tolerates scattered misses, one skipped day does not reset it", () => {
     const everyDay = plan([0, 1, 2, 3, 4, 5, 6]);
-    // Trained 0,1,3,4 — missed day 2 only.
+    // Trained 0,1,3,4: missed day 2 only.
     const s = computeStreak(sessions([0, 1, 3, 4], NOW), everyDay, NOW);
     expect(s.current).toBe(4);
   });

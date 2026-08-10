@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>torq · bottom nav — three redesigns</title>
+<title>torq · bottom nav, three redesigns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  /* torq design tokens — src/theme.ts (CARDLESS rebrand, SHARP-10 radii) */
+  /* torq design tokens, src/theme.ts (CARDLESS rebrand, SHARP-10 radii) */
   :root{
     --page:#0E0F0E; --page2:#1B1E1A; --surface:#151714;
     --ink:#F2F4EE; --inkSoft:#9AA294; --inkFaint:#5C6356;
@@ -103,7 +103,7 @@
   .dock-now .prof{width:46px;display:grid;place-items:center;color:rgba(255,255,255,.68);}
   .dock-now .prof .ic{width:22px;height:22px;}
 
-  /* A — five, spelled out */
+  /* A: five, spelled out */
   .dock-a{height:64px;padding:0 4px;}
   .dock-a .t{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
              color:rgba(255,255,255,.6);position:relative;border-radius:var(--r-ctrl);transition:color .18s;}
@@ -118,7 +118,7 @@
       display:grid;place-items:center;font-size:11px;font-weight:700;flex:none;}
   .dock-a .t.on .av{box-shadow:0 0 0 2px var(--primary),0 0 0 3.5px var(--accent);}
 
-  /* B — action dock */
+  /* B: action dock */
   .dock-b{height:64px;padding:0 6px;align-items:center;overflow:visible;}
   .dock-b .t{flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
              color:rgba(255,255,255,.6);height:100%;}
@@ -135,7 +135,7 @@
   .fab-live .t{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums;}
   .livedot{width:7px;height:7px;border-radius:999px;background:var(--accentInk);}
 
-  /* C — adaptive dock */
+  /* C: adaptive dock */
   .dock-c{height:56px;padding:0 4px;overflow:hidden;}
   .dock-c .t{flex:1 1 0;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);
              position:relative;height:100%;}
@@ -206,7 +206,7 @@
       <h1 style="font-size:36px;margin-top:6px">Three bottom-nav redesigns</h1>
       <p class="lede" style="margin-top:12px">
         Same brief for all three: <b class="accent">modern, comfortable, fast</b>. They differ in
-        how much of the current information architecture they are willing to move to get there —
+        how much of the current information architecture they are willing to move to get there,
         and that, not the pixels, is the decision.
       </p>
     </div>
@@ -216,14 +216,14 @@
   <section class="facts">
     <div class="fact bad"><b>36 dp</b><span>Width of an idle tab today. Android's minimum touch target is 48&nbsp;dp.</span></div>
     <div class="fact"><b>7</b><span>Things competing for the bar: 6 tabs plus the profile button.</span></div>
-    <div class="fact"><b>1 of 7</b><span>Labels visible at a time — only the active tab spells itself out.</span></div>
+    <div class="fact"><b>1 of 7</b><span>Labels visible at a time, only the active tab spells itself out.</span></div>
     <div class="fact"><b>260 ms</b><span>Every tab you touch reflows all the others. Targets move under your thumb.</span></div>
   </section>
 
   <p class="lede" style="margin-top:22px">
     Measured, not guessed: the dock is inset 14&nbsp;px each side and padded 6, so 6 tabs and the
     profile button share 274&nbsp;dp. With the active tab taking 2.6&nbsp;× the flex of the rest,
-    an idle tab lands at roughly <b class="accent">36&nbsp;dp</b> — narrower than a fingertip,
+    an idle tab lands at roughly <b class="accent">36&nbsp;dp</b>, narrower than a fingertip,
     unlabelled, and it shifts sideways as soon as anything is tapped. Every option below starts
     by giving that space back.
   </p>
@@ -246,7 +246,7 @@
           <nav class="dock dock-now" data-mock="now"></nav>
         </div>
       </div>
-      <p class="caption">Tap the tabs — this is the real 260&nbsp;ms morph.</p>
+      <p class="caption">Tap the tabs: this is the real 260&nbsp;ms morph.</p>
     </div>
     <div>
       <div class="cols" style="margin-top:0">
@@ -257,7 +257,7 @@
             <li><b>Targets move.</b> The capsule steals width from its neighbours, so the icon you aimed at is not where you aimed.</li>
             <li><b>Icons carry everything.</b> Medal, dumbbell and flexed-bicep all mean "training" to a new user; only one label shows at a time.</li>
             <li><b>Profile is an odd one out.</b> A fixed 46&nbsp;dp button inside a row of morphing tabs, with no active state of its own.</li>
-            <li><b>The dock says nothing during a workout</b> — the one moment the app is propped against a bench.</li>
+            <li><b>The dock says nothing during a workout</b>, the one moment the app is propped against a bench.</li>
           </ul>
         </div>
       </div>
@@ -290,7 +290,7 @@
       <p class="thesis">
         Stop animating and start labelling. Five equal fifths at <b class="accent">70&nbsp;dp</b> each,
         every one with its name under the icon, the active one marked by a lime rail and lime type.
-        Profile becomes the fifth slot as your new avatar — the picture we just shipped, doing work.
+        Profile becomes the fifth slot as your new avatar, the picture we just shipped, doing work.
       </p>
       <div class="cols">
         <div class="win">
@@ -298,7 +298,7 @@
           <ul>
             <li><b>Nothing moves, ever.</b> Muscle memory works from the second session on; a tab is always where it was.</li>
             <li><b>Every destination reads itself.</b> No icon literacy required, which is where new users lose a tracker.</li>
-            <li><b>70 dp targets</b> — comfortably past the 48&nbsp;dp floor, thumb-friendly one-handed.</li>
+            <li><b>70 dp targets</b>, comfortably past the 48&nbsp;dp floor, thumb-friendly one-handed.</li>
             <li><b>Your face on the bar.</b> The avatar is a better profile affordance than a generic glyph, and it confirms who is signed in.</li>
           </ul>
         </div>
@@ -307,7 +307,7 @@
           <ul>
             <li><b>History and Exercises leave the dock.</b> History gets a "See all" on Home's recents and a link from Stats; Exercises moves under Workout, where the browser already lives.</li>
             <li>Two extra entry points to build and keep honest.</li>
-            <li>The dock gets a little plainer — the morph was the flashiest thing in the app.</li>
+            <li>The dock gets a little plainer. The morph was the flashiest thing in the app.</li>
           </ul>
         </div>
       </div>
@@ -343,7 +343,7 @@
       <h2 style="font-size:26px">Action dock</h2>
       <p class="thesis">
         Four places and one <b class="accent">verb</b>. Working out is not a destination you browse
-        to — it is the thing the app is for — so it stops being a tab and becomes a 56&nbsp;dp lime
+        to (it is the thing the app is for), so it stops being a tab and becomes a 56&nbsp;dp lime
         button in the middle of the bar. While a session runs it turns into a live timer that drops
         you back into the set logger from anywhere in the app.
       </p>
@@ -351,7 +351,7 @@
         <div class="win">
           <h4>What you gain</h4>
           <ul>
-            <li><b>The main action is the biggest, closest target</b> — dead centre, where the thumb rests.</li>
+            <li><b>The main action is the biggest, closest target</b>, dead centre, where the thumb rests.</li>
             <li><b>A live session is never lost.</b> The timer is on screen in every tab, one tap from the logger.</li>
             <li><b>Only four things to scan.</b> The fastest bar to read of the three.</li>
             <li>Reads instantly as a 2026 app rather than a 2019 tab bar.</li>
@@ -361,7 +361,7 @@
           <h4>What it costs</h4>
           <ul>
             <li><b>The biggest IA move.</b> The Workout tab's start screen (quick start, routines, recommended) becomes a sheet the button opens.</li>
-            <li>Three destinations demoted, not two — Stats joins History and Exercises.</li>
+            <li>Three destinations demoted, not two, Stats joins History and Exercises.</li>
             <li>A centre button that overhangs the dock needs care against the Android nav bar.</li>
             <li>Most rework of screens you have already finished.</li>
           </ul>
@@ -400,7 +400,7 @@
       <h2 style="font-size:26px">Adaptive dock</h2>
       <p class="thesis">
         A dock that changes with what you are doing. Idle it is a compact icon rail. During a
-        session the whole bar becomes the session — <b class="accent">live dot, elapsed clock,
+        session the whole bar becomes the session, <b class="accent">live dot, elapsed clock,
         current exercise, Finish</b>. And a long press on any tab peeks its sub-pages, so Ranks
         keeps You / Friends / Arena and nothing has to be demoted to reach them.
       </p>
@@ -410,7 +410,7 @@
           <ul>
             <li><b>No destination lost.</b> The only option that changes zero information architecture.</li>
             <li><b>The dock earns its 56 dp during a workout</b>, which is when the phone is actually propped on a bench.</li>
-            <li><b>Deep pages in one gesture</b> — Arena or Friends without walking through Ranks first.</li>
+            <li><b>Deep pages in one gesture</b>, Arena or Friends without walking through Ranks first.</li>
             <li>Shortest bar of the three, so more page for the content.</li>
           </ul>
         </div>
@@ -418,7 +418,7 @@
           <h4>What it costs</h4>
           <ul>
             <li><b>Long press is invisible.</b> It needs a first-run hint, and hidden gestures are always a discoverability bet.</li>
-            <li>Icon-only again — the label problem stays unsolved for new users.</li>
+            <li>Icon-only again. The label problem stays unsolved for new users.</li>
             <li><b>A bar that changes shape can feel unstable</b> if the transition is anything less than perfect.</li>
             <li>The most code and the most states to test.</li>
           </ul>
@@ -441,22 +441,22 @@
         <tr><td>Idle target width</td><td class="no">36 dp</td><td class="yes">70 dp</td><td class="yes">63 dp + 56 dp button</td><td class="yes">67 dp</td></tr>
         <tr><td>Labels always visible</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
         <tr><td>Targets stay put</td><td class="no">No</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
-        <tr><td>Destinations demoted</td><td>—</td><td class="mid">2</td><td class="no">3</td><td class="yes">0</td></tr>
+        <tr><td>Destinations demoted</td><td>, </td><td class="mid">2</td><td class="no">3</td><td class="yes">0</td></tr>
         <tr><td>Live session reachable</td><td>Workout tab</td><td>Workout tab</td><td class="yes">Everywhere, 1 tap</td><td class="yes">Everywhere, 1 tap</td></tr>
         <tr><td>Hidden gestures</td><td>None</td><td class="yes">None</td><td class="yes">None</td><td class="mid">Long press</td></tr>
-        <tr><td>Build effort</td><td>—</td><td class="yes">Small · one file + 2 links</td><td class="mid">Medium · new start sheet</td><td class="no">Large · new dock states</td></tr>
-        <tr><td>Risk if it's wrong</td><td>—</td><td class="yes">Low, trivially reversible</td><td class="mid">Medium, IA is moved</td><td class="mid">Medium, hidden affordance</td></tr>
+        <tr><td>Build effort</td><td>, </td><td class="yes">Small · one file + 2 links</td><td class="mid">Medium · new start sheet</td><td class="no">Large · new dock states</td></tr>
+        <tr><td>Risk if it's wrong</td><td>, </td><td class="yes">Low, trivially reversible</td><td class="mid">Medium, IA is moved</td><td class="mid">Medium, hidden affordance</td></tr>
       </tbody>
     </table>
   </div>
 
   <p class="lede" style="margin-top:22px">
-    <b class="accent">My read:</b> A fixes the thing that is actually broken — cramped, moving,
-    unlabelled targets — for the least money and with nothing to regret. B is the better product
+    <b class="accent">My read:</b> A fixes the thing that is actually broken, cramped, moving,
+    unlabelled targets, for the least money and with nothing to regret. B is the better product
     if you believe torq is a workout-first app rather than a dashboard-first one, and it is the
     one that will look modern longest. They also compose: ship A now, and add B's centre action
     later without touching A's labels. C is the most interesting and the one I would not build
-    third-party-blind — its long press wants a real device in a real gym before you commit.
+    third-party-blind, its long press wants a real device in a real gym before you commit.
   </p>
 
   <!-- ── choice ─────────────────────────────────────────── -->
@@ -471,26 +471,26 @@
     if (!choice) return;
     window.lavish.queuePrompt(
       'Build navbar option ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
-      { tag: 'choice', text: 'Navbar: ' + choice + (notes ? ' — ' + notes : ''),
+      { tag: 'choice', text: 'Navbar: ' + choice + (notes ? ', ' + notes : ''),
         element: event.currentTarget, queueKey: 'navbar',
         data: { question: 'navbar', answer: choice, notes } }
     );
   ">
     <p class="soft" style="font-size:13.5px">
-      Pick one and I implement it end to end. Everything else on this page stays annotatable —
+      Pick one and I implement it end to end. Everything else on this page stays annotatable,
       mark up any tab, label or trade-off you want changed first.
     </p>
     <div class="picks">
-      <label><input type="radio" name="nav" value="A — Five, spelled out">
+      <label><input type="radio" name="nav" value="A, Five, spelled out">
         <span><span class="nm">A · Five, spelled out</span><span class="ds">Labelled fifths, avatar tab. Small build, low risk.</span></span></label>
-      <label><input type="radio" name="nav" value="B — Action dock">
+      <label><input type="radio" name="nav" value="B, Action dock">
         <span><span class="nm">B · Action dock</span><span class="ds">Centre lime Start button + live timer. Boldest.</span></span></label>
-      <label><input type="radio" name="nav" value="C — Adaptive dock">
+      <label><input type="radio" name="nav" value="C, Adaptive dock">
         <span><span class="nm">C · Adaptive dock</span><span class="ds">Session bar + long-press peek. Keeps every destination.</span></span></label>
       <label><input type="radio" name="nav" value="A now, B later">
         <span><span class="nm">A now, B later</span><span class="ds">Ship the labelled bar, add the centre action after.</span></span></label>
     </div>
-    <textarea name="notes" placeholder="Anything to change first — tab order, which destinations may be demoted, labels…"></textarea>
+    <textarea name="notes" placeholder="Anything to change first, tab order, which destinations may be demoted, labels…"></textarea>
     <button class="send" type="submit">Queue this answer</button>
     <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
   </form>

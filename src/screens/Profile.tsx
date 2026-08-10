@@ -1,9 +1,9 @@
 /**
- * Profile — the ATHLETE CARD (idea 1 of the lavish profile review,
+ * Profile: the ATHLETE CARD (idea 1 of the lavish profile review,
  * `.lavish/torq-profile.html`; Adilzhan picked "1 with a settings page built
  * like 2", 2026-08-09).
  *
- * It used to be four screens in one scroll — identity, a full rank card, the
+ * It used to be four screens in one scroll, identity, a full rank card, the
  * app's settings, and account deletion, about 2 400 px of it. Now the page
  * has exactly one job, "who am I here":
  *
@@ -103,7 +103,7 @@ function LinkRow({
   );
 }
 
-/** Name + photo — the only two things about you that are edited here. */
+/** Name + photo: the only two things about you that are edited here. */
 function EditDialog({ onClose }: { onClose: () => void }) {
   const { settings, updateSettings } = useStore();
   const [busy, setBusy] = useState(false);
@@ -254,7 +254,7 @@ export function Profile({
   const ranked = lifts.length > 0;
   const photo = avatarSource(settings);
 
-  /** "lifting since Jul 2026" — derived from the first logged session rather
+  /** "lifting since Jul 2026": derived from the first logged session rather
    *  than stored, so it stays true for someone who imported their history. */
   const since = (() => {
     const first = workouts.reduce(
@@ -274,7 +274,7 @@ export function Profile({
     return p ? percentileLabel(p) : null;
   };
 
-  /** Strongest percentile across the ranked lifts — the share card's line. */
+  /** Strongest percentile across the ranked lifts: the share card's line. */
   const bestPercentile = (() => {
     let best: { text: string; lift: string; pct: number } | null = null;
     for (const l of lifts) {
@@ -337,7 +337,7 @@ export function Profile({
           </Txt>
         </View>
 
-        {/* Rank STRIP — a summary that links to the Ranks tab, not a copy of
+        {/* Rank STRIP, a summary that links to the Ranks tab, not a copy of
             it. That tab already renders the big shield. */}
         {ranked ? (
           <Pressable
@@ -409,7 +409,7 @@ export function Profile({
           <Stat label="DAY STREAK" value={String(streak.current)} />
         </View>
 
-        {/* Best lifts — the top 3 the overall score counts */}
+        {/* Best lifts, the top 3 the overall score counts */}
         {ranked ? (
           <>
             <Eyebrow>Best lifts</Eyebrow>

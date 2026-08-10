@@ -1,5 +1,5 @@
 /**
- * Muscle rollups — what a session trains, and what is still recovering.
+ * Muscle rollups: what a session trains, and what is still recovering.
  *
  * Both exist for the Home rebuild (Adilzhan picked "Today, full-bleed" from
  * the lavish review `.lavish/torq-home.html`, 2026-08-09). The old Home told
@@ -8,8 +8,8 @@
  * about to hit.
  *
  * Ordered by SET COUNT rather than by volume: a session's identity is what
- * you spent your sets on, and volume — the thing this redesign is deleting
- * from Home — would let one heavy squat outrank six shoulder movements.
+ * you spent your sets on, and volume (the thing this redesign is deleting
+ * from Home) would let one heavy squat outrank six shoulder movements.
  */
 import type { BodyPart, Exercise, Routine, Workout } from "../types";
 
@@ -22,7 +22,7 @@ export function partLabel(p: BodyPart): string {
 
 /**
  * The body parts a routine trains, most-worked first. `limit` keeps it to
- * the few that define the session — a chip row is a headline, not an index.
+ * the few that define the session. A chip row is a headline, not an index.
  */
 export function routineMuscles(
   routine: Routine,
@@ -49,7 +49,7 @@ export interface Recovering {
 }
 
 /**
- * What you trained recently and how long ago, most recent first — the rest
+ * What you trained recently and how long ago, most recent first, the rest
  * day's "recovering" chips.
  *
  * Only WORKING sets count: a warmup does not fatigue a muscle group in any
@@ -100,7 +100,7 @@ export function sessionTag(routine: Routine, exercises: Exercise[]): string {
 }
 
 /**
- * The body parts a FINISHED workout actually worked, most-worked first —
+ * The body parts a FINISHED workout actually worked, most-worked first,
  * the History timeline's chips.
  *
  * Counts only ticked, non-warmup sets: a session where you racked the bar

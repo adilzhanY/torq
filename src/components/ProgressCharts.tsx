@@ -4,12 +4,12 @@
  *
  * Form follows the reader's job, not the data's shape:
  *
- *  - `RankLine` — "am I climbing?" ONE series over time with the tier ladder
+ *  - `RankLine`: "am I climbing?" ONE series over time with the tier ladder
  *    painted behind it. One series means emphasis, not categorical: no
  *    legend (the title names it) and exactly one direct label, at the
  *    endpoint. The bands are an ORDINAL ramp (the ladder is ordered), held
  *    at low alpha so they read as context and never compete with the line.
- *  - `Dumbbell` — "what moved?" before → after per lift. Pairs read as pairs
+ *  - `Dumbbell`: "what moved?" before → after per lift. Pairs read as pairs
  *    and the GAP is the subject, which grouped bars hide. One hue in two
  *    treatments (hollow = then, filled = now) rather than two hues, so the
  *    colour channel stays free.
@@ -26,7 +26,7 @@ import { Txt } from "./ui";
 import { TIER_COLORS, TIER_NAMES, type TierName } from "../lib/rank";
 import type { RankPoint } from "../lib/progress";
 
-/** Overall-scale tier floors — the per-lift thresholds × 3 (see rank.ts). */
+/** Overall-scale tier floors: the per-lift thresholds × 3 (see rank.ts). */
 const OVERALL_FLOOR: { tier: TierName; floor: number }[] = [
   { tier: "Rust", floor: 0 },
   { tier: "Iron", floor: 90 },
@@ -60,14 +60,14 @@ export function RankLine({
   const plotH = Math.max(1, height - padT - padB);
 
   // Y window: the data, padded, and always wide enough to show the band the
-  // user is in plus the one above — the point of the chart is the next tier.
+  // user is in plus the one above, the point of the chart is the next tier.
   const lo = Math.min(...points.map((p) => p.points));
   const hi = Math.max(...points.map((p) => p.points));
   const idx = OVERALL_FLOOR.reduce((acc, t, i) => (hi >= t.floor ? i : acc), 0);
   const nextFloor = OVERALL_FLOOR[idx + 1]?.floor ?? hi * 1.1;
   const y0 = Math.max(0, Math.min(lo - 10, OVERALL_FLOOR[idx].floor - 5));
   // The band ABOVE is the target ("9 pts to Gold"), so leave enough headroom
-  // that it is tall enough to carry its own name — an unlabelled target band
+  // that it is tall enough to carry its own name, an unlabelled target band
   // is just a stripe.
   const y1 = Math.max(hi + 10, nextFloor + Math.max(14, (nextFloor - OVERALL_FLOOR[idx].floor) * 0.2));
   const span = Math.max(1, y1 - y0);
@@ -202,7 +202,7 @@ export function Dumbbell({
 }: {
   rows: DumbbellRow[];
   /** Measured from the parent. The unit belongs in the section label, not
-   *  on every row — a suffix per row is noise the axis already carries. */
+   *  on every row, a suffix per row is noise the axis already carries. */
   width: number;
 }) {
   const ROW_H = 38;
@@ -227,7 +227,7 @@ export function Dumbbell({
         // A brand-new lift still shows what it added since its debut; "new"
         // is only for a lift that appeared and has not moved since, where
         // there is no number worth printing.
-        const label = moved ? `+${Math.round(gain)}` : r.isNew ? "new" : "—";
+        const label = moved ? `+${Math.round(gain)}` : r.isNew ? "new" : "-";
         return (
           <React.Fragment key={r.label}>
             <SvgText x={0} y={y - 10} fill={C.inkSoft} fontSize={11} fontFamily={FONT.semibold}>
@@ -263,7 +263,7 @@ export function Dumbbell({
   );
 }
 
-/** A single ratio against a limit — a meter, never a two-slice donut. */
+/** A single ratio against a limit: a meter, never a two-slice donut. */
 export function Meter({ value, color = C.accent }: { value: number; color?: string }) {
   return (
     <View

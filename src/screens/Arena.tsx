@@ -4,14 +4,14 @@
  *
  * Built to be honest about its own trustworthiness. An anonymous global
  * board is the single easiest surface in the app to poison, so:
- *  - appearing on it is a SEPARATE opt-in from having a public profile —
+ *  - appearing on it is a SEPARATE opt-in from having a public profile,
  *    friends-first stays the default, and nobody is entered silently;
  *  - a "Verified only" filter is present from day one, so trust can be
  *    tightened without retrofitting;
  *  - the footer says plainly that entries are self-reported.
  *
  * Ranking is on DOTS points, so a global board across every bodyweight is
- * still a fair comparison — which is the only reason one is defensible here
+ * still a fair comparison, which is the only reason one is defensible here
  * at all.
  */
 import { useCallback, useEffect, useState } from "react";
@@ -107,7 +107,7 @@ export function Arena() {
       <View style={{ gap: 12, paddingTop: 8 }}>
         <Eyebrow style={{ marginTop: 0 }}>Arena</Eyebrow>
         <Txt size={13} color={C.inkFaint}>
-          The global board needs an account — it ranks published snapshots,
+          The global board needs an account, it ranks published snapshots,
           and without one there is nothing to publish.
         </Txt>
         <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
@@ -128,7 +128,7 @@ export function Arena() {
       <View style={{ gap: 12, paddingTop: 8 }}>
         <Eyebrow style={{ marginTop: 0 }}>Arena</Eyebrow>
         <Txt size={13} color={C.inkSoft}>
-          Claim a handle on the Friends tab first — the board shows handles,
+          Claim a handle on the Friends tab first: the board shows handles,
           not names.
         </Txt>
       </View>
@@ -166,7 +166,7 @@ export function Arena() {
           })}
         </View>
 
-        {/* Verified filter — present from day one so trust can tighten later */}
+        {/* Verified filter, present from day one so trust can tighten later */}
         <Pressable
           onPress={() => {
             setVerifiedOnly((v) => !v);
@@ -248,7 +248,7 @@ export function Arena() {
         {rows.length === 0 ? (
           <Txt size={13} color={C.inkFaint}>
             {verifiedOnly
-              ? "No verified lifters on this board yet — verification isn't live."
+              ? "No verified lifters on this board yet, verification isn't live."
               : "Nobody has joined this board yet. Be first."}
           </Txt>
         ) : (

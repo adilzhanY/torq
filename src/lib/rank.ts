@@ -1,15 +1,15 @@
 /**
  * Rank engine v1 (PATH.md Phase 1, formula half of the locked hybrid):
- * every lift's best estimated 1RM becomes DOTS points — the sex+bodyweight
- * normalization powerlifting meets score with — and fixed point thresholds
+ * every lift's best estimated 1RM becomes DOTS points (the sex+bodyweight
+ * normalization powerlifting meets score with) and fixed point thresholds
  * map points onto the 9-tier ladder. The bundled OpenPowerlifting
  * percentile tables arrive later and will replace the thresholds for the
  * big lifts; until then the card claims tiers and points, never "top N%"
- * (no fake precision — locked decision).
+ * (no fake precision, locked decision).
  *
  * Rank-eligible sets (consistent with the PR engine, plus the rep cap):
  * finished workouts only, no warmups, weight > 0, reps 1–10 (Epley
- * degrades past 10 — such sets still count for PRs, just not ranks).
+ * degrades past 10, such sets still count for PRs, just not ranks).
  */
 import { est1RM } from "./stats";
 import { LB_TO_KG } from "./units";
@@ -182,7 +182,7 @@ export type TierUp = { exerciseId: string; toGo: number; next: TierName };
 /**
  * The nearest per-lift tier-up: the smallest extra e1RM (in the display
  * unit) any ranked lift needs to reach its next tier. The Home rank block's
- * "Bench Press — 2.5 kg from Silver" line.
+ * "Bench Press: 2.5 kg from Silver" line.
  */
 export function closestTierUp(
   lifts: BestLift[],

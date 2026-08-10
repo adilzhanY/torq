@@ -1,5 +1,5 @@
 /**
- * Workout tab — Strong-style: start an empty session or launch a routine.
+ * Workout tab: Strong-style: start an empty session or launch a routine.
  * While a session is active, this tab is the live logger: sets with
  * weight × reps, tick to complete, finish/discard.
  */
@@ -132,7 +132,7 @@ function SetNumInput({
 const BAR_H = 30;
 
 /** The centered "1:24" (with a pause glyph when frozen), drawn twice by
- *  RestCountdownBar — once lime on the track, once dark inside the fill. */
+ *  RestCountdownBar: once lime on the track, once dark inside the fill. */
 function RestLabel({
   remaining,
   paused,
@@ -164,7 +164,7 @@ function RestLabel({
 
 /**
  * Strong-style rest countdown: a bar that starts full and drains to the
- * left in one continuous animation, remaining time centered on it — dark
+ * left in one continuous animation, remaining time centered on it, dark
  * over the lime fill, lime over the spent track. Freezes while paused.
  * Tap to open the rest control pad.
  */
@@ -182,7 +182,7 @@ function RestCountdownBar({
   onPress: () => void;
 }) {
   const fill = useRef(new Animated.Value(0)).current;
-  /** Measured bar width — the clipped label copy needs it to stay centered
+  /** Measured bar width: the clipped label copy needs it to stay centered
    *  on the WHOLE bar while its own container shrinks with the fill. */
   const [barW, setBarW] = useState(0);
   useEffect(() => {
@@ -272,7 +272,7 @@ function RestDivider({
   const [editing, setEditing] = useState(false);
   /** Raw digit buffer for the m:ss masked input, e.g. "230" -> 2:30. */
   const [draft, setDraft] = useState("");
-  /** False until the first keystroke — the prefilled value shows "selected". */
+  /** False until the first keystroke: the prefilled value shows "selected". */
   const [touched, setTouched] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
@@ -380,7 +380,7 @@ function RestDivider({
     <Pressable
       hitSlop={6}
       onPress={openEditor}
-      // Slim fixed-height strip — the space between set rows is exactly this.
+      // Slim fixed-height strip. The space between set rows is exactly this.
       style={{
         flexDirection: "row",
         alignItems: "center",
@@ -422,7 +422,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [pad, setPad] = useState(false);
   /** Bumped to pop a specific set's rest editor open (pad's RESET). */
   const [editReq, setEditReq] = useState<{ key: string; n: number } | null>(null);
-  /** "ei-si" of the set row swiped open, if any — one at a time. */
+  /** "ei-si" of the set row swiped open, if any, one at a time. */
   const [swipeOpen, setSwipeOpen] = useState<string | null>(null);
   /** Which set's type menu is open + where to anchor it (touch position). */
   const [typeMenu, setTypeMenu] = useState<{ ei: number; si: number; x: number; y: number } | null>(null);
@@ -440,7 +440,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [warmupFor, setWarmupFor] = useState<number | null>(null);
   /** Draft text while a note dialog is open. */
   const [draftNote, setDraftNote] = useState("");
-  /** "ei-si" keys of sets added via Add set this render lifetime — only
+  /** "ei-si" keys of sets added via Add set this render lifetime, only
    * those mount with the GrowIn entrance (restored/prefilled rows don't). */
   const grownSets = useRef<Set<string>>(new Set());
   const weightRefs = useRef<Record<string, TextInput | null>>({});
@@ -542,7 +542,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
     }
     const prev = prevSetsFor(entry.exerciseId);
     const prevVol = prev ? prev.reduce((s, x) => s + x.weight * x.reps, 0) : 0;
-    // Stays +0% until something is logged — a fresh exercise isn't "-100%".
+    // Stays +0% until something is logged. A fresh exercise isn't "-100%".
     const pct = prevVol > 0 && vol > 0 ? Math.round(((vol - prevVol) / prevVol) * 100) : 0;
     const u = settings.unit;
     return {
@@ -563,7 +563,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
    * Insert the ramp the warm-up dialog previewed.
    *
    * REPLACES any warm-ups already on the exercise rather than stacking a
-   * second ramp on top — the dialog shows the whole ramp, so what you see is
+   * second ramp on top. The dialog shows the whole ramp, so what you see is
    * what the exercise ends up with however many times you open it. The rows
    * are saved on the Exercise so the same ramp comes back next session.
    */
@@ -735,7 +735,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Ellipsis" size={20} color={C.inkSoft} />
             </Pressable>
           </View>
-          {/* STICKY NOTE — a full-bleed amber BAND under the exercise name,
+          {/* STICKY NOTE, a full-bleed amber BAND under the exercise name,
               Strong's treatment. A note you wrote to your future self is an
               instruction ("elbows in", "bar on pin 4"), so it gets a surface
               of its own instead of the 12 px grey line it used to be, which
@@ -801,7 +801,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
               <Icon name="Check" size={14} color={C.inkFaint} />
             </View>
           </View>
-          {/* SESSION NOTE — Strong puts it here, in the list itself between
+          {/* SESSION NOTE, Strong puts it here, in the list itself between
               the column header and the first set, as a real field-shaped box.
               It is about TODAY ("shoulder felt off"), so it sits with today's
               sets rather than up in the exercise's identity. Tap to edit. */}
@@ -866,7 +866,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   style={{ width: 28 }}
                 >
                   {set.type === "normal" ? (
-                    /* A done set's number turns lime — the row's completion
+                    /* A done set's number turns lime, the row's completion
                        marker in the sharp-10 mock. */
                     <Txt size={14} weight="bold" color={set.done ? C.accent : C.inkFaint}>
                       {entry.sets.slice(0, si + 1).filter((s) => s.type === "normal").length}
@@ -878,7 +878,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   )}
                 </Pressable>
                 <Txt size={12.5} weight="semibold" color={C.inkSoft} style={{ flex: 1 }} numberOfLines={1}>
-                  {prevSets ? (prev ? `${prev.weight} ${settings.unit} × ${prev.reps}` : "—") : ""}
+                  {prevSets ? (prev ? `${prev.weight} ${settings.unit} × ${prev.reps}` : "-") : ""}
                 </Txt>
                 <View>
                   <SetNumInput
@@ -886,7 +886,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     done={set.done}
                     onChange={(v) =>
                       // Editing the weight makes it the user's number, not
-                      // the engine's — drop the suggestion badge.
+                      // the engine's, drop the suggestion badge.
                       patchSet(ei, si, { weight: Number(v) || 0, suggested: undefined })
                     }
                     inputRef={(r) => {
@@ -937,7 +937,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 </Squish>
               </View>
               </SwipeToDelete>
-              {/* A done set's rest is history — show its divider only while
+              {/* A done set's rest is history, show its divider only while
                   the countdown is actually running. Idle timers appear under
                   unfinished sets only. */}
               {set.done && rest?.key !== restKey ? null : (
@@ -1043,7 +1043,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           ) : null}
       </AnchoredModal>
 
-      {/* Set a Focus Metric — anchored under the exercise's metric pill. */}
+      {/* Set a Focus Metric, anchored under the exercise's metric pill. */}
       <AnchoredModal open={metricMenu !== null} onClose={() => setMetricMenu(null)}>
           {metricMenu && w.entries[metricMenu.ei] ? (
             <View
@@ -1103,7 +1103,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           ) : null}
       </AnchoredModal>
 
-      {/* Exercise ⋯ menu — Strong's list; only Remove exercise acts yet. */}
+      {/* Exercise ⋯ menu, Strong's list; only Remove exercise acts yet. */}
       <AnchoredModal open={dotsMenu !== null} onClose={() => setDotsMenu(null)}>
           {dotsMenu ? (
             <View
@@ -1276,12 +1276,12 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         </SlideUp>
       ) : null}
 
-      {/* Session note — lives on the WorkoutEntry, so it belongs to this
+      {/* Session note, lives on the WorkoutEntry, so it belongs to this
           workout only. */}
       {noteFor != null ? (
         <NoteDialog
           title="Note for this workout"
-          hint="Only on today's session — how it felt, what to change next time."
+          hint="Only on today's session, how it felt, what to change next time."
           value={draftNote}
           onChange={setDraftNote}
           onSave={() => {
@@ -1292,13 +1292,13 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         />
       ) : null}
 
-      {/* Sticky note — lives on the EXERCISE, so it comes back every session
+      {/* Sticky note, lives on the EXERCISE, so it comes back every session
           (cue, setup, seat height). That's the difference Strong draws
           between the two, and why both exist. */}
       {stickyFor != null ? (
         <NoteDialog
           title="Sticky note"
-          hint="Shown every time you train this exercise — cues, seat height, grip."
+          hint="Shown every time you train this exercise, cues, seat height, grip."
           value={draftNote}
           onChange={setDraftNote}
           onSave={() => {
@@ -1405,7 +1405,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
 
 /**
  * CARDLESS routine row (replaced the old fixed-height grid card): bare
- * text block — bold name with the ⋯ menu on the right, one faint preview
+ * text block, bold name with the ⋯ menu on the right, one faint preview
  * line of the set scheme. Whole row starts the routine; rows are separated
  * by Dividers in the list.
  */
@@ -1597,7 +1597,7 @@ export function Workout() {
       <Eyebrow>Routines ({visible.length})</Eyebrow>
       {visible.length === 0 ? (
         <Txt size={13} color={C.inkFaint}>
-          No routines yet. Start with a recommended one below — finishing it
+          No routines yet. Start with a recommended one below, finishing it
           keeps its exercises in your library.
         </Txt>
       ) : (

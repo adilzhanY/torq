@@ -1,18 +1,18 @@
 /**
- * Icon wrapper — TABLER (Adilzhan picked it from the lavish icon-pack review,
+ * Icon wrapper: TABLER (Adilzhan picked it from the lavish icon-pack review,
  * `.lavish/torq-icons.html`, 2026-08-09), replacing lucide.
  *
  * Why: lucide's rounded terminals sat oddly against a SHARP-10 radius system
  * and a logo made of blades. Tabler is the same 2 px outline idiom on the
- * same 24-unit box — so the swap is this map and nothing else — but drawn on
+ * same 24-unit box (so the swap is this map and nothing else), but drawn on
  * a squarer grid, and at ~6 200 glyphs it is roughly four times the library.
  *
  * DEEP IMPORTS, not the barrel: `@tabler/icons-react-native/IconHome`
  * pulls one module, where importing from the package root would hand Metro
  * all 6 243 icons to bundle (Metro does not tree-shake). Keep it that way.
  *
- * MEASURED: this swap took the Android bundle from 6.00 MB to 4.23 MB —
- * 1.78 MB smaller — because the OLD lucide import was a barrel and was
+ * MEASURED: this swap took the Android bundle from 6.00 MB to 4.23 MB (
+ * 1.78 MB smaller) because the OLD lucide import was a barrel and was
  * shipping all ~1 600 of its icons to use 57. The saving is the import
  * style, not the pack; do not undo it by "tidying" these into one line.
  *

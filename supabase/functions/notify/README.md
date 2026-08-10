@@ -1,4 +1,4 @@
-# Push notifications — setup
+# Push notifications: setup
 
 Everything in the app and the Edge Function is written and committed. These
 are the steps only you can do, because they need your Expo and Supabase
@@ -36,7 +36,7 @@ npx supabase functions deploy notify
 ```
 
 `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically by
-the platform — do **not** add them to `.env`, and never let the service role
+the platform, do **not** add them to `.env`, and never let the service role
 key near the app bundle. It bypasses RLS.
 
 ## 4. Point the webhooks at it
@@ -54,7 +54,7 @@ up who should hear about it and posts to Expo's push service.
 ## 5. Test it
 
 Build a dev/preview APK, open the app, and let it ask for notification
-permission (it asks when you open Friends, not on first launch — a prompt
+permission (it asks when you open Friends, not on first launch, a prompt
 with no context gets denied forever). Then from another account send yourself
 a friend request.
 
@@ -67,7 +67,7 @@ select user_id, platform, created_at from public.push_tokens;
 ## Notes
 
 - Tokens are per DEVICE, keyed on the token itself, so re-registering
-  updates rather than duplicating. Signing out deletes this device's row —
+  updates rather than duplicating. Signing out deletes this device's row,
   otherwise the next person to use the phone gets the previous owner's
   notifications.
 - The function batches to Expo's 100-messages-per-request limit.

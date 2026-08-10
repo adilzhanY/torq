@@ -1,7 +1,7 @@
 /**
  * Push notifications for friend requests and rank-ups.
  *
- * ⚠️ THE IMPORT ITSELF IS THE DANGEROUS PART — do not turn the dynamic
+ * ⚠️ THE IMPORT ITSELF IS THE DANGEROUS PART. Do not turn the dynamic
  * import below back into a top-level `import * as Notifications from
  * "expo-notifications"`.
  *
@@ -17,12 +17,12 @@
  *
  * So the module is loaded LAZILY and only once we know we are not in Expo
  * Go. Everything degrades to a silent no-op there, which keeps
- * `run_android.sh` working — it just cannot deliver a push, which was
+ * `run_android.sh` working. It just cannot deliver a push, which was
  * already true.
  *
  * What this module does NOT do: decide when to notify. That belongs on the
  * server (see supabase/functions/notify), because a device that is closed
- * cannot notice that someone added them — which is the entire point.
+ * cannot notice that someone added them, which is the entire point.
  *
  * Consent: the OS prompt only appears once, so we ask at a moment where the
  * request makes sense (after the user engages with the social features),
@@ -52,7 +52,7 @@ async function notifications(): Promise<NotificationsApi | null> {
   if (cached) return cached;
   try {
     const mod = await import("expo-notifications");
-    // Show a banner even when the app is open — these are always
+    // Show a banner even when the app is open. These are always
     // user-relevant. Set here rather than at module scope because there is
     // no module scope to set it in any more.
     mod.setNotificationHandler({
@@ -73,7 +73,7 @@ async function notifications(): Promise<NotificationsApi | null> {
 
 /**
  * Warm the module up so the foreground notification handler is installed
- * before anything can arrive. A no-op in Expo Go. Safe to call at startup —
+ * before anything can arrive. A no-op in Expo Go. Safe to call at startup,
  * it never throws and never blocks the first frame.
  */
 export function primePush(): void {
@@ -169,7 +169,7 @@ export type PushTap = { kind: "friend_request" | "rank_up" | "unknown" };
  * Listen for taps on a notification. Returns an unsubscribe function
  * SYNCHRONOUSLY, so callers can use it straight from a useEffect even though
  * the module underneath resolves a tick later. The caller decides where to
- * navigate — this module knows nothing about screens.
+ * navigate, this module knows nothing about screens.
  */
 export function onNotificationTap(handler: (tap: PushTap) => void): () => void {
   let sub: { remove: () => void } | null = null;

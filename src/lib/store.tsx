@@ -1,7 +1,7 @@
 /**
  * The Torq store: loads the AsyncStorage DB, exposes domain actions, persists
  * on every commit, and runs delta sync when signed in (on login, on commit,
- * and on an interval — same shape as grit mobile).
+ * and on an interval, same shape as grit mobile).
  */
 import React, {
   createContext,
@@ -103,7 +103,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     void loadEntitlements();
     loadDB().then((db) => {
       // One-time cleanup: drop the old seeded starter library (ids "seed-…").
-      // The ExerciseDB catalog replaced it — "my exercises" holds only what
+      // The ExerciseDB catalog replaced it: "my exercises" holds only what
       // the user saved. Tombstoned so the delete also propagates via sync.
       const seeded = db.exercises.filter((e) => e.id.startsWith("seed-"));
       if (seeded.length) {
@@ -149,7 +149,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     dbRef.current.tombstones.push({ table, id, updatedAt: Date.now() });
   };
 
-  /** Library exercise for a catalog dbId — imports it if missing. */
+  /** Library exercise for a catalog dbId: imports it if missing. */
   const ensureCatalog = (dbId: string): Exercise | null => {
     const dbEx = DB_BY_ID[dbId];
     if (!dbEx) return null;
@@ -367,7 +367,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       dbRef.current.activeWorkout = null;
       bury("active", w.id);
       commit();
-      // A finished session is the only thing that can move a rank — push the
+      // A finished session is the only thing that can move a rank, push the
       // new snapshot so friends see it without waiting for anyone to open
       // the Friends tab. Fire-and-forget: signed-out and offline are normal.
       void publishRankFromData(dbRef.current).catch(() => {});
@@ -388,7 +388,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     seedDemoWorkouts: () => {
       // Weekly progression factor: steady gains, a plateau, a deload dip,
-      // then recovery past the old top — makes honest-looking charts.
+      // then recovery past the old top, makes honest-looking charts.
       const PROG = [0, 1, 2, 3, 4, 4, 5, 6, 4, 6, 7, 8];
       const DEMO: {
         name: string;

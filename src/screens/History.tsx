@@ -1,5 +1,5 @@
 /**
- * History — THE TIMELINE (Adilzhan picked idea A from the lavish review
+ * History: THE TIMELINE (Adilzhan picked idea A from the lavish review
  * `.lavish/torq-history.html`, 2026-08-09).
  *
  * It used to be a wall of identical rows: every session rendered as the same
@@ -8,8 +8,8 @@
  * was the last screen in the app still leading with VOLUME and CALORIES,
  * after both were cut from Home and Stats.
  *
- * Now a rail runs down the left with a node per session — LIME when it set a
- * record — and the empty days are NAMED between them. That last part is the
+ * Now a rail runs down the left with a node per session (LIME when it set a
+ * record) and the empty days are NAMED between them. That last part is the
  * whole argument for the redesign: a log's second job is showing your
  * pattern, and "2 days off" says more about a training year than any
  * per-session number.
@@ -38,7 +38,7 @@ const MONTHS = [
 ];
 const DAY_MS = 86400000;
 
-/** Local midnight — gaps are counted in calendar days, not 24-hour blocks. */
+/** Local midnight: gaps are counted in calendar days, not 24-hour blocks. */
 function dayStart(ms: number): number {
   const d = new Date(ms);
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
@@ -79,7 +79,7 @@ export function History() {
   );
   const sections = useMemo(() => monthSections(sorted), [sorted]);
 
-  // One chronological pass each, not one per row — see stats.prTotals.
+  // One chronological pass each, not one per row: see stats.prTotals.
   const prs = useMemo(() => prTotals(workouts), [workouts]);
   const bodyAt = useMemo(
     () => (ms: number) => {
@@ -145,7 +145,7 @@ export function History() {
         ListHeaderComponent={<PageTitle style={{ marginBottom: 4 }}>History</PageTitle>}
         ListEmptyComponent={
           <Txt size={13} color={C.inkFaint}>
-            Nothing here yet — finish your first workout and it lands in the log.
+            Nothing here yet: finish your first workout and it lands in the log.
           </Txt>
         }
         renderSectionHeader={({ section }) => (

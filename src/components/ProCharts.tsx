@@ -1,6 +1,6 @@
 /**
  * Premium chart kit on react-native-gifted-charts (reference: iOS-style
- * strength-app card — curved line, grid, touch tooltip, goal line, range
+ * strength-app card, curved line, grid, touch tooltip, goal line, range
  * selector, metric chips, min/max tiles, stacked muscle bar):
  *
  *  - TrendLine → curved area line with grid, y-axis, sparse date labels, an
@@ -198,7 +198,7 @@ export function TrendLine({
           initialSpacing={8}
           endSpacing={8}
           showReferenceLine1={!!goal}
-          // gifted subtracts yAxisOffset internally — pass the raw value.
+          // gifted subtracts yAxisOffset internally, pass the raw value.
           referenceLine1Position={goal ? goal.value : 0}
           referenceLine1Config={{
             color: C.goodAcc,
@@ -269,7 +269,7 @@ export function ProBars({
   const [width, setWidth] = useState(0);
   const n = Math.max(1, bars.length);
   const barWidth = width > 0 ? Math.max(10, (width - 44) / n - 10) : 20;
-  // Pin the axis to the data — gifted's auto max leaves short bars swimming.
+  // Pin the axis to the data: gifted's auto max leaves short bars swimming.
   const top = Math.max(1, Math.ceil(Math.max(...bars.map((b) => b.value), 1) * 1.2));
   const data = bars.map((b) => ({
     value: b.value,
@@ -351,7 +351,7 @@ export function MinMaxTiles({
 /**
  * Ink ramp for the stacked breakdown segments, largest → faintest.
  *
- * These used to be `rgba(26,27,26,…)` — near-BLACK, written for the old
+ * These used to be `rgba(26,27,26,…)`, near-BLACK, written for the old
  * light clay theme. After the cardless dark rebrand the page is #0E0F0E, so
  * every segment was black on near-black and the bar rendered as an empty
  * grey strip with a legend of percentages beside it. Caught on the device
@@ -359,7 +359,7 @@ export function MinMaxTiles({
  *
  * Now a proper ordinal ramp for a dark surface: one hue, monotone lightness,
  * every adjacent step separable, faintest end still clearing the background
- * (validated — light→dark, ΔL ≥ 0.06 per step, 2.17:1 at the dim end).
+ * (validated, light→dark, ΔL ≥ 0.06 per step, 2.17:1 at the dim end).
  */
 const RAMP = ["#F2F4EE", "#BFC7B8", "#939B8C", "#6B7365", "#464C41"];
 

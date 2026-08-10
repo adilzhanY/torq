@@ -1,7 +1,7 @@
 /**
  * Ranks tab (PATH.md Phase 1, from the approved brand-v2 mockup): the
  * overall score up top, then every ranked lift as a row with its shield
- * badge. Cardless — type, hairlines, and the badges do the work. Points
+ * badge. Cardless, type, hairlines, and the badges do the work. Points
  * and tiers only; percentile lines arrive with the bundled dataset.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -38,7 +38,7 @@ export function Ranks() {
   const [paywall, setPaywall] = useState<Feature | null>(null);
   /**
    * Ranks draws thirteen rank badges and each carries the traced vortex
-   * emblem — measured at 42 ms for the carousel and 33 ms for the lift rows
+   * emblem, measured at 42 ms for the carousel and 33 ms for the lift rows
    * out of a 113 ms tab open. Nothing below the fold needs to exist in the
    * first frame, so the screen mounts a minimum and fills in once the tab
    * transition has settled. Re-tracing the emblem was tried first and
@@ -46,7 +46,7 @@ export function Ranks() {
    */
   const [warm, setWarm] = useState(false);
   useEffect(() => {
-    // A frame callback, NOT InteractionManager — that is deprecated in RN
+    // A frame callback, NOT InteractionManager, that is deprecated in RN
     // 0.86 and warns at runtime. One frame is all this needs: paint the
     // screen, then fill in the badges nobody can see yet.
     const h = requestAnimationFrame(() => setWarm(true));
@@ -55,7 +55,7 @@ export function Ranks() {
 
   const profile = bodyProfileAt(settings, measurements, Date.now());
   const finishedWorkouts = useMemo(() => workouts.filter((w) => w.endedAt), [workouts]);
-  /** Bodyweight AT A DATE — DOTS divides by it, so the tier a session earned
+  /** Bodyweight AT A DATE: DOTS divides by it, so the tier a session earned
    *  has to be scored with the body you had that day. */
   const bodyAt = useMemo(
     () => (ms: number) => {
@@ -69,7 +69,7 @@ export function Ranks() {
     [workouts, settings.unit, profile.weightKg, profile.sex],
   );
   const overall = useMemo(() => overallRank(lifts), [lifts]);
-  /** Walks the whole history — it must not run on every render. */
+  /** Walks the whole history. It must not run on every render. */
   const tierDates_ = useMemo(
     () => tierDates(finishedWorkouts, settings.unit, bodyAt),
     [finishedWorkouts, settings.unit, bodyAt],
@@ -86,7 +86,7 @@ export function Ranks() {
 
   const opened = info ? exercises.find((e) => e.id === info) : undefined;
 
-  /** Strongest percentile across the ranked competition lifts — the single
+  /** Strongest percentile across the ranked competition lifts: the single
    *  line most worth putting on a share card. */
   const bestPercentile = (() => {
     let best: { text: string; lift: string; pct: number } | null = null;
@@ -196,7 +196,7 @@ export function Ranks() {
             <Eyebrow>Overall</Eyebrow>
             <Txt size={13} color={C.inkFaint}>
               Finish a workout with weighted sets (10 reps or fewer) and your
-              ranks appear here — every lift gets a tier, normalized to your
+              ranks appear here, every lift gets a tier, normalized to your
               body.
             </Txt>
           </View>
@@ -205,7 +205,7 @@ export function Ranks() {
             {/* Overall */}
             <Eyebrow>Overall</Eyebrow>
             {/* The ladder IS the hero: it opens centred on your own tier at
-                full size, and swiping walks the whole ladder — earned tiers
+                full size, and swiping walks the whole ladder, earned tiers
                 with the date you got them, locked ones with what they cost.
                 The full-bleed negative margin lets neighbours run to the
                 screen edges instead of stopping at the page gutter. */}

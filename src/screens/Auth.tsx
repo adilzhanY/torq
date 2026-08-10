@@ -1,5 +1,5 @@
 /**
- * Auth gate — the first thing torq shows on a cold start when cloud sync is
+ * Auth gate: the first thing torq shows on a cold start when cloud sync is
  * configured and nobody is signed in. Cardless dark page, spinning vortex on
  * top, sign in / create account on one screen.
  *
@@ -10,7 +10,7 @@
  *    spinner instead of letting the user fire it twice;
  *  - a sign-up that needs email confirmation gets its own screen rather than
  *    silently doing nothing;
- *  - torq is local-first, so "continue without an account" is always there —
+ *  - torq is local-first, so "continue without an account" is always there,
  *    the gate must never be able to lock a user out of their own logs.
  *
  * No OTP by design (Adilzhan, 2026-08-08): email + password only for now.
@@ -59,7 +59,7 @@ function Field({
   autoComplete?: "email" | "password" | "new-password" | "off";
   onSubmit?: () => void;
   inputRef?: React.RefObject<TextInput | null>;
-  /** Border color override — used to flag mismatch/valid states. */
+  /** Border color override: used to flag mismatch/valid states. */
   tone?: string;
 }) {
   const [focused, setFocused] = useState(false);
@@ -149,7 +149,7 @@ function StrengthMeter({ password, email }: { password: string; email: string })
   );
 }
 
-/** The live policy checklist — the whole point of the sign-up screen. */
+/** The live policy checklist: the whole point of the sign-up screen. */
 function RuleList({ password, email }: { password: string; email: string }) {
   return (
     <View style={{ gap: 5 }}>
@@ -187,7 +187,7 @@ export function Auth() {
   const passwordRef = useRef<TextInput | null>(null);
   const confirmRef = useRef<TextInput | null>(null);
 
-  // Hardware back closes the "check your email" state, nothing else — the
+  // Hardware back closes the "check your email" state, nothing else. The
   // gate itself is not dismissable except through the offline link.
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -204,7 +204,7 @@ export function Auth() {
   const nameOk = handleOk(username);
 
   // Availability check, debounced so typing a name is one request, not ten.
-  // It runs while still anonymous — handle_taken is granted to `anon` for
+  // It runs while still anonymous, handle_taken is granted to `anon` for
   // exactly this screen (see supabase/social.sql) and answers nothing beyond
   // "that one is gone".
   useEffect(() => {
@@ -409,7 +409,7 @@ export function Auth() {
                   : checking
                     ? "Checking…"
                     : taken === true
-                      ? `@${username} is taken — pick another.`
+                      ? `@${username} is taken, pick another.`
                       : taken === false
                         ? `@${username} is free.`
                         : `@${username}`}

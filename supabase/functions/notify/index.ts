@@ -9,7 +9,7 @@
  * people. A phone that is closed cannot notice that someone added you, so
  * the device can never be the thing that decides to notify.
  *
- * Runs on Deno. It uses the SERVICE ROLE key, which bypasses RLS — that is
+ * Runs on Deno. It uses the SERVICE ROLE key, which bypasses RLS. That is
  * required to read the recipient's push tokens (their RLS policy correctly
  * forbids everyone else from reading them) and is exactly why this code must
  * live server-side and never ship in the app.

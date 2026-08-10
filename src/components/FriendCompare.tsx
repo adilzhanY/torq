@@ -1,7 +1,7 @@
 /**
  * Friends compare (PATH.md Phase 3): you and one friend, side by side.
  *
- * Comparison is by DOTS POINTS, never by raw kilos — that is the whole
+ * Comparison is by DOTS POINTS, never by raw kilos. That is the whole
  * premise of the rank engine. A 60 kg lifter and a 95 kg lifter benching
  * the same weight are not equal, and a compare screen that pretends
  * otherwise would undo the normalization. Each side still shows its own
@@ -29,7 +29,7 @@ function asTier(name: string): TierName {
   return (TIER_NAMES as readonly string[]).includes(name) ? (name as TierName) : "Rust";
 }
 
-/** Names differ in case/spacing across libraries — compare on a slug. */
+/** Names differ in case/spacing across libraries: compare on a slug. */
 function slug(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
@@ -62,7 +62,7 @@ function LiftRow({
   ) => (
     <View style={{ width: 92, alignItems: "center", gap: 1 }}>
       <Txt size={15} weight="extrabold" color={win ? C.accent : v ? C.ink : C.inkFaint}>
-        {v ? `${v.e1RM} ${v.unit}` : "—"}
+        {v ? `${v.e1RM} ${v.unit}` : "-"}
       </Txt>
       <Txt size={10} weight="bold" color={C.inkFaint}>
         {v ? `${Math.round(v.points)} pts` : "not logged"}
@@ -130,7 +130,7 @@ export function FriendCompare({ friend, onClose }: { friend: Friend; onClose: ()
 
   // Union of both lift lists, strongest pair first. Their snapshot only
   // carries the top 5, so "not logged" here can also mean "outside their
-  // top five" — the caption says so rather than implying they never did it.
+  // top five". The caption says so rather than implying they never did it.
   const bySlug = new Map<string, { name: string; mine?: Side["lifts"][number]; theirs?: Side["lifts"][number] }>();
   for (const l of me.lifts) bySlug.set(slug(l.name), { name: l.name, mine: l });
   for (const l of them.lifts) {
@@ -235,7 +235,7 @@ export function FriendCompare({ friend, onClose }: { friend: Friend; onClose: ()
         </View>
         {rows.length === 0 ? (
           <Txt size={13} color={C.inkFaint}>
-            Nothing to compare yet — neither of you has a ranked lift.
+            Nothing to compare yet: neither of you has a ranked lift.
           </Txt>
         ) : (
           rows.map((r, i) => (
@@ -247,7 +247,7 @@ export function FriendCompare({ friend, onClose }: { friend: Friend; onClose: ()
         )}
         <Txt size={10} color={C.inkFaint} style={{ marginTop: 8 }}>
           Ranked on DOTS points, so bodyweight and sex are already accounted
-          for — the heavier lift doesn't automatically win. A friend's list
+          for. The heavier lift doesn't automatically win. A friend's list
           holds their top 5 lifts only.
         </Txt>
       </ScrollView>

@@ -1,17 +1,17 @@
 /**
- * Plan-aware training streak — measures adherence, not raw day counts:
+ * Plan-aware training streak: measures adherence, not raw day counts:
  *
  *  - Every day with a finished workout adds 1 (multiple sessions in a day
  *    still count once; bonus rest-day workouts count too).
  *  - The streak breaks after 3 CONSECUTIVE missed planned days (weekdays
  *    of the current plan routines). Scattered single misses are tolerated
- *    — a completed workout resets the miss counter.
+ *, a completed workout resets the miss counter.
  *  - Rest days are neutral. Today's still-pending session is not a miss
  *    until the day ends. Days before the first workout never count.
  *  - No plan → no streak (nothing honest to break it against).
  *
  * Pure function of (workouts, routines): nothing stored, nothing synced.
- * Rebuilding the plan re-judges history against the NEW weekdays — the
+ * Rebuilding the plan re-judges history against the NEW weekdays: the
  * number may shift slightly; accepted, plan history isn't stored.
  */
 import type { Routine, Workout } from "../types";
@@ -23,7 +23,7 @@ export interface Streak {
   current: number;
   /** Best streak ever, including the current one. */
   longest: number;
-  /** Live streak has 2 consecutive planned misses — one more kills it. */
+  /** Live streak has 2 consecutive planned misses, one more kills it. */
   atRisk: boolean;
   /** First workout-day of the live streak (null when current = 0). */
   startedAt: number | null;

@@ -1,5 +1,5 @@
 /**
- * Torq domain types — a Strong-style workout tracker.
+ * Torq domain types: a Strong-style workout tracker.
  * Every synced row carries `id` + `updatedAt` (epoch ms) for last-write-wins
  * delta sync (see lib/sync.ts and supabase/schema.sql).
  */
@@ -49,7 +49,7 @@ export interface Exercise {
  * follow you to curls.
  */
 export interface WarmupRow {
-  /** True for the "Bar x N" row — a fixed weight, not a percentage. */
+  /** True for the "Bar x N" row: a fixed weight, not a percentage. */
   bar?: boolean;
   /** Percentage of the work set, when `bar` is not set. */
   pct?: number;
@@ -101,7 +101,7 @@ export type PlanGoal = "muscle" | "lean" | "strength" | "fit";
 
 export interface PlanPrefs {
   goal: PlanGoal;
-  /** Chosen training weekdays (0 = Sunday … 6 = Saturday), 2–6 of them —
+  /** Chosen training weekdays (0 = Sunday … 6 = Saturday), 2–6 of them,
    *  the rest are rest days. */
   weekdays: number[];
   /** Muscle groups to emphasize (extra volume + accessory slots). */
@@ -152,7 +152,7 @@ export interface Settings {
   plan?: PlanPrefs;
   /** Welcome flow finished (or skipped). */
   onboarded?: boolean;
-  /** Day (local midnight ms) whose streak celebration was already shown —
+  /** Day (local midnight ms) whose streak celebration was already shown,
    *  the Home modal auto-pops once per trained day. */
   streakCelebratedDay?: number;
   /** Profile picture kept on this phone (document dir). Always set once a

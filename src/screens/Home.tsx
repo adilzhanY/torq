@@ -1,10 +1,10 @@
 /**
- * Home — "Today, full-bleed" (Adilzhan picked idea 1 from the lavish review
+ * Home: "Today, full-bleed" (Adilzhan picked idea 1 from the lavish review
  * `.lavish/torq-home.html`, 2026-08-09).
  *
  * The problem the screenshots made obvious: a REST DAY and a TRAINING DAY
- * rendered as the same typographic block with a different noun — eyebrow,
- * headline, grey sentence — so you had to READ the page to learn what today
+ * rendered as the same typographic block with a different noun (eyebrow,
+ * headline, grey sentence), so you had to READ the page to learn what today
  * was. Home's whole job is that you shouldn't have to.
  *
  * So the day is now a PANEL that changes shape:
@@ -19,7 +19,7 @@
  *    you got, and nobody was reading it.
  *  - The DateRuler. It cost ~90 px to repeat the date already in the header,
  *    and its tick marks said nothing about which days you train. The week
- *    strip below now carries that — with each day's SESSION TAG — and the
+ *    strip below now carries that (with each day's SESSION TAG) and the
  *    calendar button still reaches any date.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -174,12 +174,12 @@ function GhostCta({ label, onPress }: { label: string; onPress: () => void }) {
 }
 
 /**
- * The day, as a panel. Every state is a visibly different object — that is
+ * The day, as a panel. Every state is a visibly different object. That is
  * the entire point of the redesign, so resist the urge to unify them back
  * into one block with a variable noun.
  */
 /**
- * The vortex, huge and dimmed, bleeding off the panel's right edge — the
+ * The vortex, huge and dimmed, bleeding off the panel's right edge, the
  * hero's watermark (Adilzhan asked for the shape he saw behind the training
  * card to be our logo).
  *
@@ -434,9 +434,9 @@ function Tile({
   value: string;
   sub?: string;
   subColor?: string;
-  /** 0..1 — draws a meter under the value. */
+  /** 0..1, draws a meter under the value. */
   progress?: number;
-  /** Seven booleans — draws the week's trained days instead of a meter. */
+  /** Seven booleans: draws the week's trained days instead of a meter. */
   dots?: boolean[];
 }) {
   return (
@@ -592,7 +592,7 @@ export function Home() {
   const listed = isToday ? recent : [...dayFinished].sort((a, b) => b.startedAt - a.startedAt);
 
   // The timeline row's two numbers. ONE chronological pass each rather than
-  // one per row — computing them per card is what made History cost 600 ms
+  // one per row, computing them per card is what made History cost 600 ms
   // to open before it was virtualised.
   const prs = useMemo(() => prTotals(workouts), [workouts]);
   const rowPoints = useMemo(
@@ -627,7 +627,7 @@ export function Home() {
                  * name ends in "day", so there is always exactly one descender
                  * pulling the word's visual mass ~2.3 dp below the box centre.
                  * Without this the pill measures perfectly centred and still
-                 * looks high — which is exactly what Adilzhan saw.
+                 * looks high, which is exactly what Adilzhan saw.
                  *
                  * A TRANSFORM, not a margin: `alignItems: "center"` centres the
                  * MARGIN box, so a marginTop of n only moves the pill n/2 and
@@ -670,7 +670,7 @@ export function Home() {
           nextUpInDays={next.inDays}
         />
 
-        {/* Week at a glance — now carrying each day's SESSION TAG, which is
+        {/* Week at a glance, now carrying each day's SESSION TAG, which is
             what the deleted date scrubber never told you. */}
         <View>
           <Eyebrow>
@@ -694,7 +694,7 @@ export function Home() {
                   : "DONE"
                 : planned
                   ? sessionTag(planned, exercises)
-                  : "—";
+                  : "-";
               return (
                 <View key={cell} style={{ flex: 1, minWidth: 0, alignItems: "center" }}>
                   <Txt size={9} weight="extrabold" color={C.inkFaint} style={{ letterSpacing: 0.4 }}>
@@ -743,7 +743,7 @@ export function Home() {
           </View>
         </View>
 
-        {/* Where you stand — three numbers that actually move. */}
+        {/* Where you stand, three numbers that actually move. */}
         {lifts.length > 0 ? (
           <View>
             <Eyebrow>Where you stand</Eyebrow>
@@ -828,7 +828,7 @@ export function Home() {
         {listed.length === 0 ? (
           <Txt size={13} color={C.inkFaint}>
             {isToday
-              ? "No workouts yet — your latest sessions will show up here."
+              ? "No workouts yet, your latest sessions will show up here."
               : "No workouts on this day."}
           </Txt>
         ) : (

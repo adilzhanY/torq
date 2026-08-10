@@ -4,7 +4,7 @@
  * sex and weight class so the rank page can say "you are at 41% of the
  * 83 kg world record".
  *
- * Matching is deliberately STRICT — only the plain barbell competition
+ * Matching is deliberately STRICT, only the plain barbell competition
  * movement counts. An incline bench or a front squat is a different lift
  * and gets no record line rather than a misleading one.
  */

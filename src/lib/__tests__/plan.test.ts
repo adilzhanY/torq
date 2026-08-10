@@ -1,7 +1,7 @@
 /**
  * The plan generator is the "coach, not notebook" pivot: whatever the user
  * answers in onboarding, it must produce a usable week. The exhaustive sweep
- * at the bottom is the real test — that shape of check is what caught flat
+ * at the bottom is the real test, that shape of check is what caught flat
  * 5x5 producing two-hour strength sessions during development.
  */
 import { describe, expect, it } from "vitest";
@@ -38,7 +38,7 @@ describe("buildPlan", () => {
     }
   });
 
-  it("is deterministic — same answers, same plan", () => {
+  it("is deterministic, same answers, same plan", () => {
     const prefs = { goal: "muscle" as const, weekdays: [1, 3, 5], focus: [] as BodyPart[], createdAt: 0 };
     expect(buildPlan(prefs)).toEqual(buildPlan(prefs));
   });
@@ -50,7 +50,7 @@ describe("buildPlan", () => {
       expect(day.items.length).toBeGreaterThan(0);
       for (const item of day.items) {
         // Catalog names carry mojibake, so plan slots reference verified
-        // dbIds — a missing one must never reach the user as a blank row.
+        // dbIds, a missing one must never reach the user as a blank row.
         expect(DB_BY_ID[item.dbId], item.dbId).toBeTruthy();
         expect(item.sets).toBeGreaterThan(0);
         expect(item.reps).toBeGreaterThan(0);

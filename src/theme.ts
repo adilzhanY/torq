@@ -1,6 +1,6 @@
 /**
- * Torq design tokens — the CARDLESS rebrand system (2026-08-06): near-black
- * page, lime accent, Space Grotesk. Content sits directly on the page —
+ * Torq design tokens: the CARDLESS rebrand system (2026-08-06): near-black
+ * page, lime accent, Space Grotesk. Content sits directly on the page,
  * hierarchy from type scale/weight/color steps (ink → inkSoft → inkFaint)
  * and whitespace, hairline dividers where separation is needed. Surfaces
  * (C.surface + C.line border) are reserved for INTERACTIVE elements and
@@ -21,7 +21,7 @@ export const C = {
   line: "#262A24",
   /** Hairline divider on the bare page. */
   hair: "#22261F",
-  /** Dim behind a modal or sheet — one definition, used by every overlay. */
+  /** Dim behind a modal or sheet: one definition, used by every overlay. */
   scrim: "rgba(0,0,0,0.55)",
   /** Near-opaque scrim for overlays that ARE the background (share card). */
   scrimDeep: "rgba(0,0,0,0.9)",
@@ -32,7 +32,7 @@ export const C = {
   accent: "#C8FE23",
   /** Text/icon color on top of the (light) lime accent. */
   accentInk: "#1A1B1A",
-  /** Spent half of the live-session rest bar — lime burned down to embers. */
+  /** Spent half of the live-session rest bar, lime burned down to embers. */
   restTrack: "#26320C",
 
   goodSurf: "#152A22",
@@ -54,18 +54,18 @@ export const C = {
 } as const;
 
 /**
- * Corner radii — the SHARP-10 system (2026-08-08, Adilzhan picked it from
+ * Corner radii: the SHARP-10 system (2026-08-08, Adilzhan picked it from
  * the lavish radius review, `.lavish/torq-radius.html`). The old clay skin
  * was pill-round everywhere; the vortex mark is eight sharp blades and the
  * cardless page leaves interactive shapes as the only geometry on screen,
  * so controls got tighter:
  *
- * - `ctrl` (10) — the DEFAULT for anything pressable: CTAs, dock tabs,
+ * - `ctrl` (10), the DEFAULT for anything pressable: CTAs, dock tabs,
  *   icon buttons, menu rows, the done-set check.
- * - `sm` (8) — inputs, KG/REPS cells, chips, tabs, thumbnails.
- * - `md` (12) — buttons with a surface, gif tiles, popovers, tooltips.
- * - `lg` (16) — dialogs, bottom sheets, the dock.
- * - `pill` (999) — STATUS ONLY (LIVE, tier pills, PR trophies, the streak
+ * - `sm` (8), inputs, KG/REPS cells, chips, tabs, thumbnails.
+ * - `md` (12), buttons with a surface, gif tiles, popovers, tooltips.
+ * - `lg` (16), dialogs, bottom sheets, the dock.
+ * - `pill` (999), STATUS ONLY (LIVE, tier pills, PR trophies, the streak
  *   pill, W/D/F letters) plus true circles (avatars, week dots) and the
  *   round caps on thin progress bars. Never a plain button.
  */
@@ -74,7 +74,7 @@ export const R = { lg: 16, md: 12, ctrl: 10, sm: 8, pill: 999 } as const;
 /**
  * The floating top bar is GONE (2026-08-06: profile moved into the dock).
  * The constant stays at 0 so every screen's `TOP_BAR_SPACE + n` padding
- * collapses to its own base padding — and so a future bar could return by
+ * collapses to its own base padding, and so a future bar could return by
  * changing one number.
  */
 export const TOP_BAR_SPACE = 0;
@@ -98,11 +98,11 @@ export const FONT = {
   medium: "SpaceGrotesk_500Medium",
   semibold: "SpaceGrotesk_600SemiBold",
   bold: "SpaceGrotesk_700Bold",
-  // Space Grotesk tops out at 700 — extrabold shares Bold.
+  // Space Grotesk tops out at 700: extrabold shares Bold.
   extrabold: "SpaceGrotesk_700Bold",
 } as const;
 
-/** Soft raised shadow — only for floating interactive surfaces/overlays. */
+/** Soft raised shadow: only for floating interactive surfaces/overlays. */
 export function clay(): ViewStyle {
   return Platform.select<ViewStyle>({
     ios: {

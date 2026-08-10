@@ -1,5 +1,5 @@
 /**
- * StreakDialog — the Duolingo-style celebration (Adilzhan's reference
+ * StreakDialog: the Duolingo-style celebration (Adilzhan's reference
  * image): the streak mark breathing inside a soft halo, a giant count,
  * a personalised line, a Monday-first week strip and the longest-streak
  * trophy. Auto-pops once per trained day from Home; the pill reopens it.
@@ -8,7 +8,7 @@
  * replaced 2026-08-09 by `StreakMarkLive` when the app got its OWN streak
  * icon: keeping the Lottie would have meant this dialog celebrating with a
  * different flame from the pill that opened it. The motion it had that
- * mattered — squash-and-stretch flicker, rising embers — came with it.
+ * mattered (squash-and-stretch flicker, rising embers) came with it.
  * assets/flame.json is kept in the repo but is no longer referenced.
  */
 import { View } from "react-native";
@@ -58,10 +58,10 @@ export function StreakDialog({
 
   const name = userName?.trim();
   const subtitle = streak.atRisk
-    ? "One more missed session and it resets — train today!"
+    ? "One more missed session and it resets. Train today!"
     : streak.current > 0
       ? `You're doing really great${name ? `, ${name}` : ""}!`
-      : "Start a new streak today — one workout is all it takes.";
+      : "Start a new streak today. One workout is all it takes.";
 
   return (
     <CustomModal onClose={onClose}>

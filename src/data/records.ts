@@ -2,7 +2,7 @@
  * World-record reference marks (PATH.md Phase 1, data half).
  *
  * IPF Classic (raw) world records for the three competition lifts, per sex
- * and weight class, in kilograms. Bundled and versioned — never
+ * and weight class, in kilograms. Bundled and versioned, never
  * live-scraped (locked decision).
  *
  * FRESHNESS WARNING: records move. Searching in 2026-08 turned up several
@@ -18,10 +18,10 @@
  * squat classes are `null`.
  *
  * TWO ATTEMPTS TO FILL THEM HAVE FAILED, both rejected on purpose:
- *  1. The OpenPowerlifting dump — "best result ever recorded" is not a
+ *  1. The OpenPowerlifting dump: "best result ever recorded" is not a
  *     ratified record (its per-class maxima run well above published
  *     records because they include every division and unratified lifts).
- *  2. Secondary aggregator pages — the one that looked like a complete
+ *  2. Secondary aggregator pages: the one that looked like a complete
  *     table states outright that its values are "approximate", with no
  *     holders and no dates.
  * Filling these needs the official IPF record database

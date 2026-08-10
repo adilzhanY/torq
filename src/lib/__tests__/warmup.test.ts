@@ -21,7 +21,7 @@ describe("warmupWeight", () => {
     expect(warmupWeight({ pct: 50, reps: 3 }, 27, "kg", "barbell")).toBe(12.5);
   });
 
-  it("never returns zero — a warm-up you cannot load is not a warm-up", () => {
+  it("never returns zero, a warm-up you cannot load is not a warm-up", () => {
     expect(warmupWeight({ pct: 5, reps: 5 }, 10, "kg")).toBe(2.5);
   });
 });

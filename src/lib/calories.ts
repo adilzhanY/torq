@@ -1,23 +1,23 @@
 /**
- * Calorie estimation — per-set work + load model on a personal BMR base.
+ * Calorie estimation: per-set work + load model on a personal BMR base.
  *
  * Resting burn comes from the Mifflin-St Jeor BMR (weight, height, age,
  * sex); a MET is a multiple of that, so time-based components are
  * `MET × restingKcal × time`. Three components per workout, all derived
- * from the sets actually completed — the wall clock is IGNORED in both
+ * from the sets actually completed. The wall clock is IGNORED in both
  * directions (v1 billed idle-session time: one 20kg×15 set showed 186 kcal;
  * v2 capped billing at elapsed time, which crushed backfilled workouts
  * logged in minutes: a real 22-set session showed 89 kcal. Activity only):
  *
- * 1. LIFTING WORK — moving the load. Raising 1 kg through a ~0.5 m range is
+ * 1. LIFTING WORK: moving the load. Raising 1 kg through a ~0.5 m range is
  *    ~0.0012 kcal of mechanical work; at ~20–25% muscular efficiency plus
  *    the eccentric lowering that's ≈0.008 kcal per kg·rep (matches published
  *    per-set costs for bench/squat). Bodyweight exercises count ~60% of body
  *    mass as the load (plus any logged added weight).
- * 2. TIME UNDER WORK — ~15 s setup + 4 s per rep per completed set, billed
+ * 2. TIME UNDER WORK: ~15 s setup + 4 s per rep per completed set, billed
  *    at the Compendium MET for the movement class (resistance training 3.5,
- *    olympic lifting 6, cardio 7 — the lifting itself is component 1).
- * 3. REST BETWEEN SETS — 1.8 MET (standing around) for the PLANNED rest per
+ *    olympic lifting 6, cardio 7, the lifting itself is component 1).
+ * 3. REST BETWEEN SETS, 1.8 MET (standing around) for the PLANNED rest per
  *    completed set (per-set override or the default timer, clamped 30s–4min).
  */
 import { LB_TO_KG } from "./units";
@@ -95,7 +95,7 @@ function setSeconds(reps: number): number {
 }
 
 /**
- * Estimated calories for a workout, purely from its completed sets — live,
+ * Estimated calories for a workout, purely from its completed sets, live,
  * finished, and backfilled sessions are all billed the same way. `settings`
  * supplies the weight unit and the default rest timer.
  */

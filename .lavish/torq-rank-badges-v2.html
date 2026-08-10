@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>torq · rank badges v2 — game medallion style</title>
+<title>torq · rank badges v2, game medallion style</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -98,18 +98,18 @@
 <header>
   <div class="brandrow">
     <div class="brandmark"><svg viewBox="0 0 100 100"><path d="M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z" fill="#C8FE23"/></svg></div>
-    <h1>Rank badges v2 — forged hex medallions</h1>
+    <h1>Rank badges v2, forged hex medallions</h1>
   </div>
   <div class="sub">
     Rebuilt from your references. The grammar I extracted and re-drew in pure SVG:
     a <b>beveled hex frame</b> (6 light-shaded facets, 3D bottom extrusion), a <b>near-black inner field</b>
-    (your app's background — like the black-field row in reference 2), a <b>chiseled center emblem</b>,
+    (your app's background, like the black-field row in reference 2), a <b>chiseled center emblem</b>,
     and <b>ornaments that escalate with tier</b>: corner studs → vertex prongs → wings that grow →
     crest → banner pedestal → sparkles. Elite is the brand-lime tier; World Class is the only
-    holographic, color-cycling badge. Everything is one parametric generator — 9 tiers from one function.
+    holographic, color-cycling badge. Everything is one parametric generator, 9 tiers from one function.
   </div>
   <div style="margin-top:12px">
-    <span class="pill">all SVG, no images — ships as a RN component</span>
+    <span class="pill">all SVG, no images, ships as a RN component</span>
     <span class="pill">heroes animate: shimmer, glow, sparkle twinkle, holo cycle</span>
   </div>
 </header>
@@ -135,7 +135,7 @@
 </section>
 
 <section>
-  <h2>Anatomy — what each tier adds</h2>
+  <h2>Anatomy, what each tier adds</h2>
   <table class="anat">
     <tr><th>Tier</th><th>Metal</th><th>Silhouette / ornament added</th></tr>
     <tr><td>1 · Rust</td><td><span class="sw" style="background:linear-gradient(#B06A3A,#5F3A20)"></span>rust bronze, dull</td><td>bare beveled hex</td></tr>
@@ -145,7 +145,7 @@
     <tr><td>5 · Gold</td><td><span class="sw" style="background:linear-gradient(#FFD84D,#8F6414)"></span>gold</td><td>+ small wings</td></tr>
     <tr><td>6 · Platinum</td><td><span class="sw" style="background:linear-gradient(#E6FBFD,#6F8F94)"></span>ice platinum</td><td>+ larger wings, top crest</td></tr>
     <tr><td>7 · Diamond</td><td><span class="sw" style="background:linear-gradient(#B8E6FF,#2F6FAE)"></span>diamond blue</td><td>+ full wings, sparkles</td></tr>
-    <tr><td>8 · Elite</td><td><span class="sw" style="background:linear-gradient(#C8FE23,#5F7F0E)"></span><b style="color:var(--lime)">brand lime</b></td><td>+ banner pedestal — reaching the brand color</td></tr>
+    <tr><td>8 · Elite</td><td><span class="sw" style="background:linear-gradient(#C8FE23,#5F7F0E)"></span><b style="color:var(--lime)">brand lime</b></td><td>+ banner pedestal, reaching the brand color</td></tr>
     <tr><td>9 · World Class</td><td><span class="sw" style="background:linear-gradient(120deg,#7CF9D4,#7FB2FF,#C08CFF,#FF7FB8,#FFD97F)"></span>holographic</td><td>+ double-layer wings, everything, color-cycling</td></tr>
   </table>
 </section>
@@ -273,7 +273,7 @@ function chevrons(count,mf){
 }
 
 /* wing (right side, local coords; mirrored for left).
-   Sharp layered metal slats, military-insignia style — not rounded feathers. */
+   Sharp layered metal slats, military-insignia style: not rounded feathers. */
 const WING_BACK='M0 -28 L58 -40 L62 -20 L54 -2 L46 14 L32 26 L0 30 Z';
 const WING_SLATS=[
   'M0 -20 L48 -34 L56 -18 L8 -8 Z',

@@ -1,5 +1,5 @@
 /**
- * Social client (PATH.md Phase 3) — the thin typed layer over the tables in
+ * Social client (PATH.md Phase 3): the thin typed layer over the tables in
  * supabase/social.sql. Everything here is friend-scoped by RLS on the
  * server; this module never assumes it can see more than it can.
  *
@@ -24,7 +24,7 @@ export interface Profile {
   visible: boolean;
   /** Opted in to the global leaderboard (separate from `visible`). */
   arena?: boolean;
-  /** Numbers checked by a human. Nothing sets this yet — see social.sql. */
+  /** Numbers checked by a human. Nothing sets this yet, see social.sql. */
   verified?: boolean;
   /** Public URL of the uploaded profile picture, if any. */
   avatarUrl?: string | null;
@@ -68,7 +68,7 @@ export interface SnapshotLift {
 
 /** A friend as the Friends list needs them: who they are + where they rank. */
 export interface Friend {
-  /** friendships.id — the row to delete when unfriending. */
+  /** friendships.id, the row to delete when unfriending. */
   edgeId: string;
   userId: string;
   handle: string;
@@ -105,7 +105,7 @@ export interface RankEvent {
 
 export type Result<T> = { data: T | null; error: string | null };
 
-const OFFLINE: string = "No connection — friends need the internet.";
+const OFFLINE: string = "No connection, friends need the internet.";
 
 /** How long a rank-up stays in the feed. */
 const EVENT_TTL_DAYS = 90;
@@ -218,7 +218,7 @@ export async function saveProfile(
  * there is no authenticated moment during registration in which the profile
  * row could be written. Rather than drop the name the user just picked (and
  * ask for it again later), it waits here and is claimed the first time a
- * session appears — which may be minutes later, on the sign-in after the
+ * session appears, which may be minutes later, on the sign-in after the
  * confirmation link.
  */
 const PENDING_HANDLE_KEY = "torq.pending_handle.v1";
@@ -233,7 +233,7 @@ export async function rememberSignupHandle(handle: string): Promise<void> {
  * already has.
  *
  * Registering with a username is an explicit "this is how friends find me",
- * so the profile is published (`visible`) — the Friends screen's separate
+ * so the profile is published (`visible`), the Friends screen's separate
  * handle claim exists for people who signed up before this, or as a guest.
  */
 export async function claimPendingHandle(): Promise<void> {
@@ -360,13 +360,13 @@ export async function publishRankFromData(source: {
   });
   if (res.error) return;
 
-  // No previous row means this is a first publish, not a promotion — a
+  // No previous row means this is a first publish, not a promotion. A
   // brand-new user should not spray "Rust → Gold" across their friends' feed.
   if (!prev) return;
 
   // Only PROMOTIONS reach the feed. A tier can fall (gaining bodyweight
   // lowers DOTS for the same lift), and "@you reached Silver" would be a lie
-  // on the way down — demotions are silent, by design.
+  // on the way down, demotions are silent, by design.
   const rank = (t: string) => (TIER_NAMES as readonly string[]).indexOf(t);
   const promoted = (from: string, to: string) => rank(to) > rank(from) && rank(from) >= 0;
 
@@ -409,7 +409,7 @@ export async function publishRankFromData(source: {
   }
 
   // Tier changes are rare and the diff is against the stored row, so running
-  // this on every publish stays idempotent — no duplicate events.
+  // this on every publish stays idempotent, no duplicate events.
   if (events.length > 0) await sb.from("rank_events").insert(events);
 
   // Retention: nobody needs to see a rank-up from last spring, and the row
@@ -623,7 +623,7 @@ export async function loadFriends(): Promise<Result<FriendsView>> {
     }
   }
   friends.sort((a, b) => (b.snapshot?.points ?? -1) - (a.snapshot?.points ?? -1));
-  // Incoming first — those are the ones needing an answer.
+  // Incoming first: those are the ones needing an answer.
   requests.sort((a, b) => (a.direction === b.direction ? 0 : a.direction === "in" ? -1 : 1));
   return { data: { friends, requests }, error: null };
 }
@@ -697,7 +697,7 @@ export async function sendRequest(userId: string): Promise<Result<true>> {
     if (edge.status === "blocked") return fail("That request can't be sent.");
     // Pending: theirs to us → accept it; ours to them → nothing to do.
     if (edge.addressee === me) return acceptRequest(edge.id);
-    return fail("Already asked — waiting for them to accept.");
+    return fail("Already asked, waiting for them to accept.");
   }
 
   const { error } = await sb
@@ -719,7 +719,7 @@ export async function acceptRequest(edgeId: string): Promise<Result<true>> {
 /**
  * Delete the account and every trace of it on the server. Play requires
  * this to exist in-app; the RPC only ever touches auth.uid()'s own rows.
- * The caller is responsible for wiping local data afterwards — the server
+ * The caller is responsible for wiping local data afterwards, the server
  * copy going away must not silently take the phone's copy with it.
  */
 export async function deleteAccount(): Promise<Result<true>> {

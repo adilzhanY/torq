@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>torq · history — three redesigns</title>
+<title>torq · history, three redesigns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -148,8 +148,8 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <h1 style="font-size:36px;margin-top:6px">Three History redesigns</h1>
     <p class="lede" style="margin-top:12px">
       The page is a <b class="accent">wall of identical rows</b>. Every session looks the same weight
-      whether it set five records or was three sets of bench, and the numbers it leads with — volume
-      and calories — are the two you have already cut from Home and Stats. All three ideas fix the
+      whether it set five records or was three sets of bench, and the numbers it leads with (volume
+      and calories) are the two you have already cut from Home and Stats. All three ideas fix the
       same thing: make a session's <i>meaning</i> visible before its inventory.
     </p>
   </div>
@@ -159,7 +159,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
   <div class="fact bad"><b>12 240 kg</b><span>Volume, still on every card, after you removed it everywhere else.</span></div>
   <div class="fact bad"><b>5 rows</b><span>Of "3 × Barbell X … 90 kg" per card. The list is most of the ink.</span></div>
   <div class="fact bad"><b>0</b><span>Visual difference between a 15-PR session and an empty one.</span></div>
-  <div class="fact"><b>0</b><span>Sense of rhythm — you cannot see a week off, or a streak, from the log.</span></div>
+  <div class="fact"><b>0</b><span>Sense of rhythm, you cannot see a week off, or a streak, from the log.</span></div>
 </section>
 
 <hr class="hair"/>
@@ -177,7 +177,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <h4 style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bad);margin-bottom:4px">What's wrong</h4>
     <div class="annot"><span class="n">1</span><p><b>Everything is the same weight.</b> Leg Day set <i>15 personal records</i> and Morning Workout was three sets of bench, and on the page they are two identical blocks of grey rows.</p></div>
     <div class="annot"><span class="n">2</span><p><b>The exercise list eats the card.</b> Five lines of "4 × Barbell Full Squat … 90 kg" is an inventory, not a memory. The number on the right is only the top weight, which is rarely the point.</p></div>
-    <div class="annot"><span class="n">3</span><p><b>Volume and calories are still the headline stats</b> — the exact two you deleted from Home and Stats. History is now the last place in the app that leads with them.</p></div>
+    <div class="annot"><span class="n">3</span><p><b>Volume and calories are still the headline stats</b>, the exact two you deleted from Home and Stats. History is now the last place in the app that leads with them.</p></div>
     <div class="annot"><span class="n">4</span><p><b>No rhythm.</b> A log's second job is showing your pattern: streaks, weeks off, whether you are training more than last month. Nothing here does that.</p></div>
     <div class="annot"><span class="n">5</span><p><b>Nothing connects a session to your rank</b>, even though the app can say exactly which sessions moved it.</p></div>
   </div>
@@ -235,7 +235,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <div class="opt-head"><p class="eyebrow">Idea A</p><span class="tag rec">Recommended</span><span class="tag">Medium build</span></div>
     <h2 style="font-size:26px">The timeline</h2>
     <p class="thesis">
-      A rail down the left with a node per session — <b class="accent">lime when it set a record</b> —
+      A rail down the left with a node per session, <b class="accent">lime when it set a record</b>,
       and the empty days named between them. The exercise inventory becomes muscle chips; what earns
       the space instead is what the session <i>did</i>: records, points, muscles worked.
     </p>
@@ -248,7 +248,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
         <li><b>You lose the at-a-glance exercise list.</b> Knowing what you actually lifted now needs a tap.</li>
-        <li>The gap markers need care — "0 days off" between two sessions on one day must not appear.</li>
+        <li>The gap markers need care, "0 days off" between two sessions on one day must not appear.</li>
         <li>A rail plus nodes is more layout than a flat list, and it has to keep working inside the virtualised SectionList.</li>
       </ul></div>
     </div>
@@ -314,13 +314,13 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <div class="cols">
       <div class="win"><h4>What you gain</h4><ul>
         <li><b>The densest signal per screen.</b> A month's shape, its totals and its sessions in one view.</li>
-        <li><b>"Best set" is the honest headline</b> — one line that says what the session was actually about, where the five-row list said nothing.</li>
+        <li><b>"Best set" is the honest headline</b>. One line that says what the session was actually about, where the five-row list said nothing.</li>
         <li><b>Months become comparable.</b> Scroll back and you can see July was 14 sessions and +31 points against August's 4.</li>
         <li>The heatmap is the rhythm view the app is missing, and it lives where you already look for the past.</li>
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
         <li><b>Most to build.</b> A calendar grid per section, month aggregates, and per-session best-set and points-gained, all inside a virtualised list.</li>
-        <li>Points-gained per session means replaying the rank history — cheap, but new work.</li>
+        <li>Points-gained per session means replaying the rank history, cheap, but new work.</li>
         <li>A month with two sessions gets a mostly empty calendar, which looks like failure rather than data.</li>
       </ul></div>
     </div>
@@ -397,7 +397,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
         <li><b>It reintroduces boxes</b> on a page the CARDLESS rule says should be content on the page with hairlines. This is the one idea that argues with the design system.</li>
-        <li>Still no rhythm — you cannot see a week off.</li>
+        <li>Still no rhythm. You cannot see a week off.</li>
         <li>"+ 3 more exercises" hides things behind a tap that used to be visible.</li>
       </ul></div>
     </div>
@@ -413,19 +413,19 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <tr><td>PR session stands out</td><td class="no">No</td><td class="yes">Lime node + chip</td><td class="yes">Gold count</td><td class="yes">Gold edge</td></tr>
     <tr><td>Shows rhythm / days off</td><td class="no">No</td><td class="yes">Named gaps</td><td class="yes">Month heatmap</td><td class="no">No</td></tr>
     <tr><td>Sessions per screen</td><td class="no">~2</td><td class="yes">~5</td><td class="yes">~6</td><td class="mid">~4</td></tr>
-    <tr><td>Fits the CARDLESS rule</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No — boxes return</td></tr>
+    <tr><td>Fits the CARDLESS rule</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No, boxes return</td></tr>
     <tr><td>Matches Home's language</td><td class="no">No</td><td class="mid">Muscle chips</td><td class="mid">Partly</td><td class="yes">Session tags</td></tr>
-    <tr><td>New data needed</td><td>—</td><td class="mid">Points per session</td><td class="no">Points, best set, month totals</td><td class="mid">Points, session tag</td></tr>
-    <tr><td>Build effort</td><td>—</td><td class="mid">Medium</td><td class="no">Large</td><td class="yes">Small</td></tr>
+    <tr><td>New data needed</td><td>, </td><td class="mid">Points per session</td><td class="no">Points, best set, month totals</td><td class="mid">Points, session tag</td></tr>
+    <tr><td>Build effort</td><td>, </td><td class="mid">Medium</td><td class="no">Large</td><td class="yes">Small</td></tr>
   </tbody>
 </table></div>
 
 <p class="lede" style="margin-top:22px">
   <b class="accent">My read:</b> A. It is the only one that answers "what does a log <i>do</i> that a list
-  cannot" — it shows the gaps, and the gaps are the story of anyone's training year. It also stays
+  cannot". It shows the gaps, and the gaps are the story of anyone's training year. It also stays
   cardless, halves the ink per session, and finishes removing volume from the app. B has the best
   content and the worst cost/benefit; its month heatmap is worth stealing into A later as a section
-  header. C is the safe one, and the only one that fights the design system — bringing boxes back to
+  header. C is the safe one, and the only one that fights the design system, bringing boxes back to
   a page you deliberately un-boxed in the cardless migration.
 </p>
 
@@ -440,26 +440,26 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
   if (!choice) return;
   window.lavish.queuePrompt(
     'Redesign the History page using: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
-    { tag: 'choice', text: 'History: ' + choice + (notes ? ' — ' + notes : ''),
+    { tag: 'choice', text: 'History: ' + choice + (notes ? ', ' + notes : ''),
       element: event.currentTarget, queueKey: 'history',
       data: { question: 'history', answer: choice, notes } }
   );
 ">
   <p class="soft" style="font-size:13.5px">
-    Pick one and I implement it end to end. The mocks are real markup — annotate any row,
+    Pick one and I implement it end to end. The mocks are real markup, annotate any row,
     chip or card you want changed first.
   </p>
   <div class="picks">
-    <label><input type="radio" name="design" value="A — The timeline">
+    <label><input type="radio" name="design" value="A, The timeline">
       <span><span class="nm">A · Timeline</span><span class="ds">Rail with a node per session, named gaps, muscle chips. My recommendation.</span></span></label>
-    <label><input type="radio" name="design" value="A — The timeline, with B's month heatmap header">
+    <label><input type="radio" name="design" value="A, The timeline, with B's month heatmap header">
       <span><span class="nm">A + month heatmap</span><span class="ds">The timeline, and each month opens with B's calendar.</span></span></label>
-    <label><input type="radio" name="design" value="B — The month spread">
+    <label><input type="radio" name="design" value="B, The month spread">
       <span><span class="nm">B · Month spread</span><span class="ds">Calendar + totals per month, one line per session.</span></span></label>
-    <label><input type="radio" name="design" value="C — Session cards">
+    <label><input type="radio" name="design" value="C, Session cards">
       <span><span class="nm">C · Session cards</span><span class="ds">Boxed cards with tags, top lifts, gold edge for PRs.</span></span></label>
   </div>
-  <textarea name="notes" placeholder="Anything to change first — whether to keep the exercise list, how much detail per session, should points appear…"></textarea>
+  <textarea name="notes" placeholder="Anything to change first, whether to keep the exercise list, how much detail per session, should points appear…"></textarea>
   <button class="send" type="submit">Queue this answer</button>
   <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
 </form>

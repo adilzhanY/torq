@@ -2,7 +2,7 @@
  * Types for @tabler/icons-react-native's DEEP imports.
  *
  * The package ships per-icon modules (`@tabler/icons-react-native/IconHome`),
- * which is how src/components/Icon.tsx imports them — the barrel would hand
+ * which is how src/components/Icon.tsx imports them. The barrel would hand
  * Metro all 6 243 icons, and Metro does not tree-shake.
  *
  * Its `exports` map points those subpaths at `./dist/icons/*.d.ts`, but the

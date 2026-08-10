@@ -58,7 +58,7 @@ describe("percentileForExercise", () => {
   it("only speaks for the three plain barbell competition lifts", () => {
     const pts = dotsPoints(120, 83, "male");
     expect(percentileForExercise("Barbell Bench Press", "barbell", "male", pts)).not.toBeNull();
-    // Variations have no distribution of their own — better silent than wrong.
+    // Variations have no distribution of their own, better silent than wrong.
     expect(percentileForExercise("Incline Bench Press", "barbell", "male", pts)).toBeNull();
     expect(percentileForExercise("Dumbbell Bench Press", "dumbbell", "male", pts)).toBeNull();
     expect(percentileForExercise("Leg Extension", "machine", "male", pts)).toBeNull();

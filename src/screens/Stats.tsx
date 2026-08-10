@@ -1,5 +1,5 @@
 /**
- * Stats — "the climb" (Adilzhan picked idea 1 plus the dumbbell chart from
+ * Stats: "the climb" (Adilzhan picked idea 1 plus the dumbbell chart from
  * idea 2 in the lavish review `.lavish/torq-stats.html`, 2026-08-09).
  *
  * The page used to measure VOLUME: the KPI row led with "29k VOLUME (KG)"
@@ -7,16 +7,16 @@
  * bar chart of weekly workout counts, four of whose six slots were empty.
  * Volume is how much work you did; it rewards long sessions, not strong
  * ones. This page now answers the only question torq is uniquely able to
- * answer — **am I getting stronger** — in one order:
+ * answer (**am I getting stronger**) in one order:
  *
  *   1. rank points now, and the climb, with the tier ladder behind it
  *   2. how far to the next tier, in points AND in kilos
- *   3. WHICH LIFTS MOVED — the dumbbell chart, where a flat row is a stall
+ *   3. WHICH LIFTS MOVED, the dumbbell chart, where a flat row is a stall
  *   4. the records that got you here
  *   5. bodyweight (it divides DOTS, so it moves the rank) and consistency
  *
  * Volume, sets, hours, the weekly bars and the muscle split are not deleted
- * — they moved to the "Training load" sub-page, for when you actually want
+ *. They moved to the "Training load" sub-page, for when you actually want
  * them. Measurements moved to their own sub-page too.
  */
 import { useMemo, useState } from "react";
@@ -162,7 +162,7 @@ export function Stats() {
     const raw = rankHistory(finished, settings.unit, bodyAt, from, now, 32);
     // Drop the leading UNRANKED samples. Keeping them drew a vertical cliff
     // out of zero and made the delta read "+217 in 6 months", which is the
-    // gain from not existing — true, and useless. The climb starts at the
+    // gain from not existing, true, and useless. The climb starts at the
     // first moment there was something to climb from.
     const first = raw.findIndex((p) => p.points > 0);
     return first <= 0 ? raw : raw.slice(first);
@@ -176,7 +176,7 @@ export function Stats() {
   const overall = overallRank(lifts);
   const s = overall.state;
   const gained = history.length > 1 ? s.points - history[0].points : 0;
-  /** "since May 26" — always true, unlike "in 6 months" when the data is younger. */
+  /** "since May 26". Always true, unlike "in 6 months" when the data is younger. */
   const sinceLabel = history.length
     ? `${MONTHS[new Date(history[0].at).getMonth()].slice(0, 3)} ${String(
         new Date(history[0].at).getFullYear(),
@@ -201,7 +201,7 @@ export function Stats() {
 
   const records = useMemo(() => recentRecords(finished, 5), [finished]);
 
-  /** The two lifts closest to a promotion, in kilos — what you do on Monday. */
+  /** The two lifts closest to a promotion, in kilos: what you do on Monday. */
   const tierUps = useMemo(() => {
     const out: { exerciseId: string; toGo: number; next: string; progress: number }[] = [];
     let pool = [...lifts];
@@ -366,7 +366,7 @@ export function Stats() {
               </View>
             ) : (
               <Txt size={10.5} color={C.inkFaint} style={{ marginTop: 4 }}>
-                Log it to see the trend — it divides your DOTS score.
+                Log it to see the trend: it divides your DOTS score.
               </Txt>
             )}
           </View>
@@ -503,7 +503,7 @@ function MeasurementsPage({
       {confirming ? (
         <ConfirmModal
           title="Delete measurement?"
-          message={`${confirming.kind} — ${confirming.value} ${confirming.unit} will be removed from the log.`}
+          message={`${confirming.kind}, ${confirming.value} ${confirming.unit} will be removed from the log.`}
           onConfirm={() => onDelete(confirming.id)}
           onClose={() => setConfirming(null)}
         />
@@ -513,7 +513,7 @@ function MeasurementsPage({
 }
 
 /**
- * Everything the old page led with. It is not wrong — it is just not the
+ * Everything the old page led with. It is not wrong. It is just not the
  * headline, so it lives here for the sessions where you do want to know how
  * much you moved.
  */
@@ -540,7 +540,7 @@ function TrainingLoadPage({ onBack }: { onBack: () => void }) {
   const sets = inMonth.reduce((s, w) => s + workoutSets(w), 0);
   const hours = inMonth.reduce((s, w) => s + ((w.endedAt ?? w.startedAt) - w.startedAt), 0) / 3600000;
 
-  // Weekly buckets — only weeks that actually contain something, so the
+  // Weekly buckets: only weeks that actually contain something, so the
   // chart is never four fifths empty the way the old one was.
   const thisWeek = weekStartOf(Date.now());
   const buckets = new Map<number, { volume: number; count: number }>();

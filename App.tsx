@@ -40,7 +40,7 @@ function Root() {
   const [dataNoteOpen, setDataNoteOpen] = useState(false);
 
   // Restoring the session and reading the local DB both gate the first
-  // frame — one splash covers both so the app never flashes the auth screen
+  // frame, one splash covers both so the app never flashes the auth screen
   // at someone who is already signed in.
   if (!ready || (auth.enabled && auth.loading)) {
     return (
@@ -101,7 +101,7 @@ function Root() {
         >
           <Icon name="TriangleAlert" size={14} color={C.badAcc} />
           <Txt size={11} weight="bold" color={C.badAcc} style={{ flex: 1 }}>
-            Saved data could not be read — tap before logging anything
+            Saved data could not be read, tap before logging anything
           </Txt>
         </Pressable>
       ) : null}
@@ -112,7 +112,7 @@ function Root() {
           message={
             "torq is running on an empty database right now. The unreadable " +
             "copy has been kept on this device, so nothing has been deleted " +
-            "— but logging new workouts will save over it. If you have an " +
+            ", but logging new workouts will save over it. If you have an " +
             "account, sign in first and your data will come back from the " +
             "cloud."
           }
@@ -124,7 +124,7 @@ function Root() {
 
       {/* Loud failure instead of a silent one. When the Supabase env vars
           are missing the auth gate quietly skips itself and accounts look
-          "broken" with no explanation — which is exactly what happened to
+          "broken" with no explanation, which is exactly what happened to
           the first EAS build, whose profile had no env block (.env is
           gitignored, so EAS never uploads it). If this banner is visible in
           a real build, fix eas.json, not the app. */}
@@ -148,7 +148,7 @@ function Root() {
         >
           <Icon name="TriangleAlert" size={14} color={C.warnAcc} />
           <Txt size={11} weight="bold" color={C.warnAcc} style={{ flex: 1 }}>
-            Cloud sync not configured — accounts and friends are off
+            Cloud sync not configured: accounts and friends are off
           </Txt>
         </Pressable>
       ) : null}
@@ -213,8 +213,8 @@ export default function App() {
             {/* Reserve BOTH system bars. The Android navigation bar (the
                 back/home/recents strip) was drawing over the app: the dock
                 compensated for it but nothing else did, so every
-                bottom-anchored control — the rest-timer pad, the picker's
-                "Add N exercises" footer, the new-exercise sheet — sat
+                bottom-anchored control (the rest-timer pad, the picker's
+                "Add N exercises" footer, the new-exercise sheet) sat
                 underneath it and could not be tapped. Reserving the inset
                 once here means no child can draw under the bar, and every
                 hardcoded paddingBottom in the app stays correct. */}

@@ -144,14 +144,14 @@
 
   <div class="eyebrow">torq · design decision</div>
   <h1>How round should torq be?</h1>
-  <p class="lede">We went cardless, dark, and Space Grotesk — but every chip, button, field and dock capsule
+  <p class="lede">We went cardless, dark, and Space Grotesk, but every chip, button, field and dock capsule
   is still fully rounded (<code>R.pill = 999</code>) or very soft (<code>R.md = 22</code>). That radius is
   left over from the warm clay/bento skin. Here is what it looks like at four settings, and what I think we
   should lock in.</p>
 
   <h2>My take</h2>
   <div class="verdict">
-    <div class="big">Yes — go less round. Land on <b>10 px for controls, 8 px for chips and fields</b>,
+    <div class="big">Yes, go less round. Land on <b>10 px for controls, 8 px for chips and fields</b>,
     and keep the pill for one job only: <b>status labels</b> (LIVE, tier pills, PR badges).</div>
     <div class="why">
       <div>
@@ -171,13 +171,13 @@
       </div>
       <div>
         <h3>Not fully square</h3>
-        <p>0–4 px reads as brutalist/dev-tool — wrong for a gym app people should find pretty. 10 px is the
+        <p>0–4 px reads as brutalist/dev-tool, wrong for a gym app people should find pretty. 10 px is the
         line where it stays premium (Apple Fitness, Whoop, Strava all sit 8–14 px).</p>
       </div>
     </div>
   </div>
 
-  <h2>Try it — real torq surfaces</h2>
+  <h2>Try it, real torq surfaces</h2>
   <p>Left is what ships today. Right updates live: pick a preset or drag the slider.</p>
 
   <div class="lab">
@@ -196,7 +196,7 @@
           <div class="chip">History</div><div class="chip">Records</div>
         </div>
         <div class="bar"><i></i></div>
-        <div class="faint" style="margin-top:6px">18 pts to Gold — about 4.5 kg more</div>
+        <div class="faint" style="margin-top:6px">18 pts to Gold, about 4.5 kg more</div>
 
         <div class="setgrid" style="margin-top:16px">
           <div class="hdr">SET</div><div class="hdr">PREVIOUS</div><div class="hdr" style="text-align:center">KG</div><div class="hdr" style="text-align:center">REPS</div><div></div>
@@ -234,7 +234,7 @@
           <div class="chip">History</div><div class="chip">Records</div>
         </div>
         <div class="bar"><i></i></div>
-        <div class="faint" style="margin-top:6px">18 pts to Gold — about 4.5 kg more</div>
+        <div class="faint" style="margin-top:6px">18 pts to Gold, about 4.5 kg more</div>
 
         <div class="setgrid" style="margin-top:16px">
           <div class="hdr">SET</div><div class="hdr">PREVIOUS</div><div class="hdr" style="text-align:center">KG</div><div class="hdr" style="text-align:center">REPS</div><div></div>
@@ -266,7 +266,7 @@
       <div class="presets">
         <button class="preset" type="button" data-ctrl="999" data-chip="999" data-field="16" data-sheet="22" data-name="Pill (today)">
           <span class="sw" style="border-radius:999px"></span>
-          <span>Pill — today<small>Nothing changes. Soft, friendly, a bit generic.</small></span>
+          <span>Pill, today<small>Nothing changes. Soft, friendly, a bit generic.</small></span>
         </button>
         <button class="preset" type="button" data-ctrl="14" data-chip="12" data-field="12" data-sheet="20" data-name="Soft 14">
           <span class="sw" style="border-radius:8px"></span>
@@ -290,13 +290,13 @@
         <span>sheet <b id="vSheet">16</b>px</span>
       </div>
       <p style="font-size:12px;margin-top:14px">Drag past 20 and the buttons start swallowing their own
-      labels at small sizes — that's the practical ceiling for a 30 px tall field.</p>
+      labels at small sizes, that's the practical ceiling for a 30 px tall field.</p>
     </div>
   </div>
 
   <h2>The token map I'd ship</h2>
   <p>One edit in <code>src/theme.ts</code> changes the whole app, because every component already reads
-  <code>R</code>. The pill token stays — it just gets used in far fewer places.</p>
+  <code>R</code>. The pill token stays. It just gets used in far fewer places.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Token</th><th>Now</th><th>Proposed</th><th>Used by</th></tr></thead>
@@ -304,16 +304,16 @@
         <tr><td><b>R.lg</b></td><td class="old">28</td><td class="n">16</td><td>Dialogs, bottom sheets, the dock, overlay corners</td></tr>
         <tr><td><b>R.md</b></td><td class="old">22</td><td class="n">12</td><td>Buttons, gif tiles, routine rows, popovers</td></tr>
         <tr><td><b>R.sm</b></td><td class="old">16</td><td class="n">8</td><td>Inputs, KG/REPS cells, set-done check, chips</td></tr>
-        <tr><td><b>R.ctrl</b> <small>(new)</small></td><td class="old">—</td><td class="n">10</td><td>The default for any pressable: CTAs, dock tabs, menu rows</td></tr>
-        <tr><td><b>R.pill</b></td><td>999</td><td class="n">999</td><td><b>Status only</b> — LIVE, tier pills, PR trophies, streak pill, W/D/F set-type letters</td></tr>
+        <tr><td><b>R.ctrl</b> <small>(new)</small></td><td class="old">, </td><td class="n">10</td><td>The default for any pressable: CTAs, dock tabs, menu rows</td></tr>
+        <tr><td><b>R.pill</b></td><td>999</td><td class="n">999</td><td><b>Status only</b>, LIVE, tier pills, PR trophies, streak pill, W/D/F set-type letters</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h2>What stays fully round — non-negotiable</h2>
+  <h2>What stays fully round, non-negotiable</h2>
   <div class="keep">
     <div><b>Circles that are circles</b><p>Week-strip dots, avatar, rank badge orbit balls, the quick-start play chip. A circle is not a rounded rectangle.</p></div>
-    <div><b>Progress bars</b><p>The 5 px rank/goal bars keep round caps — a squared 5 px bar looks broken, not sharp.</p></div>
+    <div><b>Progress bars</b><p>The 5 px rank/goal bars keep round caps, a squared 5 px bar looks broken, not sharp.</p></div>
     <div><b>Status pills</b><p>LIVE, tier labels, PR badges, streak flame. This is the one place the pill earns its shape.</p></div>
     <div><b>The rank shields</b><p>The hex badge geometry is its own system and is already sharp. Untouched.</p></div>
   </div>
@@ -321,21 +321,21 @@
   <h2>Cost</h2>
   <p>Small. <code>R</code> is one object and 48 usages already reference it. The real work is auditing the
   ~31 hardcoded <code>999</code>/<code>99</code> radii scattered in components and deciding per case whether
-  each is a true pill or a leftover — roughly an hour, screen by screen, no risk of behavior change.</p>
+  each is a true pill or a leftover, roughly an hour, screen by screen, no risk of behavior change.</p>
 
   <h2>Pick one and I'll ship it</h2>
   <form class="q" data-lavish-question="radius" onsubmit="event.preventDefault();
       const f=new FormData(event.currentTarget); const choice=f.get('radius'); const note=(f.get('note')||'').toString().trim();
       if(!choice) return;
-      window.lavish.queuePrompt('Radius decision: '+choice+(note?(' — extra notes: '+note):''),
+      window.lavish.queuePrompt('Radius decision: '+choice+(note?(', extra notes: '+note):''),
         {tag:'choice',text:'Radius: '+choice,element:event.currentTarget,data:{question:'radius',answer:choice,note:note}});">
-    <label><input type="radio" name="radius" value="Sharp 10 px — ctrl 10 / chip+field 8 / sheet 16, pill reserved for status" checked>
-      <span>Sharp · 10 px <small>My recommendation — apply the full token map above across the app.</small></span></label>
-    <label><input type="radio" name="radius" value="Soft 14 px — ctrl 14 / chip+field 12 / sheet 20">
+    <label><input type="radio" name="radius" value="Sharp 10 px, ctrl 10 / chip+field 8 / sheet 16, pill reserved for status" checked>
+      <span>Sharp · 10 px <small>My recommendation, apply the full token map above across the app.</small></span></label>
+    <label><input type="radio" name="radius" value="Soft 14 px, ctrl 14 / chip+field 12 / sheet 20">
       <span>Soft · 14 px <small>Half-step. Less round than today, still soft.</small></span></label>
-    <label><input type="radio" name="radius" value="Squared 4 px — ctrl 4 / chip+field 4 / sheet 8">
+    <label><input type="radio" name="radius" value="Squared 4 px, ctrl 4 / chip+field 4 / sheet 8">
       <span>Squared · 4 px <small>Full technical look.</small></span></label>
-    <label><input type="radio" name="radius" value="Keep the pills — no radius change">
+    <label><input type="radio" name="radius" value="Keep the pills, no radius change">
       <span>Keep pills <small>Leave it alone, the round look is fine.</small></span></label>
     <textarea name="note" rows="2" placeholder="Anything to adjust? e.g. 'sharp 10 but keep the dock capsule round'"></textarea>
     <button type="submit">Queue this decision</button>

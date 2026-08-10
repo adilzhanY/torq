@@ -1,7 +1,7 @@
 /**
  * Scrubbable date ruler (nutrition-app reference): a horizontal snap
- * scroller of day numbers — the centered day is big and dark, neighbors
- * shrink and fade (scroll-driven native interpolations) — over a tick
+ * scroller of day numbers (the centered day is big and dark while
+ * neighbours shrink and fade, via scroll-driven native interpolations) over a tick
  * ruler that scrolls along (5 ticks per day, taller center tick), with a
  * fixed ▲ caret marking the selection point.
  *
@@ -23,7 +23,7 @@ export function dayStart(ms: number): number {
   return new Date(ms).setHours(0, 0, 0, 0);
 }
 
-/** Local midnight `n` days away from the given local midnight (DST-safe —
+/** Local midnight `n` days away from the given local midnight (DST-safe,
  *  adding fixed 24h blocks drifts an hour across clock changes). */
 export function addDays(dayMs: number, n: number): number {
   const d = new Date(dayMs);
@@ -132,7 +132,7 @@ export function DateRuler({
             >
               <View style={{ width: ITEM_W, alignItems: "center" }}>
                 <View style={{ height: 40, alignItems: "center", justifyContent: "center" }}>
-                  {/* Two stacked layers crossfaded — text color can't run on
+                  {/* Two stacked layers crossfaded, text color can't run on
                       the native driver, scale + opacity can. */}
                   <Animated.Text
                     style={{

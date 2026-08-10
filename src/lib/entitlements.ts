@@ -3,20 +3,20 @@
  *
  * ONE place decides what is paid. The split and the price are still open
  * questions in PATH.md, so the worst possible outcome is `if (isPro)`
- * sprinkled through twenty screens — changing your mind then means an audit
+ * sprinkled through twenty screens, changing your mind then means an audit
  * instead of an edit. Everything here is data.
  *
  * BILLING IS NOT WIRED. Play Billing needs Adilzhan's Play account, signed
  * products and a real purchase flow, and a half-wired purchase path is worse
  * than none: it can take money without granting anything. So `unlock()` is a
  * single documented seam that currently only honours a local override, and
- * `PRO` resolves to true for everyone until it is connected — shipping a
+ * `PRO` resolves to true for everyone until it is connected, shipping a
  * paywall that blocks features before purchases work would break the app
  * for the only user it has.
  *
  * The locked decision this encodes (PATH.md): core LOGGING stays free
  * forever. Ranks, social and deep insights are the paid surface. Someone
- * who paid nothing must still be able to track every workout — that is the
+ * who paid nothing must still be able to track every workout. That is the
  * promise that makes the paid tier feel fair rather than extortionate.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -34,7 +34,7 @@ export type Feature =
 export interface FeatureSpec {
   /** Shown on the paywall. */
   label: string;
-  /** Why someone would pay for it — the pitch, in one line. */
+  /** Why someone would pay for it, the pitch, in one line. */
   pitch: string;
   free: boolean;
 }
@@ -127,7 +127,7 @@ export function paidFeatures(): { key: Feature; spec: FeatureSpec }[] {
 export async function unlock(): Promise<{ ok: boolean; error: string | null }> {
   return {
     ok: false,
-    error: "Purchases aren't available yet — every feature is unlocked in the meantime.",
+    error: "Purchases aren't available yet. Every feature is unlocked in the meantime.",
   };
 }
 

@@ -6,7 +6,7 @@
  * `src/data/percentiles.json` is built from the OpenPowerlifting dump
  * (2026-08-08: 4.0M meet results → 2.2M per-lifter bests) by
  * scratchpad/percentiles.py. Distributions are over DOTS POINTS, not kilos,
- * because DOTS already normalizes sex and bodyweight — so one curve per
+ * because DOTS already normalizes sex and bodyweight, so one curve per
  * (sex, lift) covers every weight class, and it plugs straight into the
  * points rank.ts already computes.
  *
@@ -93,7 +93,7 @@ export function percentileForExercise(
   return p ? { ...p, lift } : null;
 }
 
-/** "Stronger than 62%" / "Top 3%" — the phrasing flips at the top end. */
+/** "Stronger than 62%" / "Top 3%": the phrasing flips at the top end. */
 export function percentileLabel(p: Percentile): string {
   if (p.percent >= 90) return `Top ${100 - p.percent}%`;
   return `Stronger than ${p.percent}%`;

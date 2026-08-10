@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 export type Tab = "home" | "ranks" | "history" | "workout" | "exercises" | "stats";
 
 /** Which segment of the Ranks tab is showing. It lives here rather than in
- *  Ranks' own state so other screens can deep-link into it — Profile's
+ *  Ranks' own state so other screens can deep-link into it. Profile's
  *  Friends row opens the tab already on the right segment. */
 export type RanksView = "you" | "friends" | "arena";
 
@@ -14,7 +14,7 @@ interface UiValue {
   setRanksView: (v: RanksView) => void;
   /** Jump straight to a segment of the Ranks tab. */
   openRanks: (v?: RanksView) => void;
-  /** Plan wizard (onboarding) reopened on demand — Home's build-plan hero
+  /** Plan wizard (onboarding) reopened on demand: Home's build-plan hero
    *  and Profile's Rebuild plan both route here; Root renders it. */
   planWizard: boolean;
   openPlanWizard: () => void;

@@ -57,7 +57,7 @@ export interface KeyboardAwareScrollViewProps extends ScrollViewProps {
 
 /**
  * A ScrollView that keeps the focused TextInput visible above the keyboard.
- * Drop-in replacement — same props.
+ * Drop-in replacement: same props.
  */
 export const KeyboardAwareScrollView = forwardRef<ScrollView, KeyboardAwareScrollViewProps>(
   function KeyboardAwareScrollView(
@@ -84,7 +84,7 @@ export const KeyboardAwareScrollView = forwardRef<ScrollView, KeyboardAwareScrol
           const keyboardTop = screenH - kbHeight - bottomOffset;
           const inputBottom = y + h + GAP;
           const covered = inputBottom - keyboardTop;
-          if (covered <= 0) return; // already visible — do nothing
+          if (covered <= 0) return; // already visible, do nothing
           inner.current?.scrollTo({ y: Math.max(0, offset.current + covered), animated: true });
         });
       });

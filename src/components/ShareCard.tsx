@@ -1,16 +1,16 @@
 /**
- * Share cards (PATH.md Phase 3 — "the marketing engine, treat it as a
+ * Share cards (PATH.md Phase 3: "the marketing engine, treat it as a
  * first-class feature"): a rank or a workout as a 4:5 image for stories and
  * reels, captured straight off the rendered view.
  *
  * Why a VISIBLE preview instead of an off-screen capture: on Android a view
  * parked outside the window can capture blank, and a person about to post
  * something to their story deserves to see it first. So the card IS the
- * overlay — what you look at is exactly what gets shared.
+ * overlay, what you look at is exactly what gets shared.
  *
  * Libraries checked against the SDK 57 docs (AGENTS.md): react-native-view-shot
  * `captureRef` and `expo-sharing`, both included in Expo Go. Output is
- * 1080×1350 physical pixels — the doc's PixelRatio trick, since captureRef
+ * 1080×1350 physical pixels, the doc's PixelRatio trick, since captureRef
  * sizes in logical points.
  */
 import { useEffect, useRef, useState } from "react";
@@ -90,7 +90,7 @@ export function ShareSheet({
         result: "tmpfile",
         format: "png",
         quality: 1,
-        // captureRef sizes in logical points — divide by the device ratio to
+        // captureRef sizes in logical points, divide by the device ratio to
         // land on the physical pixel count we actually want.
         width: OUT_W / ratio,
         height: OUT_H / ratio,

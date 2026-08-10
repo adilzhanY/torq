@@ -1,5 +1,5 @@
 /**
- * "Add warm-up sets" — Strong's dialog (Adilzhan's request, 2026-08-09).
+ * "Add warm-up sets", Strong's dialog (Adilzhan's request, 2026-08-09).
  *
  * It used to insert a 40/60/80% ramp silently the moment you tapped the menu
  * item, which is the wrong shape for this decision twice over: warming up for
@@ -9,7 +9,7 @@
  *
  * So: edit the formula, see the real kilos as you type, then insert. The ramp
  * is remembered ON THE EXERCISE, so tuning it for squats does not follow you
- * to curls — that is the answer to "different percentages for different
+ * to curls. That is the answer to "different percentages for different
  * exercises". The app does not guess a per-exercise default (nothing in the
  * catalog would justify one); it learns yours.
  */
@@ -90,7 +90,7 @@ function Row({
 
 /**
  * Footer as its OWN component, because `useModalClose()` reads a context
- * that CustomModal provides — calling it in the component that RENDERS the
+ * that CustomModal provides, calling it in the component that RENDERS the
  * dialog lands outside the provider and silently returns the no-op fallback.
  * (Which is exactly the bug this shipped with for one build: Insert inserted
  * and the dialog stayed open.) ConfirmButtons in Dialog.tsx exists for the

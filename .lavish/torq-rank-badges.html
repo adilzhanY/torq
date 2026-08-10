@@ -105,17 +105,17 @@
     <div class="brandmark">
       <svg viewBox="0 0 100 100"><path d="M14 18 H86 V34 H58 V70 L72 84 H42 V34 H14 Z" fill="#C8FE23"/></svg>
     </div>
-    <h1>Rank badges — 4 visual concepts</h1>
+    <h1>Rank badges, 4 visual concepts</h1>
   </div>
   <div class="sub">
     Nine tiers: <b>Rust → Iron → Bronze → Silver → Gold → Platinum → Diamond → Elite → World Class</b>.
     Every concept is pure SVG (ships as components, no image assets), built on the locked rebrand:
     sharp tau, lime <b>#C8FE23</b> on near-black. Two deliberate color rules across all concepts:
     <b>Elite is the brand-lime tier</b> (reaching the brand color = reaching the top of the human ladder),
-    and <b>World Class goes holographic</b> (animated iridescence — the only tier that cycles color).
+    and <b>World Class goes holographic</b> (animated iridescence, the only tier that cycles color).
   </div>
   <div style="margin-top:14px">
-    <span class="pill">hover any hero badge — animations run continuously</span>
+    <span class="pill">hover any hero badge, animations run continuously</span>
     <span class="pill">24 px strip under each concept = list-row legibility test</span>
   </div>
 </header>
@@ -128,7 +128,7 @@
     The facet lines make it read as machined metal, not a flat sticker. Tier is encoded twice:
     the <b>metal gradient</b> and the <b>pip count</b> on the lower facet (1–9), so colorblind users still
     read rank. Animation: a specular <b>shimmer sweep</b> across the metal + a breathing rim glow on high tiers.
-    The most "game rank" of the four — strongest for share cards and rank-up moments.
+    The most "game rank" of the four: strongest for share cards and rank-up moments.
   </div>
   <div class="stage">
     <div class="hero anim"><div class="badge anim" id="heroA"></div><div class="herolabel">hero · <b id="heroAlabel"></b></div></div>
@@ -136,9 +136,9 @@
   </div>
   <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microA"></div></div>
   <div class="notes">
-    <span class="note good">Instantly reads as "rank" — zero explanation needed</span>
+    <span class="note good">Instantly reads as "rank", zero explanation needed</span>
     <span class="note good">Pips = redundant tier encoding</span>
-    <span class="note risk">Most visually loud — can fight the calm bento UI on dense screens</span>
+    <span class="note risk">Most visually loud, can fight the calm bento UI on dense screens</span>
   </div>
 </section>
 
@@ -146,10 +146,10 @@
 <section class="concept" id="concept-b">
   <div class="chead"><span class="ctag">B</span><h2>Torque Ring</h2></div>
   <div class="cdesc">
-    A dial of <b>9 arc segments</b> around the tau — your tier is how many segments are lit,
+    A dial of <b>9 arc segments</b> around the tau: your tier is how many segments are lit,
     in the tier metal. This is the same visual language as the app's existing ArcGauges on Home,
     so it feels native on day one, and it's the only concept where <b>progress to the next tier is drawable</b>:
-    the next segment can fill partially (see the hero — Diamond at 60% toward Elite).
+    the next segment can fill partially (see the hero, Diamond at 60% toward Elite).
     Animation: segments <b>ignite sequentially</b> on mount, the partial segment breathes, tau glows.
   </div>
   <div class="stage">
@@ -159,8 +159,8 @@
   <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microB"></div></div>
   <div class="notes">
     <span class="note good">Only concept that shows progress-to-next-tier in the badge itself</span>
-    <span class="note good">Extends the existing ArcGauge language — cheapest to make coherent</span>
-    <span class="note risk">Segment count unreadable below ~20 px — micro size leans on color alone</span>
+    <span class="note good">Extends the existing ArcGauge language, cheapest to make coherent</span>
+    <span class="note risk">Segment count unreadable below ~20 px, micro size leans on color alone</span>
   </div>
 </section>
 
@@ -180,7 +180,7 @@
   </div>
   <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microC"></div></div>
   <div class="notes">
-    <span class="note good">Shape encodes tier band — survives grayscale and tiny sizes</span>
+    <span class="note good">Shape encodes tier band, survives grayscale and tiny sizes</span>
     <span class="note good">World Class starburst is a genuinely distinct trophy</span>
     <span class="note risk">"Gem" leans mobile-game; needs restrained gradients to stay premium</span>
   </div>
@@ -192,7 +192,7 @@
   <div class="cdesc">
     The quiet one: the app icon's <b>rounded dark square</b>, tau struck in the tier metal, a thin tier-metal
     ring, and a 9-slot <b>notch rail</b> along the bottom edge (lit notches = tier). Background stays near-black
-    for every tier, so a column of these in a list stays calm — only the tau's metal changes.
+    for every tier, so a column of these in a list stays calm, only the tau's metal changes.
     Animation: a vertical <b>scanline</b> pass + the newest notch blinking.
     This is the concept that looks best <em>inside</em> the UI; the crest looks best <em>outside</em> it.
   </div>
@@ -202,9 +202,9 @@
   </div>
   <div class="microrow"><span class="mlabel">at 24 px (exercise rows):</span><div class="micro" id="microD"></div></div>
   <div class="notes">
-    <span class="note good">Calmest in dense lists — matches the app-icon language exactly</span>
+    <span class="note good">Calmest in dense lists, matches the app-icon language exactly</span>
     <span class="note good">Notch rail = precise tier readout</span>
-    <span class="note risk">Least trophy-like — weak as a share-card centerpiece on its own</span>
+    <span class="note risk">Least trophy-like, weak as a share-card centerpiece on its own</span>
   </div>
 </section>
 
@@ -213,8 +213,8 @@
   <h2>A pairing, not a single pick</h2>
   <p>
     These jobs pull in opposite directions: a badge living in a 24 px exercise row wants to be quiet;
-    a rank-up share card wants a trophy. My lean: <b>Torque Ring (B) as the system badge</b> — it inherits the
-    ArcGauge language you already ship, and it's the only one that can show "820 pts to Elite" <em>in the badge</em> —
+    a rank-up share card wants a trophy. My lean: <b>Torque Ring (B) as the system badge</b>, it inherits the
+    ArcGauge language you already ship, and it's the only one that can show "820 pts to Elite" <em>in the badge</em>,
     paired with <b>Forged Crest (A) as the celebration/share asset</b> (rank-up modal, share cards, profile hero).
     Same tier metals, same tau, two silhouettes for two jobs. Cut Gem's shape-escalation trick
     (silhouette changes per tier band) is worth stealing into whichever direction wins.
@@ -234,10 +234,10 @@
   <h2>Pick a direction</h2>
   <div class="cdesc">Selecting is local until you press <b>Queue answer</b>, then send from the panel. Annotate any specific badge above for finer feedback (tier colors, tau weight, animation speed…).</div>
   <div class="optgrid">
-    <label class="opt"><input type="radio" name="concept" value="A — Forged Crest"><span><span class="on">A · Forged Crest</span><span class="od">the game-rank shield, loudest & most shareable</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="B — Torque Ring"><span><span class="on">B · Torque Ring</span><span class="od">segment dial, shows progress, native to the app</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="C — Cut Gem"><span><span class="on">C · Cut Gem</span><span class="od">facet cut levels up with tier</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="D — Plate"><span><span class="on">D · Plate</span><span class="od">quiet icon-language badge for dense UI</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="A, Forged Crest"><span><span class="on">A · Forged Crest</span><span class="od">the game-rank shield, loudest & most shareable</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="B, Torque Ring"><span><span class="on">B · Torque Ring</span><span class="od">segment dial, shows progress, native to the app</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="C, Cut Gem"><span><span class="on">C · Cut Gem</span><span class="od">facet cut levels up with tier</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="D, Plate"><span><span class="on">D · Plate</span><span class="od">quiet icon-language badge for dense UI</span></span></label>
     <label class="opt"><input type="radio" name="concept" value="B + A pairing (recommended)"><span><span class="on">B + A pairing</span><span class="od">Ring in-app, Crest for celebrations & shares</span></span></label>
   </div>
   <textarea name="notes" placeholder="Optional: tweaks, mixes, vetoes… e.g. 'B but with C's starburst for World Class'"></textarea>

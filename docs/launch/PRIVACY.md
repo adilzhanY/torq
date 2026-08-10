@@ -1,4 +1,4 @@
-# torq — Privacy Policy
+# torq, Privacy Policy
 
 **Last updated: 8 August 2026**
 
@@ -11,7 +11,7 @@ written to be read, not to be survived.
 - torq works **without an account**. If you never sign in, nothing you log
   ever leaves your phone.
 - If you do sign in, your workouts are backed up to your own private space
-  and are **not visible to anyone else** — not to other users, not to your
+  and are **not visible to anyone else**, not to other users, not to your
   friends.
 - The only things other people can ever see are the things you deliberately
   publish: a handle, a display name, and a computed strength rank.
@@ -22,7 +22,7 @@ written to be read, not to be survived.
 
 Everything you log: exercises, routines, workouts and sets, body
 measurements, your training plan, and your settings (including the body
-details you enter for calorie estimation — sex, birth year, height, weight).
+details you enter for calorie estimation, sex, birth year, height, weight).
 
 If you never create an account, this never leaves the device, and deleting
 the app deletes it.

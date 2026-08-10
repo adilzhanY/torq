@@ -2,7 +2,7 @@
  * Delta sync against Supabase: each row is
  * { user_id, id, data jsonb, updated_at, deleted }, last-write-wins by
  * updatedAt. Operates on the in-memory DB object (the store commits after).
- * Ported from grit mobile — the mirror-table pattern is domain-agnostic.
+ * Ported from grit mobile: the mirror-table pattern is domain-agnostic.
  */
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "./supabase";
@@ -53,7 +53,7 @@ function collection(db: DB, name: SyncedTable): {
 
 // Push cursor (this device's clock) selects our own dirty rows. Pull cursor
 // tracks the max *server* updated_at seen, so pulling is immune to clock skew
-// between devices (the server stamps updated_at via a trigger — see
+// between devices (the server stamps updated_at via a trigger, see
 // supabase/schema.sql).
 const pushKey = (userId: string) => `torq.sync.${userId}.at`;
 const pullKey = (userId: string) => `torq.sync.${userId}.pull`;
@@ -160,13 +160,13 @@ export async function sync(db: DB, userId: string): Promise<SyncResult | null> {
           continue;
         }
         // Apply the remote row UNLESS we hold an unpushed local edit to it.
-        // "Locally dirty" = updatedAt > pushSince — this device's own clock
+        // "Locally dirty" = updatedAt > pushSince: this device's own clock
         // measured against its own push cursor, immune to cross-device skew.
         const local = existing.get(id);
         const locallyDirty = local !== undefined && local > pushSince;
         if (!locallyDirty) {
           // Stamp pulled rows with OUR cycle-start time (device domain), never
-          // the server clock — otherwise next cycle this row would look newer
+          // the server clock, otherwise next cycle this row would look newer
           // than our push cursor and be misread as a pending local edit.
           coll.upsert({ ...row.data, updatedAt: startedAt });
           pulled += 1;

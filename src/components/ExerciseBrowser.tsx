@@ -5,7 +5,7 @@
  * and the Exercises tab (tap opens the exercise detail) so both look the same.
  *
  * Overlays (order menu, filter dialog, new-exercise sheet) are inline views,
- * not Modals — Modals clip bottom-anchored content on this emulator.
+ * not Modals, Modals clip bottom-anchored content on this emulator.
  */
 import React, { useEffect, useMemo, useState } from "react";
 import { BackHandler, Pressable, SectionList, View } from "react-native";
@@ -249,7 +249,7 @@ export function ExerciseBrowser({
     return out;
   }, [exercises, workouts]);
 
-  /** Chip filters only — its length is the live count in the Filter title. */
+  /** Chip filters only: its length is the live count in the Filter title. */
   const chipFiltered = useMemo(
     () =>
       items.filter(
@@ -399,7 +399,7 @@ export function ExerciseBrowser({
         <View style={{ position: "absolute", left: 16, right: 16, bottom: 100 }}>{footer}</View>
       ) : null}
 
-      {/* Order menu — anchored under the toolbar's sort icon */}
+      {/* Order menu, anchored under the toolbar's sort icon */}
       <AnchoredModal open={orderOpen} onClose={() => setOrderOpen(false)}>
           <View style={{ position: "absolute", top: orderAt ?? 0, right: 16, width: 210 }}>
             <View style={[{ backgroundColor: C.surface, borderRadius: R.md, padding: 4 }, clay()]}>

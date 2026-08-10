@@ -1,5 +1,5 @@
 /**
- * CustomModal — the app's ONE overlay primitive (2026-08-10, Adilzhan: "now
+ * CustomModal: the app's ONE overlay primitive (2026-08-10, Adilzhan: "now
  * it opens good, but slowly, and it takes time for me to be able to actually
  * press on buttons there").
  *
@@ -24,11 +24,11 @@
  *    place, and it settles in 150 ms;
  *  - nothing is ever `pointerEvents: none` on the card, so a tap on frame 1
  *    is handled on frame 1;
- *  - the entrance is a TIMING, so it actually finishes — there is no long
+ *  - the entrance is a TIMING, so it actually finishes. There is no long
  *    invisible tail still owning the view.
  *
  * The centered shells are inline absolute overlays, NOT react-native Modals
- * (those clip on this emulator — a bug this project has hit twice). Mount
+ * (those clip on this emulator, a bug this project has hit twice). Mount
  * them inside a flex-1 screen root. AnchoredModal is the exception and DOES
  * use a Modal, because a popover has to escape its parent's clipping; it
  * keeps `statusBarTranslucent` so page coordinates line up with the
@@ -109,7 +109,7 @@ function useOverlayAnim(onClose: () => void, enter = MOTION.enter) {
 
 /**
  * Hardware Back dismisses the top-most overlay. Registered on mount, so a
- * modal opened over a screen that has its own back handler wins — Android
+ * modal opened over a screen that has its own back handler wins. Android
  * runs these newest-first and ours returns true, which is exactly right: the
  * thing on top is what Back should close.
  */
@@ -125,7 +125,7 @@ function useBackToClose(close: () => void, enabled: boolean) {
 }
 
 /**
- * The dim, on its own, for overlays that bring their own body — bottom
+ * The dim, on its own, for overlays that bring their own body, bottom
  * sheets anchored above the keyboard, mostly. Same fade and same color as
  * the one inside CustomModal, so a sheet and a dialog dim identically.
  */

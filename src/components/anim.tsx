@@ -103,12 +103,12 @@ export function GrowIn({ children, style }: { children: React.ReactNode; style?:
 }
 
 /**
- * Scale + fade in — the pill/badge entrance.
+ * Scale + fade in: the pill/badge entrance.
  *
  * Retuned 2026-08-10 with the modal work: this was the same
  * `friction: 6, tension: 140` spring, which overshoots 26% and rings for
  * 967 ms before RN calls it settled. It is a TIMING now, shared with every
- * overlay through MOTION, and starts at 0.94 instead of 0.85 — a badge that
+ * overlay through MOTION, and starts at 0.94 instead of 0.85, a badge that
  * grows 15% reads as a zoom, not an appearance.
  */
 export function PopIn({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {

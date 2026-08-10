@@ -1,4 +1,4 @@
-/** Unit conversions — the one home for lb/kg and ft-in/cm math. */
+/** Unit conversions: the one home for lb/kg and ft-in/cm math. */
 
 export const LB_TO_KG = 0.45359237;
 export const CM_PER_FT = 30.48;

@@ -54,7 +54,7 @@ describe("workoutCalories", () => {
     expect(kcal).toBeLessThan(30);
   });
 
-  it("IGNORES the wall clock — a backfilled session bills like a live one", () => {
+  it("IGNORES the wall clock, a backfilled session bills like a live one", () => {
     // This is the whole v2 fix: the same work entered a month later, in
     // seconds, must not be penalised.
     const sets = [{ weight: 100, reps: 8 }, { weight: 100, reps: 8 }, { weight: 100, reps: 8 }];
@@ -82,7 +82,7 @@ describe("workoutCalories", () => {
   });
 
   it("lands a realistic full session in the low hundreds", () => {
-    // 22 sets, ~7000 kg of volume — the session used to calibrate v2.
+    // 22 sets, ~7000 kg of volume. The session used to calibrate v2.
     const sets = Array.from({ length: 22 }, () => ({ weight: 80, reps: 4 }));
     const kcal = workoutCalories(workout(sets), [bench], profile, settings);
     expect(kcal).toBeGreaterThan(80);

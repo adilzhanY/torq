@@ -1,5 +1,5 @@
 /**
- * Password policy for the sign-up screen — the client half of it. The server
+ * Password policy for the sign-up screen: the client half of it. The server
  * enforces its own minimum (Supabase Auth), but a rule the user can SEE while
  * typing is what actually produces a strong password, so the checklist and
  * the meter both come from this one module.
@@ -55,7 +55,7 @@ export function passwordRules(password: string, email = ""): Rule[] {
   ];
 }
 
-/** "abcdef" / "123456" / "654321" — a straight run through the keyboard. */
+/** "abcdef" / "123456" / "654321": a straight run through the keyboard. */
 function isSequential(p: string): boolean {
   if (p.length < 4) return false;
   let up = 1;
@@ -69,7 +69,7 @@ function isSequential(p: string): boolean {
   return false;
 }
 
-/** "aaaaaa" / "abababab" — a short pattern tiled to length. */
+/** "aaaaaa" / "abababab": a short pattern tiled to length. */
 function isRepeated(p: string): boolean {
   if (p.length < 4) return false;
   for (const unit of [1, 2, 3]) {

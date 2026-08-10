@@ -14,7 +14,7 @@ import { MOTION } from "../motion";
 /** The one file allowed to own modal mechanics. */
 const SHELL = "components/CustomModal.tsx";
 
-// Vite's raw glob rather than node:fs — `moduleResolution: bundler` with the
+// Vite's raw glob rather than node:fs: `moduleResolution: bundler` with the
 // react-native condition cannot resolve node builtins in this project, and
 // the test should typecheck under the app's own tsconfig.
 const raw = import.meta.glob("../../**/*.{ts,tsx}", {
@@ -54,7 +54,7 @@ describe("MOTION tokens", () => {
 describe("one modal implementation", () => {
   it("has a single shell file", () => {
     expect(files.some((f) => f.rel === SHELL)).toBe(true);
-    // The old shell must be gone, not merely unused — two names for the
+    // The old shell must be gone, not merely unused, two names for the
     // same thing is how the app ended up with two behaviours.
     expect(files.some((f) => f.rel === "components/Dialog.tsx")).toBe(false);
   });
@@ -78,7 +78,7 @@ describe("one modal implementation", () => {
   });
 
   it("leaves no overlay springing on the old ringing config", () => {
-    // friction 6 / tension 140 is ζ = 0.39 — 26% overshoot, 967 ms to settle.
+    // friction 6 / tension 140 is ζ = 0.39, 26% overshoot, 967 ms to settle.
     const offenders = files
       .filter((f) => /Animated\.spring\([\s\S]{0,120}?friction:\s*6\b[\s\S]{0,40}tension:\s*140\b/.test(f.text))
       .map((f) => f.rel);

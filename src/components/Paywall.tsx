@@ -8,7 +8,7 @@
  *
  * Billing is not connected yet (see lib/entitlements.ts), so `unlock()`
  * returns an honest "not available", and every feature is currently
- * unlocked anyway — this screen is the plumbing, ready for the day products
+ * unlocked anyway. This screen is the plumbing, ready for the day products
  * exist.
  */
 import { useEffect, useState } from "react";
@@ -21,7 +21,7 @@ import { PrimaryButton, Txt } from "./ui";
 import { FEATURES, paidFeatures, unlock, type Feature } from "../lib/entitlements";
 
 export function Paywall({
-  /** What the user just tried to reach — shown first. */
+  /** What the user just tried to reach: shown first. */
   feature,
   onClose,
 }: {
@@ -104,7 +104,7 @@ export function Paywall({
           <Txt size={12.5} weight="bold">Always free</Txt>
           <Txt size={12} color={C.inkSoft}>
             Logging every workout, your full history, your routines, your
-            plan — and backup, so your training can never be held hostage.
+            plan, and backup, so your training can never be held hostage.
           </Txt>
         </View>
 
@@ -132,7 +132,7 @@ export function Paywall({
 
 /**
  * The in-place lock shown where a paid surface would be. Keeps the app
- * legible rather than blank, and only ever appears when `can()` is false —
+ * legible rather than blank, and only ever appears when `can()` is false,
  * which, until billing is connected, is never.
  */
 export function LockedPanel({

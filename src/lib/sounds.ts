@@ -1,11 +1,11 @@
 /**
- * Sound effects (expo-audio, verified in the SDK 57 docs — included in Expo
+ * Sound effects (expo-audio, verified in the SDK 57 docs: included in Expo
  * Go, so no dev build needed).
  *
  * The clips are SYNTHESIZED, not sampled: `scripts/build-sounds.sh` builds
  * them with ffmpeg as plucked sine tones in A minor pentatonic. That keeps
  * them unambiguously ours to ship in a paid app (no stock-library licence
- * to honour), keeps them tiny, and lets them match the design — dark and
+ * to honour), keeps them tiny, and lets them match the design, dark and
  * sharp rather than the cinematic whoosh every free SFX pack is full of.
  * Pitch rises with significance: tick < set done < go < workout done < PR.
  *
@@ -49,7 +49,7 @@ async function ensureMode(): Promise<void> {
       // Play through the silent switch: someone in a gym with their phone on
       // silent still wants the rest timer.
       playsInSilentMode: true,
-      // The whole point — layer over the user's music instead of pausing it.
+      // The whole point: layer over the user's music instead of pausing it.
       interruptionMode: "mixWithOthers",
       shouldPlayInBackground: false,
     });
@@ -76,13 +76,13 @@ export function play(name: SoundName): void {
     p.seekTo(0);
     p.play();
   } catch {
-    // Ignore — audio is a garnish, not a feature anything depends on.
+    // Ignore: audio is a garnish, not a feature anything depends on.
   }
 }
 
 /**
  * The rest-timer countdown. Called every second with the seconds remaining;
- * ticks at 3-2-1 and lands on "go" at zero. Idempotent per second — the
+ * ticks at 3-2-1 and lands on "go" at zero. Idempotent per second, the
  * caller may re-render freely.
  */
 let lastCounted: number | null = null;

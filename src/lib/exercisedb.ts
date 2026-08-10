@@ -1,5 +1,5 @@
 /**
- * ExerciseDB catalog — the full open-source dataset (1500+ exercises) from
+ * ExerciseDB catalog: the full open-source dataset (1500+ exercises) from
  * https://oss.exercisedb.dev/api/v1/exercises, snapshotted into
  * src/data/exercisedb.json for offline search. Gifs stay remote on the
  * ExerciseDB CDN (bundling ~1500 gifs would add hundreds of MB); expo-image
@@ -36,7 +36,7 @@ const raw = RAW as RawExercise[];
 /**
  * The dataset's gifUrl points at static.exercisedb.dev, a domain with no DNS
  * record (dead). The gifs are served from Adilzhan's mirror of the ExerciseDB
- * repo instead — github.com/adilzhanY/exercise-db holds all 1500 under
+ * repo instead, github.com/adilzhanY/exercise-db holds all 1500 under
  * media/<exerciseId>.gif, delivered via GitHub's raw CDN.
  */
 const GIF_BASE = "https://raw.githubusercontent.com/adilzhanY/exercise-db/main/media";
@@ -68,7 +68,7 @@ export const DB_BY_ID: Record<string, DbExercise> = Object.fromEntries(
 /**
  * How-to steps for one exercise, loaded ON DEMAND.
  *
- * Instructions are 776 KB — 69% of the original snapshot — and are read on
+ * Instructions are 776 KB (69% of the original snapshot) and are read on
  * exactly one screen (the exercise About tab), so they are NOT part of the
  * startup blob. The inline require is the point: Metro evaluates the module
  * the first time this runs, not at app launch. Measured: splitting these

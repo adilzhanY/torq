@@ -41,7 +41,7 @@ describe("recordLiftOf", () => {
     }
   });
 
-  it("requires a barbell — the records are barbell records", () => {
+  it("requires a barbell, because the records are barbell records", () => {
     expect(recordLiftOf("Dumbbell Bench Press", "dumbbell")).toBeNull();
     expect(recordLiftOf("Machine Bench Press", "machine")).toBeNull();
     expect(recordLiftOf("Bodyweight Squat", "bodyweight")).toBeNull();
@@ -67,7 +67,7 @@ describe("worldRecord", () => {
   });
 
   it("returns null for cells that are not curated, instead of guessing", () => {
-    // The women's squat classes are deliberately unfilled — see data/records.ts.
+    // The women's squat classes are deliberately unfilled, see data/records.ts.
     expect(worldRecord("squat", "female", 60)).toBeNull();
     // ...but the ones we do have are present.
     expect(worldRecord("squat", "female", 84)).not.toBeNull();

@@ -1,5 +1,5 @@
 /**
- * Torq logo — the lime vortex mark (torque in motion) on its dark square.
+ * Torq logo: the lime vortex mark (torque in motion) on its dark square.
  * Traced from Adilzhan's approved AI concept (assets/torq_logo_v2.png) via
  * potrace; single path in a 1024 box, y-flipped by the wrapping G transform
  * (potrace emits math-axis coordinates). Rendered with react-native-svg; the
@@ -38,7 +38,7 @@ export function Logo({ size = 32 }: { size?: number }) {
 }
 
 /**
- * The mark, spinning — torque made literal. Used on the auth gate and any
+ * The mark, spinning: torque made literal. Used on the auth gate and any
  * "working" state. One linear loop on the native driver, so it keeps turning
  * smoothly while JS is busy signing in.
  */

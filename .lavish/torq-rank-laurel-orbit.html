@@ -82,12 +82,12 @@
 <header>
   <h1>Shield + orbit · mountain emblem · laurel for World Class</h1>
   <div class="sub">
-    Emblem is now a <b>mountain peak</b> — summit, climb, strength; a clean flat silhouette no gym app
+    Emblem is now a <b>mountain peak</b>, summit, climb, strength; a clean flat silhouette no gym app
     uses for ranks. There is exactly <b>one orbit ring</b>: stage II draws it, stage III sets a ball
     revolving on it, stage IV puts <b>two balls on the same ring</b>, opposite each other. And the
-    <b>laurel wreath is back where it belongs — World Class only</b>, drawn properly this time: paired
+    <b>laurel wreath is back where it belongs, World Class only</b>, drawn properly this time: paired
     elliptical leaves along curved stems, crossed at the bottom, in laurel greens like your concept art.
-    The wreath stays green while the holo hex cycles — it frames the prize, it isn't part of the metal.
+    The wreath stays green while the holo hex cycles, it frames the prize, it isn't part of the metal.
   </div>
   <div style="margin-top:12px">
     <span class="pill">stage: I bare · II ring · III ball · IV two balls</span>
@@ -96,8 +96,8 @@
 </header>
 
 <section>
-  <h2>The full matrix — 36 badges</h2>
-  <div class="desc">Stage III/IV orbits are live in every cell. The World Class row carries the wreath at every stage — the tier itself is the honor; stages still climb on the orbit.</div>
+  <h2>The full matrix, 36 badges</h2>
+  <div class="desc">Stage III/IV orbits are live in every cell. The World Class row carries the wreath at every stage. The tier itself is the honor; stages still climb on the orbit.</div>
   <div class="gridwrap">
     <div class="stagehead"><div class="tlabel"></div><div class="shcell">I · bare</div><div class="shcell">II · ring</div><div class="shcell">III · + ball</div><div class="shcell">IV · two balls</div></div>
     <div id="grid"></div>
@@ -123,7 +123,7 @@
     {tag:'choice',text:'Mountain: '+e,element:event.currentTarget,data:{question:'shield-orbit-mountain',answer:e,notes:n}});
 ">
   <h2>Lock it in?</h2>
-  <div class="desc">Annotate any badge for finer tweaks — leaf density, wreath size, peak shape, ball speed…</div>
+  <div class="desc">Annotate any badge for finer tweaks, leaf density, wreath size, peak shape, ball speed…</div>
   <div class="optgrid">
     <label class="opt"><input type="radio" name="verdict" value="locked - build the RN component"><span><span class="on">Lock it in</span><span class="od">this is the system; port to react-native-svg</span></span></label>
     <label class="opt"><input type="radio" name="verdict" value="tweak (see notes)"><span><span class="on">Tweak first</span><span class="od">details in notes</span></span></label>
@@ -207,7 +207,7 @@ function orbit(t,stage,animate,dur){
   return {backs,fronts};
 }
 
-/* ============ laurel wreath — WORLD CLASS ONLY, drawn properly ============ */
+/* ============ laurel wreath, WORLD CLASS ONLY, drawn properly ============ */
 /* paired elliptical leaves along curved stems, crossed at the bottom; stays
    green (outside the holo layer) like the concept art */
 const LAUREL={stem:'#35502F', deepL:'#243521', inner:'#41633B', outer:'#6B9457', tip:'#87B36A'};
@@ -255,7 +255,7 @@ function wreath(){
 
 /* ============ mountain peak emblem (100-box), traced from the reference:
    three-peak massif on a base bar; jagged icicle snow descending from each
-   apex and slanted gully gaps separating the side peaks — snow and gullies
+   apex and slanted gully gaps separating the side peaks, snow and gullies
    are cut in the field color so they read as negative space ============ */
 const MTN_BODY='M0 78 L6 78 L25 36 L35 48 L52 20 L66 46 L76 34 L94 78 L100 78 L100 82 L0 82 Z';
 const MTN_SNOW_C='M52 20 L59 32 L56 50 L52 40 L49 58 L46 44 L43 52 L41 40 L44 33 Z';

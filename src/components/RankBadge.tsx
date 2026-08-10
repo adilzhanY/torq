@@ -1,25 +1,25 @@
 /**
- * RankBadge — the react-native-svg port of the shield badge designed in
+ * RankBadge: the react-native-svg port of the shield badge designed in
  * the lavish rounds (.lavish/torq-brand-v2.html): rounded hex shield in
  * the tier's metal gradient, the vortex brand mark as the emblem, and the
- * orbit ring that grows with the stage — I bare · II ring · III one jewel
+ * orbit ring that grows with the stage, I bare · II ring · III one jewel
  * ball · IV two balls. World Class swaps the metal for the holographic
  * gradient.
  *
  * TWO RENDER PATHS, and the split is deliberate:
  *
- *  - STATIC (default) — one SVG, balls parked at the ellipse's ends, the
+ *  - STATIC (default): one SVG, balls parked at the ellipse's ends, the
  *    ring masked so it breaks around each ball. This is what list rows use:
  *    a Ranks screen with 8 lifts, a Friends list and Home all draw badges,
  *    and none of them should pay for an animation nobody is looking at.
  *
- *  - ANIMATED (`animated`) — the balls actually ORBIT, on every tier
+ *  - ANIMATED (`animated`): the balls actually ORBIT, on every tier
  *    (Adilzhan, 2026-08-09: the motion should not be a World Class
  *    privilege). Used on the big hero badge and the tier ladder.
  *
  * How the orbit is done, since RN has no SMIL: one looping Animated.Value
  * drives translateX/translateY/scale/opacity through sampled interpolation
- * tables of the tilted ellipse, all on the NATIVE driver — so the motion
+ * tables of the tilted ellipse, all on the NATIVE driver, so the motion
  * never touches the JS thread while you scroll. Z-ORDER is faked by drawing
  * each ball TWICE, once under the shield and once over it, and cross-fading
  * between the copies; the swap happens at the ellipse's left and right
@@ -28,7 +28,7 @@
  * across, a fill plus a specular dot is indistinguishable from the gradient
  * and costs a fraction of the nodes.
  *
- * The animated path drops the ring's mask gap on purpose — an opaque ball
+ * The animated path drops the ring's mask gap on purpose, an opaque ball
  * riding over a continuous ring reads as "in front" by itself, and a moving
  * gap would need animated SVG props, which are JS-driven.
  */
@@ -131,9 +131,9 @@ function orbitTables(cy: number) {
     x.push(CX + ex * Math.cos(rot) - ey * Math.sin(rot));
     y.push(cy + ex * Math.sin(rot) + ey * Math.cos(rot));
     // SVG y grows downward, so the lower half of the ellipse is the near
-    // half: that is when the ball passes IN FRONT of the shield.
+    // half, that is when the ball passes IN FRONT of the shield.
     front.push(Math.sin(t) >= 0 ? 1 : 0);
-    // A touch of perspective — smaller when it is further away.
+    // A touch of perspective: smaller when it is further away.
     scale.push(0.8 + 0.2 * ((Math.sin(t) + 1) / 2));
   }
   return { input, x, y, front, scale };
@@ -205,7 +205,7 @@ function OrbitBall({
 }: {
   m: Metal;
   t: Animated.Value;
-  /** 0 or 0.5 — the second ball rides opposite the first. */
+  /** 0 or 0.5, the second ball rides opposite the first. */
   phase: number;
   layer: "front" | "back";
   tables: ReturnType<typeof orbitTables>;
@@ -245,7 +245,7 @@ function OrbitBall({
         ],
       }}
     >
-      {/* Specular highlight — what sells it as a sphere at 12 px. */}
+      {/* Specular highlight, what sells it as a sphere at 12 px. */}
       <View
         style={{
           position: "absolute",
@@ -271,7 +271,7 @@ function RankBadgeImpl({
   tier: TierName;
   stage?: 1 | 2 | 3 | 4;
   size?: number;
-  /** Orbit the balls. Off by default — list rows should not pay for it. */
+  /** Orbit the balls. Off by default, list rows should not pay for it. */
   animated?: boolean;
 }) {
   const m = METALS[tier];

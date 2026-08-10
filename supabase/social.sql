@@ -4,7 +4,7 @@
 --
 -- Deliberately separate from the private mirror tables in schema.sql: those
 -- hold raw workout logs and never leave the owner. Here we publish only what
--- a friend is allowed to see — a handle, a display name, and a COMPUTED rank
+-- a friend is allowed to see, a handle, a display name, and a COMPUTED rank
 -- snapshot. No sets, no dates, no bodyweight history.
 --
 -- Friends-first (locked decision): there is no "browse all users" surface.
@@ -52,7 +52,7 @@ create table if not exists public.rank_snapshots (
   points        numeric     not null default 0,
   tier          text        not null default 'Rust',
   stage         smallint    not null default 1 check (stage between 1 and 4),
-  -- [{ name, e1RM, unit, points, tier }] — the top lifts, display-ready.
+  -- [{ name, e1RM, unit, points, tier }], the top lifts, display-ready.
   lifts         jsonb       not null default '[]'::jsonb,
   bodyweight_kg numeric,
   sex           text        check (sex in ('male', 'female')),
@@ -242,7 +242,7 @@ create policy "delete own events" on public.rank_events
 --
 -- The privacy tradeoff, stated plainly: prefix search over opted-in
 -- profiles is inherently more enumerable than exact match. It is bounded on
--- purpose — minimum 2 characters, at most 20 rows, `visible` profiles only,
+-- purpose, minimum 2 characters, at most 20 rows, `visible` profiles only,
 -- and it returns nothing but handle + display name (never a rank, never an
 -- id you could not already reach). Opting in stays a deliberate act: a user
 -- who never publishes a profile is unfindable by any query here.
@@ -288,7 +288,7 @@ create index if not exists profiles_name_trgm_idx
 -- account deletion, so this is a launch blocker rather than a nicety.
 --
 -- SECURITY DEFINER because it must reach auth.users, which no client role
--- can touch. It deletes only auth.uid()'s own rows — there is no parameter
+-- can touch. It deletes only auth.uid()'s own rows, there is no parameter
 -- to point it at somebody else, which is the property that makes granting
 -- it to `authenticated` safe.
 --
@@ -335,12 +335,12 @@ grant execute on function public.delete_my_account() to authenticated;
 -- thing in the app to poison, so this is built to be UNTRUSTWORTHY BY
 -- DEFAULT and to say so:
 --   * appearing is a SEPARATE opt-in (`arena`), not implied by having a
---     public profile — friends-first stays the default;
+--     public profile, friends-first stays the default;
 --   * every published snapshot has already passed the client-side
 --     plausibility cap (src/lib/plausibility.ts), which drops anything over
 --     the world record for the lifter's class;
 --   * `verified` marks a lifter whose numbers a human has checked. Nothing
---     sets it yet — video verification is a later feature — but the column
+--     sets it yet (video verification is a later feature), but the column
 --     exists so the board can be filtered to verified-only from day one
 --     rather than retrofitting trust later.
 -- Identity exposed is exactly what search already exposes: a handle and a
@@ -520,7 +520,7 @@ create policy "delete own avatar" on storage.objects
 -- every sign-up form on the internet leaks ("that name is taken") and it
 -- exposes nothing else: no owner, no id, no profile.
 --
--- handle_taken compares against auth.uid(), which is null for anon — the
+-- handle_taken compares against auth.uid(), which is null for anon, the
 -- "and p.user_id <> auth.uid()" clause would then drop every row, so it is
 -- rewritten here to only exclude the caller when there IS one.
 create or replace function public.handle_taken(p_handle text)

@@ -1,7 +1,7 @@
 /** Workout math + formatting for the post-workout summary (Strong-style). */
 import type { Settings, Workout, WorkoutSet } from "../types";
 
-/** Daily calorie-burn goal (the only typed goal — the rest come from the
+/** Daily calorie-burn goal (the only typed goal: the rest come from the
  *  training plan). */
 export function kcalGoal(settings: Settings): number {
   return settings.kcalGoal ?? 300;
@@ -50,7 +50,7 @@ export function fmtDuration(startedAt: number, endedAt: number): string {
 }
 
 /**
- * Fresh (undone) sets replaying the exercise's most recent finished workout —
+ * Fresh (undone) sets replaying the exercise's most recent finished workout,
  * same set count and types, weights/reps/rest prefilled from last time.
  * Failure sets are not replayed (Strong-style); warmups and drop sets are.
  * Null when the exercise has no history.
@@ -89,7 +89,7 @@ export interface ExercisePoint {
 }
 
 /**
- * Per-session series for an exercise, ascending by date — working
+ * Per-session series for an exercise, ascending by date: working
  * (non-warmup, loaded) sets only. Feeds the ExerciseInfo Charts tab.
  */
 export function exerciseSeries(exerciseId: string, workouts: Workout[]): ExercisePoint[] {
@@ -187,7 +187,7 @@ export function computePRs(
  * PR counts for EVERY workout, in one chronological pass.
  *
  * The History screen used to call `computePRs` once per card, and each call
- * rescanned the entire history — quadratic in sets, and measured at 601 ms
+ * rescanned the entire history, quadratic in sets, and measured at 601 ms
  * to open the tab with 37 workouts. This walks the history once.
  *
  * Workouts sharing a `startedAt` are judged as a GROUP against the state

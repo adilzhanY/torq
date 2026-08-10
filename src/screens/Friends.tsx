@@ -3,9 +3,9 @@
  * side. Lives inside the Ranks tab behind the You / Friends switch.
  *
  * Three states, in order of how far along the user is:
- *  1. guest — nothing to sync with, offer the account;
- *  2. no public profile — claim a handle (this is the opt-in);
- *  3. the list — pending requests first, then friends by points.
+ *  1. guest, nothing to sync with, offer the account;
+ *  2. no public profile, claim a handle (this is the opt-in);
+ *  3. the list, pending requests first, then friends by points.
  *
  * Discovery is exact-handle only (see find_profile in supabase/social.sql):
  * no browsing, no enumeration. Opening the screen also republishes YOUR
@@ -45,7 +45,7 @@ import {
   type RankEvent,
 } from "../lib/social";
 
-/** "3d" / "2h" / "now" — feed timestamps, short enough to sit in a row. */
+/** "3d" / "2h" / "now": feed timestamps, short enough to sit in a row. */
 function ago(iso: string): string {
   const ms = Date.now() - new Date(iso).getTime();
   const min = Math.floor(ms / 60000);
@@ -58,7 +58,7 @@ function ago(iso: string): string {
   return `${Math.floor(d / 7)}w`;
 }
 
-/** Snapshot tiers arrive as plain strings — keep the badge total. */
+/** Snapshot tiers arrive as plain strings: keep the badge total. */
 function asTier(name: string): TierName {
   return (TIER_NAMES as readonly string[]).includes(name) ? (name as TierName) : "Rust";
 }
@@ -223,7 +223,7 @@ export function Friends() {
     setSearching(true);
     const t = setTimeout(async () => {
       const res = await searchProfiles(term);
-      // Hide people already in the list — adding them again is a dead end.
+      // Hide people already in the list: adding them again is a dead end.
       const known = new Set([...friends.map((f) => f.userId), ...requests.map((r) => r.userId)]);
       setResults((res.data ?? []).filter((p) => !known.has(p.userId)));
       setSearching(false);
@@ -247,7 +247,7 @@ export function Friends() {
   const claim = () =>
     void act(
       () => saveProfile(handle, settings.name || handle, true),
-      "Profile published — friends can find you by your handle.",
+      "Profile published: friends can find you by your handle.",
     );
 
   /** Send a request to a specific search result. */
@@ -281,7 +281,7 @@ export function Friends() {
       <View style={{ gap: 12, paddingTop: 8 }}>
         <Eyebrow style={{ marginTop: 0 }}>Friends</Eyebrow>
         <Txt size={13} color={C.inkFaint}>
-          Friends need an account — that's how ranks reach each other. Your
+          Friends need an account, that's how ranks reach each other. Your
           workouts stay private either way; only your rank is shared.
         </Txt>
         <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
@@ -303,7 +303,7 @@ export function Friends() {
         <Eyebrow style={{ marginTop: 0 }}>Claim your handle</Eyebrow>
         <Txt size={13} color={C.inkSoft}>
           Pick a handle so friends can find you. Nothing is published until
-          you do, and only your rank ever leaves this phone — never your
+          you do, and only your rank ever leaves this phone. Never your
           workouts.
         </Txt>
         <HandleInput value={handle} onChange={setHandle} placeholder="yourname" onSubmit={claim} />
@@ -435,7 +435,7 @@ export function Friends() {
           </>
         ) : null}
 
-        {/* Rank-ups — the reason to open this tab twice a week */}
+        {/* Rank-ups, the reason to open this tab twice a week */}
         {feed.length > 0 ? (
           <>
             <Eyebrow>Rank-ups</Eyebrow>
@@ -465,7 +465,7 @@ export function Friends() {
         <Eyebrow>Friends ({friends.length})</Eyebrow>
         {friends.length === 0 ? (
           <Txt size={13} color={C.inkFaint}>
-            No friends yet — add someone by their handle and compare where you
+            No friends yet: add someone by their handle and compare where you
             both stand.
           </Txt>
         ) : (
@@ -497,7 +497,7 @@ export function Friends() {
                   </View>
                   <View style={{ alignItems: "flex-end", gap: 1 }}>
                     <Txt size={16} weight="extrabold" color={s ? TIER_COLORS[asTier(s.tier)] : C.inkFaint}>
-                      {s ? Math.round(s.points) : "—"}
+                      {s ? Math.round(s.points) : "-"}
                     </Txt>
                     <Txt size={9} weight="bold" color={C.inkFaint}>PTS</Txt>
                   </View>
@@ -510,7 +510,7 @@ export function Friends() {
         {friends.length > 0 ? (
           <Txt size={10} color={C.inkFaint} style={{ marginTop: 4 }}>
             Tap a friend to compare lift by lift, hold to remove them. Only
-            ranks are shared — never your workout logs.
+            ranks are shared. Never your workout logs.
           </Txt>
         ) : null}
 

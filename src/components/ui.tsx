@@ -1,4 +1,4 @@
-/** Shared UI primitives — the clay card, pills, fields, buttons, text. */
+/** Shared UI primitives: the clay card, pills, fields, buttons, text. */
 import React from "react";
 import {
   Text,
@@ -37,7 +37,7 @@ export function Txt({
 }
 
 /**
- * PageTitle — the heading at the top of every screen, defined ONCE.
+ * PageTitle: the heading at the top of every screen, defined ONCE.
  *
  * Before this existed the app shipped five different sizes for the same
  * thing: 30 on Home, 26 on History/Workout/Ranks/Stats/Profile/Settings,
@@ -71,7 +71,7 @@ export function PageTitle({
 }
 
 /**
- * CARDLESS: a content block, not a box. Transparent by default — content
+ * CARDLESS: a content block, not a box. Transparent by default, content
  * sits directly on the page; only the old padding survives so layouts keep
  * their gutters. Passing an explicit `background` (dialog bodies, the odd
  * deliberate dark panel) restores a bordered surface. For interactive
@@ -107,7 +107,7 @@ export function Card({
   );
 }
 
-/** The old card look — reserved for overlays and floating interactive UI. */
+/** The old card look: reserved for overlays and floating interactive UI. */
 export function Surface({
   children,
   style,
@@ -136,7 +136,7 @@ export function Surface({
   );
 }
 
-/** Tiny uppercase section label — the cardless replacement for boxes. */
+/** Tiny uppercase section label: the cardless replacement for boxes. */
 export function Eyebrow({
   children,
   style,
@@ -210,7 +210,7 @@ export function PrimaryButton({
   disabled?: boolean;
   background?: string;
   color?: string;
-  /** Chunky primary CTA (Finish workout) — taller with bigger type. */
+  /** Chunky primary CTA (Finish workout): taller with bigger type. */
   large?: boolean;
 }) {
   return (

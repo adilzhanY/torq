@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>torq · cardless — every page</title>
+<title>torq · cardless, every page</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -109,12 +109,12 @@
 <div class="wrap">
 
 <header class="page">
-  <h1>Cardless — every page, type does the work</h1>
+  <h1>Cardless, every page, type does the work</h1>
   <div class="sub">
     New design principle, now in CLAUDE.md: <b>no more card containers for content</b>. Text sits
     directly on the page background; hierarchy comes from type scale, weight, color and whitespace;
-    hairlines separate where needed. Surfaces survive only where you <b>touch</b> them — buttons,
-    inputs, the dock — and in true overlays. Below: all seven pages rebuilt on that rule, in the
+    hairlines separate where needed. Surfaces survive only where you <b>touch</b> them (buttons,
+    inputs, the dock) and in true overlays. Below: all seven pages rebuilt on that rule, in the
     rebrand skin (near-black · lime · Space Grotesk).
   </div>
 </header>
@@ -125,14 +125,14 @@
   <div class="grid g3">
     <div class="cell"><h3 style="color:#E06A5A">What dies</h3><p>Card backgrounds, box shadows, rounded containers around plain content, "bento" grids of boxes, chart frames. Every pixel of chrome that isn't information.</p></div>
     <div class="cell"><h3 style="color:var(--lime)">What replaces it</h3><p><b>Type scale</b> (26/17/13/10), <b>weight</b> (700 vs 400), <b>color steps</b> (ink → dim → faint), eyebrow labels, hairline dividers, and generous whitespace. Numbers get big; labels get small.</p></div>
-    <div class="cell"><h3>What survives</h3><p>Interactive surfaces only: the lime CTA pill, inputs, the dock, the top bar — plus real overlays (dialogs, sheets). Charts keep their plots, lose their frames.</p></div>
+    <div class="cell"><h3>What survives</h3><p>Interactive surfaces only: the lime CTA pill, inputs, the dock, the top bar, plus real overlays (dialogs, sheets). Charts keep their plots, lose their frames.</p></div>
   </div>
 </section>
 
 <!-- ===== 2. BEFORE / AFTER ===== -->
 <section>
   <h2>2 · Same content, boxes vs type</h2>
-  <div class="desc">The Home hero as it ships today (clay cards) against the cardless rebuild. Nothing was removed — only the chrome.</div>
+  <div class="desc">The Home hero as it ships today (clay cards) against the cardless rebuild. Nothing was removed, only the chrome.</div>
   <div class="ba">
     <div class="side">
       <div class="lbl">TODAY · cards</div>
@@ -162,7 +162,7 @@
 <!-- ===== 3. ALL PAGES ===== -->
 <section>
   <h2>3 · The seven pages</h2>
-  <div class="desc">Home · Live session · Workout · History · Exercises · Stats · Profile — every screen on the same rule. Annotate any element.</div>
+  <div class="desc">Home · Live session · Workout · History · Exercises · Stats · Profile, every screen on the same rule. Annotate any element.</div>
   <div class="phones">
 
     <!-- HOME -->
@@ -346,13 +346,13 @@
     {tag:'choice',text:'Cardless: '+v,element:event.currentTarget,data:{question:'cardless-verdict',answer:v,notes:n}});
 ">
   <h2>Build it?</h2>
-  <div class="desc">The principle is recorded in CLAUDE.md. Pick where the code work starts — or annotate any page above first.</div>
+  <div class="desc">The principle is recorded in CLAUDE.md. Pick where the code work starts, or annotate any page above first.</div>
   <div class="optgrid">
-    <label class="opt"><input type="radio" name="verdict" value="approved - start migrating screens to cardless (say which first)"><span><span class="on">Approved — start coding</span><span class="od">migrate the app screen by screen; tell me which page goes first in notes</span></span></label>
+    <label class="opt"><input type="radio" name="verdict" value="approved - start migrating screens to cardless (say which first)"><span><span class="on">Approved, start coding</span><span class="od">migrate the app screen by screen; tell me which page goes first in notes</span></span></label>
     <label class="opt"><input type="radio" name="verdict" value="approved for Home only as a pilot"><span><span class="on">Pilot on Home</span><span class="od">rebuild just the Home tab cardless, judge it on the emulator, then decide</span></span></label>
     <label class="opt"><input type="radio" name="verdict" value="iterate on the mockups (see notes/annotations)"><span><span class="on">Iterate first</span><span class="od">something above needs changing</span></span></label>
   </div>
-  <textarea name="notes" placeholder="Optional notes — e.g. which page to start with…"></textarea>
+  <textarea name="notes" placeholder="Optional notes, e.g. which page to start with…"></textarea>
   <br><button class="queue" type="submit">Queue answer</button>
 </form>
 

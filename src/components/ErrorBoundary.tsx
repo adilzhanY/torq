@@ -3,7 +3,7 @@
  *
  * torq is local-first: a user's entire training history can live only on
  * their phone. So a render crash is not "the screen went blank", it is "my
- * data is gone" — the worst thing this app can do to someone. This catches
+ * data is gone", the worst thing this app can do to someone. This catches
  * the throw, keeps the process alive, and says plainly that nothing was
  * lost.
  *
@@ -24,7 +24,7 @@ import { PrimaryButton, Txt } from "./ui";
 
 interface Props {
   children: React.ReactNode;
-  /** Reset hook — e.g. send the user back to a known-good tab. */
+  /** Reset hook: e.g. send the user back to a known-good tab. */
   onReset?: () => void;
 }
 
@@ -55,7 +55,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     const { error, showDetail } = this.state;
     if (!error) {
-      // The key forces a fresh subtree on reset — without it React reuses the
+      // The key forces a fresh subtree on reset, without it React reuses the
       // same instances and the same bad state throws again immediately.
       return <React.Fragment key={this.state.attempt}>{this.props.children}</React.Fragment>;
     }
@@ -68,7 +68,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             Something broke
           </Txt>
           <Txt size={14} color={C.inkSoft} style={{ textAlign: "center", lineHeight: 21 }}>
-            A screen crashed, but your workouts are safe — nothing was
+            A screen crashed, but your workouts are safe. Nothing was
             deleted and nothing was changed.
           </Txt>
         </View>

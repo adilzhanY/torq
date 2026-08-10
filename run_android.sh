@@ -9,7 +9,7 @@
 # project instead of starting a duplicate; otherwise picks the first free
 # port. Keeps Expo Go on the device in sync with the version the project's
 # SDK requires (stale Go shows "Project is incompatible with this version
-# of Expo Go" — hit after the gifted-charts upgrade).
+# of Expo Go", hit after the gifted-charts upgrade).
 set -euo pipefail
 
 export ANDROID_AVD_HOME="$HOME/.config/.android/avd"
@@ -77,7 +77,7 @@ ensure_expo_go() {
   fi
 
   if [ -n "$installed" ] && { [ -z "$required" ] || [ "$installed" = "$required" ]; }; then
-    return 0 # up to date (or offline — trust what's there)
+    return 0 # up to date (or offline, trust what's there)
   fi
 
   mkdir -p "$APK_CACHE"
@@ -93,7 +93,7 @@ ensure_expo_go() {
     echo "Installing Expo Go $(basename "$apk" | sed 's/Expo-Go-//; s/.apk//') (device had: ${installed:-none})..."
     "$ADB" install -r "$apk" >/dev/null
   else
-    echo "No Expo Go APK available — expo will handle it."
+    echo "No Expo Go APK available, expo will handle it."
   fi
 }
 ensure_expo_go

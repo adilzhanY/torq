@@ -1,4 +1,4 @@
-# Play Data Safety — answer sheet
+# Play Data Safety: answer sheet
 
 Fill this into Play Console → App content → Data safety. Every answer below
 was checked against the code and the schema, not assumed. Where the honest
@@ -24,7 +24,7 @@ Deletion URL, if asked: point at the in-app path plus
 
 ### Personal info → Email address
 - Collected: **Yes**. Shared: **No**.
-- Processed **ephemerally**: No — it is stored.
+- Processed **ephemerally**: No: it is stored.
 - Required or optional: **Optional** (the app works without an account).
 - Purposes: **Account management**.
 
@@ -44,7 +44,7 @@ Deletion URL, if asked: point at the in-app path plus
 
 ### App activity → Other user-generated content
 - Collected: **Yes** (rank snapshots, rank-up events, workout notes).
-- Shared: **No** — see the note below on "shared".
+- Shared: **No**: see the note below on "shared".
 - Optional. Purposes: **App functionality**.
 
 ### Device or other IDs
@@ -52,7 +52,7 @@ Deletion URL, if asked: point at the in-app path plus
   notifications). Shared: **No**.
 - Optional. Purposes: **App functionality**.
 
-## Types NOT collected — do not tick these
+## Types NOT collected: do not tick these
 
 Location, contacts, photos/videos, audio, files, calendar, SMS, call logs,
 browsing history, search history, installed apps, purchase history,
@@ -66,7 +66,7 @@ performance" section is entirely No.
 ## On the word "shared"
 
 Play defines *sharing* as transfer to a **third party**. Publishing a rank to
-another torq user is not third-party sharing — it stays inside the service —
+another torq user is not third-party sharing. It stays inside the service,
 so every row above answers **No** to shared. Do not confuse "other users can
 see it" with "shared".
 
@@ -79,14 +79,14 @@ Be ready to explain in the review notes:
 
 ## Third parties receiving data
 
-- **Supabase** — processor for auth, database, edge functions.
-- **Expo Push Service / FCM** — processor for notification delivery only.
-- **GitHub (raw.githubusercontent.com)** — serves exercise images. Receives
+- **Supabase**: processor for auth, database, edge functions.
+- **Expo Push Service / FCM**: processor for notification delivery only.
+- **GitHub (raw.githubusercontent.com)**: serves exercise images. Receives
   the image request only, no account data.
 
 ## Re-check this when
 
 - Any analytics or crash reporting is added (it currently is not).
-- Billing goes live — purchase history becomes a declarable type.
-- Regional leaderboards land — they would need a country, which is a new
+- Billing goes live, purchase history becomes a declarable type.
+- Regional leaderboards land: they would need a country, which is a new
   personal-info type.

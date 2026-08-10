@@ -1,5 +1,5 @@
 /**
- * Recommended routines shown on the Workout tab — a classic 3-day
+ * Recommended routines shown on the Workout tab: a classic 3-day
  * push/pull/legs split built from ExerciseDB catalog exercises (dbIds
  * reference src/data/exercisedb.json). Starting one imports any missing
  * exercises into the user's library and opens a live session with the
@@ -21,7 +21,7 @@ export interface RecommendedRoutine {
 export const RECOMMENDED: RecommendedRoutine[] = [
   {
     name: "Push Day",
-    blurb: "Chest, shoulders & triceps — day 1 of a 3-day split.",
+    blurb: "Chest, shoulders & triceps, day 1 of a 3-day split.",
     items: [
       { dbId: "EIeI8Vf", sets: 4, reps: 8 },  // barbell bench press
       { dbId: "3TZduzM", sets: 3, reps: 10 }, // barbell incline bench press
@@ -32,7 +32,7 @@ export const RECOMMENDED: RecommendedRoutine[] = [
   },
   {
     name: "Pull Day",
-    blurb: "Back & biceps — day 2 of a 3-day split.",
+    blurb: "Back & biceps, day 2 of a 3-day split.",
     items: [
       { dbId: "ila4NZS", sets: 3, reps: 5 },  // barbell deadlift
       { dbId: "lBDjFxJ", sets: 3, reps: 8 },  // pull-up
@@ -43,7 +43,7 @@ export const RECOMMENDED: RecommendedRoutine[] = [
   },
   {
     name: "Leg Day",
-    blurb: "Quads, hamstrings & calves — day 3 of a 3-day split.",
+    blurb: "Quads, hamstrings & calves, day 3 of a 3-day split.",
     items: [
       { dbId: "qXTaZnJ", sets: 4, reps: 8 },  // barbell full squat
       { dbId: "wQ2c4XD", sets: 3, reps: 10 }, // barbell romanian deadlift

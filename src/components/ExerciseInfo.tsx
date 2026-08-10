@@ -8,7 +8,7 @@
  *   tapping one opens the full WorkoutSummary with this exercise ringed in
  *   light green.
  * - Rank: this lift's tier badge, DOTS points, progress to the next tier
- *   and — for the three competition lifts — how it compares to the world
+ *   and (for the three competition lifts) how it compares to the world
  *   record in the user's weight class.
  * - Records: personal records, best real performance per rep count with the
  *   estimated rep-max curve (inverse Epley off the best 1RM), lifetime stats.
@@ -235,7 +235,7 @@ export function ExerciseInfo({
     );
   }, [rank, libRow, exercise.name, exercise.equipment, profile.sex]);
 
-  /** World-record mention — only the three plain barbell competition lifts. */
+  /** World-record mention: only the three plain barbell competition lifts. */
   const wr = useMemo(() => {
     const name = libRow?.name ?? exercise.name;
     const equipment = libRow?.equipment ?? exercise.equipment;
@@ -259,7 +259,7 @@ export function ExerciseInfo({
         backgroundColor: C.page,
       }}
     >
-      {/* Fixed header — it, not the scroll content, must clear the floating
+      {/* Fixed header, it, not the scroll content, must clear the floating
           top bar. */}
       <View
         style={{
@@ -380,13 +380,13 @@ export function ExerciseInfo({
         {tab === "rank" ? (
           !rank ? (
             <Txt size={13} color={C.inkFaint}>
-              No rank yet — log a weighted set of 10 reps or fewer (warmups
+              No rank yet: log a weighted set of 10 reps or fewer (warmups
               don't count) and this lift gets a tier, normalized to your sex
               and bodyweight.
             </Txt>
           ) : (
             <>
-              {/* The badge is the headline of this page — centred and big,
+              {/* The badge is the headline of this page, centred and big,
                   with the numbers stacked under it rather than squeezed
                   into a row beside a thumbnail-sized shield. */}
               <View style={{ alignItems: "center", gap: 2, paddingTop: 4 }}>
@@ -424,7 +424,7 @@ export function ExerciseInfo({
               </View>
               <Txt size={12} color={C.inkSoft}>
                 {rank.tier.next
-                  ? `${Math.ceil(rank.tier.toNext)} pts to ${rank.tier.next} — about ${
+                  ? `${Math.ceil(rank.tier.toNext)} pts to ${rank.tier.next}, about ${
                       Math.round(rank.toGo * 10) / 10
                     } ${u} more on your best set.`
                   : "Top of the ladder."}
@@ -561,7 +561,7 @@ export function ExerciseInfo({
               <Txt size={10} color={C.inkFaint} style={{ marginTop: 6 }}>
                 DOTS points, normalized to {Math.round(profile.weightKg)} kg ·{" "}
                 {profile.sex === "male" ? "M" : "F"}
-                {profile.complete ? "" : " (default body stats — set yours in Profile)"}
+                {profile.complete ? "" : " (default body stats, set yours in Profile)"}
               </Txt>
             </>
           )
@@ -585,7 +585,7 @@ export function ExerciseInfo({
           rec.rows.length === 0 ? (
             <View>
               <Txt size={13} color={C.inkFaint}>
-                No sets logged yet — records show up after the first finished
+                No sets logged yet, records show up after the first finished
                 workout with this exercise.
               </Txt>
             </View>
@@ -649,7 +649,7 @@ export function ExerciseInfo({
           series.length === 0 ? (
             <View>
               <Txt size={13} color={C.inkFaint}>
-                No data yet — charts appear after the first finished workout
+                No data yet: charts appear after the first finished workout
                 with this exercise.
               </Txt>
             </View>
@@ -690,7 +690,7 @@ export function ExerciseInfo({
                     </View>
                     <Txt size={12} color={C.inkFaint}>
                       {delta == null
-                        ? "First sessions — nothing to compare yet."
+                        ? "First sessions, nothing to compare yet."
                         : delta === 0
                           ? "Level with last week."
                           : `Compared to last week: ${delta > 0 ? "up" : "down"} ${fmtShort(Math.abs(delta))} ${m.unit}.`}
@@ -710,7 +710,7 @@ export function ExerciseInfo({
 
                     {shown.length === 0 ? (
                       <Txt size={13} color={C.inkFaint} style={{ paddingVertical: 24 }}>
-                        No sessions in this range — pick a longer one.
+                        No sessions in this range: pick a longer one.
                       </Txt>
                     ) : (
                       <TrendLine

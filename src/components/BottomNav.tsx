@@ -1,10 +1,10 @@
 /**
- * Bottom dock — "Five, spelled out" (Adilzhan picked it from the lavish
+ * Bottom dock: "Five, spelled out" (Adilzhan picked it from the lavish
  * review `.lavish/torq-navbar.html`, 2026-08-09).
  *
  * The old dock morphed a capsule between six tabs plus a profile button.
- * Measured on a 360 dp screen that left an idle tab at ~36 dp — under
- * Android's 48 dp minimum touch target — with only the active tab labelled,
+ * Measured on a 360 dp screen that left an idle tab at ~36 dp (under
+ * Android's 48 dp minimum touch target) with only the active tab labelled,
  * and every tap reflowed all seven targets sideways under the thumb. So:
  *
  *  - SIX fixed slots (~58 dp each). Nothing resizes, nothing slides, so
@@ -15,7 +15,7 @@
  *    slots still clear Android's 48 dp minimum comfortably.
  *  - Every tab carries its NAME. Medal, dumbbell and flexed-bicep all read
  *    as "training" to someone new; icons alone were doing too much work.
- *  - The active tab is lime with a short rail at the top edge — the only
+ *  - The active tab is lime with a short rail at the top edge, the only
  *    thing that animates, and it animates in place.
  *  - Profile is the last slot as the user's AVATAR, not a generic glyph:
  *    it doubles as "who is signed in".
@@ -24,7 +24,7 @@
  * Workout, reached from that tab's library row, and its PARENT tab stays lit
  * while it is open so the dock never shows nothing selected. Home's "Recent
  * workouts · See all" survives as a shortcut into History even though
- * History is a tab again — a second door into a room is not a problem.
+ * History is a tab again, a second door into a room is not a problem.
  */
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, View } from "react-native";
@@ -69,7 +69,7 @@ function Slot({
       toValue: active ? 1 : 0,
       duration: 200,
       easing: Easing.out(Easing.cubic),
-      // Only scaleX and opacity — both native-drivable, and nothing here
+      // Only scaleX and opacity: both native-drivable, and nothing here
       // touches layout, which is the whole point of the redesign.
       useNativeDriver: true,
     }).start();
@@ -140,7 +140,7 @@ export function BottomNav({ onProfile }: { onProfile: () => void }) {
       })}
 
       {/* Profile: the last slot, and the only one that opens an overlay
-          rather than switching tabs — so it never takes the active state. */}
+          rather than switching tabs, so it never takes the active state. */}
       <Slot active={false} label="You" onPress={onProfile}>
         <Avatar uri={avatarSource(settings)} name={settings.name} size={23} />
       </Slot>

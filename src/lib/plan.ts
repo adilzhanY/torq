@@ -1,5 +1,5 @@
 /**
- * Training-plan generator — deterministic templates, no magic. Onboarding
+ * Training-plan generator: deterministic templates, no magic. Onboarding
  * answers (goal, days/week, focus) pick a split, a rep scheme, and exercise
  * slots from the bundled ExerciseDB catalog:
  *
@@ -10,15 +10,15 @@
  * Goal sets the scheme (sets × reps, rest): muscle 4×8/3×12, lean 3×12/3×15
  * short rests, fit 3×10/3×12. Strength runs mains-first like real strength
  * programs (531/GZCLP shape): the first two compounds of a day get the heavy
- * 5×5 with long rests, later compounds and isolations drop to moderate 3×8 —
+ * 5×5 with long rests, later compounds and isolations drop to moderate 3×8,
  * otherwise a 4-compound day at 5×5×3min rest is a 2-hour session. Focused
  * muscle groups get +1 set on matching slots and unlock that day's extra
  * accessory slot (capped at MAX_SLOTS). Finally each day is trimmed from the
- * tail until it fits SESSION_CAP_MIN — a plan that doesn't fit a session is
+ * tail until it fits SESSION_CAP_MIN. A plan that doesn't fit a session is
  * a plan that gets abandoned.
  *
  * Exercises are referenced by ExerciseDB id (names in the snapshot aren't
- * stable enough to match on — one leg-press row has a mojibake "45в°").
+ * stable enough to match on, one leg-press row has a mojibake "45в°").
  * Every dbId below is verified against src/data/exercisedb.json; unknown
  * ids are skipped at build time rather than crashing.
  */
@@ -83,7 +83,7 @@ const PUSH: DayTemplate = {
 };
 const PUSH_B: DayTemplate = {
   name: "Push Day B",
-  blurb: "Chest, shoulders & triceps — dumbbell variant",
+  blurb: "Chest, shoulders & triceps, dumbbell variant",
   slots: [DB_BENCH, INCLINE, OHP, FLY, OH_TRICEPS],
   extras: { shoulders: REVERSE_FLY, arms: PUSHDOWN },
 };
@@ -107,7 +107,7 @@ const LEGS: DayTemplate = {
 };
 const LEGS_B: DayTemplate = {
   name: "Leg Day B",
-  blurb: "Quads, glutes & calves — machine variant",
+  blurb: "Quads, glutes & calves, machine variant",
   slots: [LEG_PRESS, GOBLET, DB_RDL, LEG_EXT, CALF_SEATED],
   extras: { legs: LUNGE, core: CRUNCH },
 };
@@ -119,7 +119,7 @@ const UPPER_A: DayTemplate = {
 };
 const UPPER_B: DayTemplate = {
   name: "Upper Day B",
-  blurb: "Chest, back, shoulders & arms — variant",
+  blurb: "Chest, back, shoulders & arms, variant",
   slots: [INCLINE, ROW, PULLUP, DB_BENCH, REVERSE_FLY, PUSHDOWN],
   extras: { arms: HAMMER, shoulders: LATERAL, chest: FLY },
 };
@@ -131,7 +131,7 @@ const LOWER_A: DayTemplate = {
 };
 const LOWER_B: DayTemplate = {
   name: "Lower Day B",
-  blurb: "Quads, glutes, calves & core — variant",
+  blurb: "Quads, glutes, calves & core, variant",
   slots: [LEG_PRESS, GOBLET, DB_RDL, LEG_EXT, CALF_SEATED, X_CRUNCH],
   extras: { legs: LUNGE, core: LEG_RAISE },
 };
@@ -215,7 +215,7 @@ export const GOAL_META: Record<
   PlanGoal,
   { label: string; blurb: string; kcalGoal: number }
 > = {
-  muscle: { label: "Build muscle", blurb: "Hypertrophy — moderate reps, solid rest", kcalGoal: 300 },
+  muscle: { label: "Build muscle", blurb: "Hypertrophy, moderate reps, solid rest", kcalGoal: 300 },
   lean: { label: "Get lean", blurb: "Higher reps, short rests, more burn", kcalGoal: 400 },
   strength: { label: "Get strong", blurb: "Heavy compounds, low reps, long rest", kcalGoal: 250 },
   fit: { label: "Stay fit", blurb: "Balanced, sustainable all-round training", kcalGoal: 300 },

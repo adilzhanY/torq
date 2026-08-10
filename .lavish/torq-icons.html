@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>torq · icon packs — three docks</title>
+<title>torq · icon packs, three docks</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -84,7 +84,7 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
     <h1 style="font-size:36px;margin-top:6px">The dock in three icon packs</h1>
     <p class="lede" style="margin-top:12px">
       Every dock below is drawn with the <b class="accent">real geometry</b> of that pack, pulled from
-      its published SVGs — not redrawn or approximated. All three are free for commercial use, all three
+      its published SVGs, not redrawn or approximated. All three are free for commercial use, all three
       ship a React&nbsp;Native package, and all three are at least as complete as lucide.
     </p>
   </div>
@@ -103,7 +103,7 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
   </div>
   <div>
     <p class="thesis" style="margin-top:0">
-      1&nbsp;600 icons, ISC licence, 2&nbsp;px rounded strokes. It is a good pack — the reason to look
+      1&nbsp;600 icons, ISC licence, 2&nbsp;px rounded strokes. It is a good pack, the reason to look
       elsewhere is not quality, it is that <b>lucide is everywhere</b>, and torq has spent this week
       buying its own geometry: the eight-blade vortex, the shield badges, a hand-drawn streak mark.
       A rounded-terminal outline set is the least torq-like thing left on the screen.
@@ -111,7 +111,7 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
     <div class="cols">
       <div class="cost"><h4>Where it sits wrong</h4><ul>
         <li><b>Round terminals and round joins</b> against a SHARP-10 radius system and a logo made of blades.</li>
-        <li><b>Outline only.</b> No filled weight, so an active tab can only change colour — the dock's
+        <li><b>Outline only.</b> No filled weight, so an active tab can only change colour, the dock's
         selected state has to be carried entirely by the lime and the rail.</li>
         <li>The dumbbell is its most recognisable glyph and it reads as two blobs at 21&nbsp;px.</li>
       </ul></div>
@@ -130,10 +130,10 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
   <div>
     <div class="opt-head"><p class="eyebrow">Pack 1</p><span class="tag rec">Recommended</span><span class="tag">5 900 icons</span><span class="tag">MIT</span></div>
     <h2 style="font-size:26px">Tabler</h2>
-    <p class="thesis">The closest thing to a sharper lucide. Same 2&nbsp;px outline language so nothing else in the app has to change, but the corners are <b class="accent">squarer and the geometry more constructed</b> — it looks drawn on a grid, which is exactly what SHARP-10 and the blade logo are doing.</p>
+    <p class="thesis">The closest thing to a sharper lucide. Same 2&nbsp;px outline language so nothing else in the app has to change, but the corners are <b class="accent">squarer and the geometry more constructed</b>. It looks drawn on a grid, which is exactly what SHARP-10 and the blade logo are doing.</p>
     <div class="cols">
-      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Drop-in.</b> Same stroke width, same 24-unit box, same outline idiom — the swap is a rename in Icon.tsx, not a redesign.</li><li><b>5 900 icons</b>, nearly four times lucide, so nothing you reach for later is missing.</li><li>Squarer terminals sit with the sharp radii instead of arguing with them.</li><li>Official <code>@tabler/icons-react-native</code>; MIT.</li></ul></div>
-      <div class="cost"><h4>What it costs</h4><ul><li><b>It is still an outline set.</b> If you want a filled active tab you have to reach for the separate <code>-filled</code> variants, which exist for only part of the library.</li><li>The change is subtle — from a metre away this dock and the current one look alike.</li><li>Its barbell is more literal than lucide's, which some will read as clip-art.</li></ul></div>
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Drop-in.</b> Same stroke width, same 24-unit box, same outline idiom, so the swap is a rename in Icon.tsx, not a redesign.</li><li><b>5 900 icons</b>, nearly four times lucide, so nothing you reach for later is missing.</li><li>Squarer terminals sit with the sharp radii instead of arguing with them.</li><li>Official <code>@tabler/icons-react-native</code>; MIT.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>It is still an outline set.</b> If you want a filled active tab you have to reach for the separate <code>-filled</code> variants, which exist for only part of the library.</li><li>The change is subtle, from a metre away this dock and the current one look alike.</li><li>Its barbell is more literal than lucide's, which some will read as clip-art.</li></ul></div>
     </div>
   </div>
 </div><hr class="hair"/>
@@ -149,10 +149,10 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
   <div>
     <div class="opt-head"><p class="eyebrow">Pack 2</p><span class="tag">Boldest</span><span class="tag">6 weights</span><span class="tag">MIT</span></div>
     <h2 style="font-size:26px">Phosphor</h2>
-    <p class="thesis">Six weights of the same 1&nbsp;512 glyphs — and the one that matters here is <b class="accent">Fill</b>. The active tab in this dock is not just lime, it is <b>solid</b>, which is the pattern the app already adopted when the streak mark went from a stroked flame to a filled one.</p>
+    <p class="thesis">Six weights of the same 1&nbsp;512 glyphs, and the one that matters here is <b class="accent">Fill</b>. The active tab in this dock is not just lime. It is <b>solid</b>, which is the pattern the app already adopted when the streak mark went from a stroked flame to a filled one.</p>
     <div class="cols">
-      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Fill on the active tab</b> — the strongest selected state of the three, and it matches the solid streak mark and solid rank shields.</li><li>Six weights (thin → bold → fill → duotone) means one family covers every density you will ever need without mixing packs.</li><li>Geometric, slightly severe, with a distinct personality — nobody will mistake it for the default.</li><li>Official <code>phosphor-react-native</code>; MIT.</li></ul></div>
-      <div class="cost"><h4>What it costs</h4><ul><li><b>1 512 unique glyphs — fewer than lucide's 1 600.</b> With six weights it is 9 000 files, but if you count distinct concepts, this is the only option here that does not beat what you have. Worth checking the few you rely on before committing.</li><li>Two weights in the dock means two icon lookups per slot and a slightly heavier component.</li><li>Its house and medal are noticeably rounder than Tabler's — less angular than the brand.</li></ul></div>
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Fill on the active tab</b>, the strongest selected state of the three, and it matches the solid streak mark and solid rank shields.</li><li>Six weights (thin → bold → fill → duotone) means one family covers every density you will ever need without mixing packs.</li><li>Geometric, slightly severe, with a distinct personality. Nobody will mistake it for the default.</li><li>Official <code>phosphor-react-native</code>; MIT.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>1 512 unique glyphs, fewer than lucide's 1 600.</b> With six weights it is 9 000 files, but if you count distinct concepts, this is the only option here that does not beat what you have. Worth checking the few you rely on before committing.</li><li>Two weights in the dock means two icon lookups per slot and a slightly heavier component.</li><li>Its house and medal are noticeably rounder than Tabler's, less angular than the brand.</li></ul></div>
     </div>
   </div>
 </div><hr class="hair"/>
@@ -168,10 +168,10 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
   <div>
     <div class="opt-head"><p class="eyebrow">Pack 3</p><span class="tag">Softest</span><span class="tag">3 058 icons</span><span class="tag">Apache 2.0</span></div>
     <h2 style="font-size:26px">Remix Icon</h2>
-    <p class="thesis">Every glyph ships as a matched <b class="accent">line and fill pair</b>, designed for exactly this: outline when idle, solid when selected. Rounder and friendlier than the other two — the question is whether torq wants friendly.</p>
+    <p class="thesis">Every glyph ships as a matched <b class="accent">line and fill pair</b>, designed for exactly this: outline when idle, solid when selected. Rounder and friendlier than the other two, so the question is whether torq wants friendly.</p>
     <div class="cols">
-      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Line/fill pairs across the whole set</b>, not just part of it, so the filled active state never has a gap.</li><li><b>3 058 icons</b>, nearly double lucide.</li><li>Heavier optical weight than lucide, which holds up better on a near-black page.</li><li>Apache 2.0 — the most permissive licence here for a paid app.</li></ul></div>
-      <div class="cost"><h4>What it costs</h4><ul><li><b>Roundest of the three.</b> On a page built from blades and 10-px corners it softens the brand rather than reinforcing it.</li><li><b>No dumbbell.</b> The nearest workout glyph is a boxing glove, which is not what the tab does.</li><li>No official React Native package — you would render the SVGs yourself or add a wrapper.</li></ul></div>
+      <div class="win"><h4>Why it fits torq</h4><ul><li><b>Line/fill pairs across the whole set</b>, not just part of it, so the filled active state never has a gap.</li><li><b>3 058 icons</b>, nearly double lucide.</li><li>Heavier optical weight than lucide, which holds up better on a near-black page.</li><li>Apache 2.0, the most permissive licence here for a paid app.</li></ul></div>
+      <div class="cost"><h4>What it costs</h4><ul><li><b>Roundest of the three.</b> On a page built from blades and 10-px corners it softens the brand rather than reinforcing it.</li><li><b>No dumbbell.</b> The nearest workout glyph is a boxing glove, which is not what the tab does.</li><li>No official React Native package. You would render the SVGs yourself or add a wrapper.</li></ul></div>
     </div>
   </div>
 </div><hr class="hair"/>
@@ -186,17 +186,17 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
     <tr><td>Official RN package</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No</td></tr>
     <tr><td>Terminals</td><td class="no">Round</td><td class="yes">Square-ish</td><td class="mid">Round, geometric</td><td class="no">Round</td></tr>
     <tr><td>Filled active tab</td><td class="no">Not possible</td><td class="mid">Partial</td><td class="yes">Yes</td><td class="yes">Yes</td></tr>
-    <tr><td>Has a real dumbbell</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No — boxing glove</td></tr>
-    <tr><td>Migration cost</td><td>—</td><td class="yes">Rename map in Icon.tsx</td><td class="mid">Rename + weight prop</td><td class="no">Rename + own renderer</td></tr>
+    <tr><td>Has a real dumbbell</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="yes">Yes</td><td class="no">No, boxing glove</td></tr>
+    <tr><td>Migration cost</td><td>, </td><td class="yes">Rename map in Icon.tsx</td><td class="mid">Rename + weight prop</td><td class="no">Rename + own renderer</td></tr>
   </tbody>
 </table></div>
 
 <p class="lede" style="margin-top:22px">
   <b class="accent">My read:</b> Tabler if you want the app to look more like itself with one afternoon's
-  work — it is the same idiom with the corners the brand actually wants, it is four times the library,
+  work. It is the same idiom with the corners the brand actually wants, and four times the library,
   and the migration is a rename map behind the <code>Icon</code> component you already have. Phosphor if
   you want the dock to gain something lucide structurally cannot give it: a <i>filled</i> active tab, which
-  is the same move the streak mark just made. Remix I would not ship — the roundness pulls against the
+  is the same move the streak mark just made. Remix I would not ship, the roundness pulls against the
   brand, there is no official RN package, and its workout tab would be a boxing glove.
   <br/><br/>
   One thing none of these change: <b>the icons are not the reason the app looks generic</b>. The vortex,
@@ -214,7 +214,7 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
   if (!choice) return;
   window.lavish.queuePrompt(
     'Migrate the app icons to: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
-    { tag: 'choice', text: 'Icon pack: ' + choice + (notes ? ' — ' + notes : ''),
+    { tag: 'choice', text: 'Icon pack: ' + choice + (notes ? ', ' + notes : ''),
       element: event.currentTarget, queueKey: 'icons',
       data: { question: 'icons', answer: choice, notes } }
   );
@@ -230,10 +230,10 @@ font-family:inherit;font-size:14px;font-weight:700;padding:13px 22px;cursor:poin
       <span><span class="nm">2 · Phosphor</span><span class="ds">Six weights; filled active tab. 1 512 glyphs.</span></span></label>
     <label><input type="radio" name="pack" value="Remix Icon">
       <span><span class="nm">3 · Remix</span><span class="ds">Line/fill pairs, 3 058 icons, softer.</span></span></label>
-    <label><input type="radio" name="pack" value="none — keep lucide">
+    <label><input type="radio" name="pack" value="none, keep lucide">
       <span><span class="nm">Keep lucide</span><span class="ds">Not worth the churn right now.</span></span></label>
   </div>
-  <textarea name="notes" placeholder="Anything specific — a glyph that must look a certain way, whether the active tab should be filled…"></textarea>
+  <textarea name="notes" placeholder="Anything specific, a glyph that must look a certain way, whether the active tab should be filled…"></textarea>
   <button class="send" type="submit">Queue this answer</button>
   <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
 </form>

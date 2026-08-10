@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>torq · stats — three redesigns</title>
+<title>torq · stats, three redesigns</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -109,7 +109,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <h1 style="font-size:36px;margin-top:6px">Three Stats redesigns</h1>
     <p class="lede" style="margin-top:12px">
       You're right that the page measures the wrong thing. Volume is <b class="accent">how much work you did</b>;
-      rank and 1RM are <b class="accent">how strong you got</b> — and only the second one is why
+      rank and 1RM are <b class="accent">how strong you got</b>, and only the second one is why
       torq exists. All three ideas below delete volume from the headline. They differ in
       what replaces it: the ladder, the lifts, or the month.
     </p>
@@ -119,8 +119,8 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
 <section class="facts">
   <div class="fact bad"><b>2 of 4</b><span>Headline figures are volume-flavoured (volume, sets). None mention rank.</span></div>
   <div class="fact bad"><b>2</b><span>Near-identical weekly bar charts, stacked one above the other.</span></div>
-  <div class="fact bad"><b>4 of 6</b><span>Bar slots are empty — the month window is wider than the data.</span></div>
-  <div class="fact"><b>0</b><span>Charts about rank, PRs or 1RM — the things the app is actually for.</span></div>
+  <div class="fact bad"><b>4 of 6</b><span>Bar slots are empty. The month window is wider than the data.</span></div>
+  <div class="fact"><b>0</b><span>Charts about rank, PRs or 1RM, the things the app is actually for.</span></div>
 </section><hr class="hair"/>
 <p class="eyebrow">Today</p>
 <h2 style="font-size:22px;margin-top:6px">The real page, on your phone</h2>
@@ -130,16 +130,16 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
       <img class="shot" src="stats-now-1.png" alt="Stats page, top"/>
       <img class="shot" src="stats-now-2.png" alt="Stats page, bottom"/>
     </div>
-    <p class="caption">Captured from the emulator just now — not a mock.</p>
+    <p class="caption">Captured from the emulator just now, not a mock.</p>
   </div>
   <div>
     <h4 style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--bad);margin-bottom:4px">What's wrong</h4>
-    <div class="annot"><span class="n">1</span><p><b>Volume is the hero.</b> "29k VOLUME (KG)" sits in the KPI row and the largest chart on the page is weekly volume. Volume rewards long sessions, not strong ones — you can add 20% volume by adding a set of curls.</p></div>
+    <div class="annot"><span class="n">1</span><p><b>Volume is the hero.</b> "29k VOLUME (KG)" sits in the KPI row and the largest chart on the page is weekly volume. Volume rewards long sessions, not strong ones, you can add 20% volume by adding a set of curls.</p></div>
     <div class="annot"><span class="n">2</span><p><b>Two charts, one story.</b> Weekly volume and weekly workout count have the same shape from the same weeks, stacked. The second one is the first one, dimmer.</p></div>
     <div class="annot"><span class="n">3</span><p><b>Four of six bars are empty.</b> The month window always shows 5–6 weeks whether or not they contain anything, so the chart is mostly background.</p></div>
-    <div class="annot"><span class="n">4</span><p><b>The muscle breakdown renders as an empty grey strip.</b> The legend says Legs 50% / Chest 19% / Back 15% — but the stacked bar itself has no visible colour. That's a real bug, not a design opinion.</p></div>
+    <div class="annot"><span class="n">4</span><p><b>The muscle breakdown renders as an empty grey strip.</b> The legend says Legs 50% / Chest 19% / Back 15%, but the stacked bar itself has no visible colour. That's a real bug, not a design opinion.</p></div>
     <div class="annot"><span class="n">5</span><p><b>Raw axis ticks:</b> 35022, 23348, 11674. Unrounded numbers nobody can scan, on an axis whose job is orientation.</p></div>
-    <div class="annot"><span class="n">6</span><p><b>Nothing about getting stronger.</b> No rank over time, no PR, no 1RM, no "which lift is stalling" — and those are the only questions this app is uniquely able to answer.</p></div>
+    <div class="annot"><span class="n">6</span><p><b>Nothing about getting stronger.</b> No rank over time, no PR, no 1RM, no "which lift is stalling", and those are the only questions this app is uniquely able to answer.</p></div>
   </div>
 </div><hr class="hair"/>
 <div class="opt">
@@ -220,7 +220,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
       <div class="eb">More</div>
       <div class="lrow"><div><div class="nm">Measurements</div><div class="sub">Weight, body fat, chest, waist…</div></div><div class="vl faint">›</div></div>
       <div class="dv"></div>
-      <div class="lrow"><div><div class="nm">Training load</div><div class="sub">Volume, sets, hours — if you want them</div></div><div class="vl faint">›</div></div>
+      <div class="lrow"><div><div class="nm">Training load</div><div class="sub">Volume, sets, hours, if you want them</div></div><div class="vl faint">›</div></div>
     </div></div></div>
     <p class="caption">Scroll it. One question per block, rank first.</p>
   </div>
@@ -235,13 +235,13 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     </p>
     <div class="cols">
       <div class="win"><h4>What you gain</h4><ul>
-        <li><b>The chart the app has never drawn.</b> Rank over time with tier bands turns nine abstract thresholds into a picture of a climb — and every point on it is already computable from your logs.</li>
+        <li><b>The chart the app has never drawn.</b> Rank over time with tier bands turns nine abstract thresholds into a picture of a climb, and every point on it is already computable from your logs.</li>
         <li><b>"+3.9 kg to Gold" is actionable.</b> Points are the currency but kilos are what you do on Monday, so the tier-up rows are denominated in kilos.</li>
         <li><b>Records get a home.</b> PRs are currently visible only inside a finished-workout summary that scrolls away.</li>
-        <li><b>Body weight stays</b> — not vanity, it's a DOTS input, so it belongs next to the rank it moves.</li>
+        <li><b>Body weight stays</b>, not vanity, it's a DOTS input, so it belongs next to the rank it moves.</li>
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
-        <li><b>Rank history has to be replayed.</b> Points-at-a-date means recomputing <code>rankLifts</code> over every prefix of your history — cheap for a few hundred workouts, but it needs a memo, not a naive loop per pixel.</li>
+        <li><b>Rank history has to be replayed.</b> Points-at-a-date means recomputing <code>rankLifts</code> over every prefix of your history, cheap for a few hundred workouts, but it needs a memo, not a naive loop per pixel.</li>
         <li>A new "Training load" sub-page for the volume/sets/hours that leave the surface.</li>
         <li>The line looks flat for a brand-new user with two sessions.</li>
       </ul></div>
@@ -279,7 +279,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
 <line x1="44.6" y1="156.0" x2="44.6" y2="156.0" stroke="#5C6356" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
 <circle cx="44.6" cy="156.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
 <circle cx="44.6" cy="156.0" r="5" fill="#5C6356" stroke="#0E0F0E" stroke-width="2"/>
-<text x="356" y="160.0" class="delta" text-anchor="end" fill="#5C6356">—</text>
+<text x="356" y="160.0" class="delta" text-anchor="end" fill="#5C6356">, </text>
 </svg>
       <p style="font-size:10.5px;color:var(--inkFaint);margin-top:4px">
         Hollow dot = 90 days ago · filled = today. Cable Pulldown hasn't moved in 90 days.
@@ -324,7 +324,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
         <div style="display:flex;padding:6px 0;color:var(--inkFaint);font-weight:700;font-size:9.5px;letter-spacing:.1em">
           <span style="width:34px">REPS</span><span style="flex:1">BEST REAL SET</span><span>EST.</span></div>
         <div class="dv"></div>
-        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">1</span><span style="flex:1;color:var(--inkSoft)">—</span><span style="font-weight:700">89</span></div>
+        <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">1</span><span style="flex:1;color:var(--inkSoft)">, </span><span style="font-weight:700">89</span></div>
         <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">3</span><span style="flex:1;color:var(--inkSoft)">80 kg · 1 Aug</span><span style="font-weight:700">81</span></div>
         <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">5</span><span style="flex:1;color:var(--inkSoft)">75 kg · 27 Jul</span><span style="font-weight:700">76</span></div>
         <div style="display:flex;padding:7px 0"><span style="width:34px;font-weight:700">8</span><span style="flex:1;color:var(--inkSoft)">65 kg · 20 Jul</span><span style="font-weight:700">68</span></div>
@@ -336,19 +336,19 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     <div class="opt-head"><p class="eyebrow">Idea 2</p><span class="tag">Most specific</span><span class="tag">Large build</span></div>
     <h2 style="font-size:26px">The lift lab</h2>
     <p class="thesis">
-      The page is about <b class="accent">exercises, not sessions</b>. It opens with a dumbbell chart —
-      every ranked lift, 90 days ago versus today — which is the one form that makes
+      The page is about <b class="accent">exercises, not sessions</b>. It opens with a dumbbell chart,
+      every ranked lift, 90 days ago versus today, which is the one form that makes
       "which lifts are moving and which are stuck" readable at a glance. Pick a lift and get
       its whole file: e1RM line with records, tier, percentile, rep maxes.
     </p>
     <div class="cols">
       <div class="win"><h4>What you gain</h4><ul>
         <li><b>Stalls become visible.</b> A flat dumbbell row is the single most useful thing a training app can tell you, and nothing in torq currently says it.</li>
-        <li><b>Exactly what you asked for</b> — "weight increasing in exercises", as the page's whole subject.</li>
+        <li><b>Exactly what you asked for</b>, "weight increasing in exercises", as the page's whole subject.</li>
         <li><b>The rep-max table earns its place here</b>, where you're already thinking about one lift.</li>
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
-        <li><b>It duplicates a screen you already have.</b> ExerciseInfo already ships About / History / Records / Charts / Rank per exercise. Building the same charts on Stats means two places to maintain the same thing — the strongest argument against this one.</li>
+        <li><b>It duplicates a screen you already have.</b> ExerciseInfo already ships About / History / Records / Charts / Rank per exercise. Building the same charts on Stats means two places to maintain the same thing, the strongest argument against this one.</li>
         <li>Needs a selection model and a sensible default lift.</li>
         <li>A lift needs two data points 90 days apart before the headline chart says anything.</li>
       </ul></div>
@@ -410,7 +410,7 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
 <line x1="44.6" y1="122.0" x2="44.6" y2="122.0" stroke="#5C6356" stroke-width="2.5" stroke-linecap="round" opacity="0.5"/>
 <circle cx="44.6" cy="122.0" r="4.5" fill="#0E0F0E" stroke="#5C6356" stroke-width="2"/>
 <circle cx="44.6" cy="122.0" r="5" fill="#5C6356" stroke="#0E0F0E" stroke-width="2"/>
-<text x="356" y="126.0" class="delta" text-anchor="end" fill="#5C6356">—</text>
+<text x="356" y="126.0" class="delta" text-anchor="end" fill="#5C6356">, </text>
 </svg>
 
       <div class="eb">Strength balance</div>
@@ -584,13 +584,13 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
     </p>
     <div class="cols">
       <div class="win"><h4>What you gain</h4><ul>
-        <li><b>The ladder finally appears.</b> Nowhere in torq can you currently see all nine tiers and where you sit among them — the game's whole board.</li>
+        <li><b>The ladder finally appears.</b> Nowhere in torq can you currently see all nine tiers and where you sit among them, the game's whole board.</li>
         <li><b>Strength balance is a genuine coaching insight</b> and no competitor of yours shows it: a 120 kg deadlift behind a 114 kg squat is a real finding.</li>
         <li><b>The heatmap replaces two bar charts</b> with one denser, better-filled picture of consistency.</li>
         <li>The month stepper you built stops being wasted on volume.</li>
       </ul></div>
       <div class="cost"><h4>What it costs</h4><ul>
-        <li><b>Most to build</b> — five new chart forms, one of which (the balance baseline) is a convention you'd have to defend.</li>
+        <li><b>Most to build</b>, five new chart forms, one of which (the balance baseline) is a convention you'd have to defend.</li>
         <li><b>The balance chart is noise for many users.</b> Anyone not training all three competition lifts gets a chart about lifts they don't do.</li>
         <li>A month is a short window for strength: some months move 2 pts and the hero reads as failure.</li>
       </ul></div>
@@ -600,18 +600,18 @@ font-weight:700;display:grid;place-items:center;flex:none;margin-top:1px}
 <p class="eyebrow">The charts</p>
 <h2 style="font-size:22px;margin:6px 0 8px">Which form, and why not the obvious one</h2>
 <p class="lede" style="margin-bottom:18px">You asked what charts to use. The form follows the reader's job,
-not the data's shape — and in several places the honest answer is "not a chart".</p>
+not the data's shape, and in several places the honest answer is "not a chart".</p>
 <div class="tablewrap"><table>
   <thead><tr><th>The question</th><th>Form</th><th>Why not the obvious alternative</th></tr></thead>
   <tbody>
-    <tr><td>Am I climbing?</td><td><b>Line + tier bands</b>, one series</td><td>Not multi-line. The other lifts are context; eight hues would bury the one line that matters. One series needs no legend — the title names it.</td></tr>
+    <tr><td>Am I climbing?</td><td><b>Line + tier bands</b>, one series</td><td>Not multi-line. The other lifts are context; eight hues would bury the one line that matters. One series needs no legend, the title names it.</td></tr>
     <tr><td>How far to the next tier?</td><td><b>Meter</b></td><td>Not a two-slice donut. A single ratio against a limit is a bar, and the number does most of the work.</td></tr>
-    <tr><td>Which lifts moved?</td><td><b>Dumbbell</b> (before → after)</td><td>Not grouped bars: pairs read as pairs and the gap <i>is</i> the subject. One hue in two treatments — hollow then, filled now.</td></tr>
-    <tr><td>How did one lift progress?</td><td><b>Line</b>, PR points ringed</td><td>Not bars — time is continuous. The ring is secondary encoding so records aren't colour-alone.</td></tr>
+    <tr><td>Which lifts moved?</td><td><b>Dumbbell</b> (before → after)</td><td>Not grouped bars: pairs read as pairs and the gap <i>is</i> the subject. One hue in two treatments, hollow then, filled now.</td></tr>
+    <tr><td>How did one lift progress?</td><td><b>Line</b>, PR points ringed</td><td>Not bars, time is continuous. The ring is secondary encoding so records aren't colour-alone.</td></tr>
     <tr><td>Am I balanced?</td><td><b>Diverging bars</b> around a neutral centre</td><td>Not a radar. Radar's filled area exaggerates magnitude and its axis order is arbitrary. Δ-to-target is textbook diverging.</td></tr>
     <tr><td>Am I consistent?</td><td><b>Calendar heatmap</b>, one hue</td><td>Not a weekly bar chart with four empty slots. A heatmap is dense where bars are sparse.</td></tr>
     <tr><td>What records did I set?</td><td><b>A list</b></td><td>Not a chart at all. Events with names and dates are a feed; plotting them adds nothing.</td></tr>
-    <tr><td>Where is my body weight going?</td><td><b>Small line</b></td><td>Keep it — DOTS divides by bodyweight, so it is the one measurement that moves your rank.</td></tr>
+    <tr><td>Where is my body weight going?</td><td><b>Small line</b></td><td>Keep it, DOTS divides by bodyweight, so it is the one measurement that moves your rank.</td></tr>
     <tr><td>Which muscles did I train?</td><td><b>Cut it</b>, or horizontal stacked bar</td><td>Today it renders as an invisible grey strip. Either fix the fills or admit it was volume-by-another-name.</td></tr>
   </tbody>
 </table></div>
@@ -632,15 +632,15 @@ not the data's shape — and in several places the honest answer is "not a chart
     <tr><td>Per-lift progression</td><td class="no">Nowhere</td><td class="mid">Tier-up rows (kg to go)</td><td class="yes">The whole page</td><td class="yes">Dumbbell, monthly</td></tr>
     <tr><td>Answers "what's stalling"</td><td class="no">No</td><td class="mid">Implicitly</td><td class="yes">Directly</td><td class="yes">Directly</td></tr>
     <tr><td>Duplicates ExerciseInfo</td><td class="yes">No</td><td class="yes">No</td><td class="no">Heavily</td><td class="mid">A little</td></tr>
-    <tr><td>New chart forms to build</td><td>—</td><td class="yes">2 (banded line, meter)</td><td class="mid">3</td><td class="no">5</td></tr>
+    <tr><td>New chart forms to build</td><td>, </td><td class="yes">2 (banded line, meter)</td><td class="mid">3</td><td class="no">5</td></tr>
     <tr><td>Works on day 3 of using the app</td><td class="mid">Sort of</td><td class="mid">Flat line, honest</td><td class="no">Needs 90 days</td><td class="no">Needs a full month</td></tr>
-    <tr><td>Build effort</td><td>—</td><td class="mid">Medium</td><td class="no">Large</td><td class="no">Large</td></tr>
+    <tr><td>Build effort</td><td>, </td><td class="mid">Medium</td><td class="no">Large</td><td class="no">Large</td></tr>
   </tbody>
 </table></div>
 
 <p class="lede" style="margin-top:22px">
   <b class="accent">My read:</b> build 1, and steal one chart from 2. The rank line is the picture torq has
-  been missing since the rank engine shipped — it's the only screen that would make someone open the app on a
+  been missing since the rank engine shipped, it's the only screen that would make someone open the app on a
   rest day. But idea 2's dumbbell chart is the cheapest big win on this page: two numbers per lift, and it
   answers "what's stalling", which idea 1 only implies. The rest of idea 2 I'd leave alone, because
   ExerciseInfo already owns per-lift detail and a second copy is a second thing to keep true.
@@ -656,26 +656,26 @@ not the data's shape — and in several places the honest answer is "not a chart
   if (!choice) return;
   window.lavish.queuePrompt(
     'Redesign the Stats page using: ' + choice + '.' + (notes ? ' Notes: ' + notes : ''),
-    { tag: 'choice', text: 'Stats: ' + choice + (notes ? ' — ' + notes : ''),
+    { tag: 'choice', text: 'Stats: ' + choice + (notes ? ', ' + notes : ''),
       element: event.currentTarget, queueKey: 'stats',
       data: { question: 'stats', answer: choice, notes } }
   );
 ">
   <p class="soft" style="font-size:13.5px">
-    Pick one and I implement it end to end. The mocks are real markup — annotate any chart,
+    Pick one and I implement it end to end. The mocks are real markup, annotate any chart,
     row or label you want changed first.
   </p>
   <div class="picks">
-    <label><input type="radio" name="design" value="1 — The climb, plus the dumbbell chart from 2">
-      <span><span class="nm">1 + the dumbbell</span><span class="ds">Rank line with tier bands, tier-ups in kg, PR feed — and "what moved" on top. My recommendation.</span></span></label>
-    <label><input type="radio" name="design" value="1 — The climb">
+    <label><input type="radio" name="design" value="1, The climb, plus the dumbbell chart from 2">
+      <span><span class="nm">1 + the dumbbell</span><span class="ds">Rank line with tier bands, tier-ups in kg, PR feed, and "what moved" on top. My recommendation.</span></span></label>
+    <label><input type="radio" name="design" value="1, The climb">
       <span><span class="nm">1 · The climb</span><span class="ds">Rank-first. The banded rank line as the hero, volume to a sub-page.</span></span></label>
-    <label><input type="radio" name="design" value="2 — The lift lab">
+    <label><input type="radio" name="design" value="2, The lift lab">
       <span><span class="nm">2 · The lift lab</span><span class="ds">Per-exercise page: dumbbell chart, e1RM history, rep maxes.</span></span></label>
-    <label><input type="radio" name="design" value="3 — The monthly scorecard">
+    <label><input type="radio" name="design" value="3, The monthly scorecard">
       <span><span class="nm">3 · Scorecard</span><span class="ds">Month report: points gained, tier ladder, balance, heatmap.</span></span></label>
   </div>
-  <textarea name="notes" placeholder="Anything to change first — should volume survive anywhere, which lifts to feature, keep the month stepper or drop it…"></textarea>
+  <textarea name="notes" placeholder="Anything to change first, should volume survive anywhere, which lifts to feature, keep the month stepper or drop it…"></textarea>
   <button class="send" type="submit">Queue this answer</button>
   <p class="note">Queues one prompt. Press Send to Agent in the panel when you're ready.</p>
 </form>

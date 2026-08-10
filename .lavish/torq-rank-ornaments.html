@@ -64,7 +64,7 @@
 <div class="wrap">
 
 <header>
-  <h1>Stage ornaments — 5 alternatives to the twin-hex burst</h1>
+  <h1>Stage ornaments, 5 alternatives to the twin-hex burst</h1>
   <div class="sub">
     Same flat 2.5D hex + placeholder star; only the <b>stage language</b> (I → IV inside a tier) changes.
     Each concept is shown on <b>Gold</b> so silhouettes compare fairly, with an animated stage-IV hero at the
@@ -83,13 +83,13 @@
     {tag:'choice',text:'Ornament: '+e,element:event.currentTarget,data:{question:'ornament-pick',answer:e,notes:n}});
 ">
   <h2>Pick the stage language</h2>
-  <div class="desc">One of these replaces the twin-hex burst in the full 9×4 matrix. Mixes are fair game — say so in the notes.</div>
+  <div class="desc">One of these replaces the twin-hex burst in the full 9×4 matrix. Mixes are fair game, say so in the notes.</div>
   <div class="optgrid">
-    <label class="opt"><input type="radio" name="concept" value="A — Laurel"><span><span class="on">A · Laurel</span><span class="od">wreath grows around the hex</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="B — Shards"><span><span class="on">B · Shards</span><span class="od">crystal spikes erupt from behind</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="C — Orbit"><span><span class="on">C · Orbit</span><span class="od">rings + satellite around the badge</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="D — Chevrons"><span><span class="on">D · Chevrons</span><span class="od">military stack under the hex</span></span></label>
-    <label class="opt"><input type="radio" name="concept" value="E — Crown"><span><span class="on">E · Crown</span><span class="od">crest points grow on top</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="A, Laurel"><span><span class="on">A · Laurel</span><span class="od">wreath grows around the hex</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="B, Shards"><span><span class="on">B · Shards</span><span class="od">crystal spikes erupt from behind</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="C, Orbit"><span><span class="on">C · Orbit</span><span class="od">rings + satellite around the badge</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="D, Chevrons"><span><span class="on">D · Chevrons</span><span class="od">military stack under the hex</span></span></label>
+    <label class="opt"><input type="radio" name="concept" value="E, Crown"><span><span class="on">E · Crown</span><span class="od">crest points grow on top</span></span></label>
   </div>
   <textarea name="notes" placeholder="Optional: mixes and tweaks, e.g. 'C rings but with D chevrons as the stage counter'…"></textarea>
   <br><button class="queue" type="submit">Queue answer</button>
@@ -250,10 +250,10 @@ function badge(t,concept,stage,animate){
 }
 
 const CONCEPTS=[
-  {k:'A',name:'Laurel',blurb:'A wreath of flat leaves climbs the hex: a few sprigs at II, half-wreath at III, full wreath with crossed stems at IV. The classic "champion" read, and the only organic option — warm next to the geometric hex.'},
-  {k:'B',name:'Shards',blurb:'Crystal shards erupt from behind at deliberate, asymmetric angles — 2 at II, 4 at III, a full eruption at IV. Aggressive and modern; the alternating base/dark fills give real depth while staying flat.'},
-  {k:'C',name:'Orbit',blurb:'A flat ring orbits the badge (front arc passes over the hex): one ring at II, crossed rings + a light satellite at III, three rings at IV. The satellite actually revolves in hero contexts. The most "torque/physics" option — motion is the theme.'},
-  {k:'D',name:'Chevrons',blurb:'A military stack under the hex: one chevron per stage above I. The most literal progress counter — you can count your stage — and the quietest silhouette in dense lists.'},
+  {k:'A',name:'Laurel',blurb:'A wreath of flat leaves climbs the hex: a few sprigs at II, half-wreath at III, full wreath with crossed stems at IV. The classic "champion" read, and the only organic option, warm next to the geometric hex.'},
+  {k:'B',name:'Shards',blurb:'Crystal shards erupt from behind at deliberate, asymmetric angles, 2 at II, 4 at III, a full eruption at IV. Aggressive and modern; the alternating base/dark fills give real depth while staying flat.'},
+  {k:'C',name:'Orbit',blurb:'A flat ring orbits the badge (front arc passes over the hex): one ring at II, crossed rings + a light satellite at III, three rings at IV. The satellite actually revolves in hero contexts. The most "torque/physics" option, motion is the theme.'},
+  {k:'D',name:'Chevrons',blurb:'A military stack under the hex: one chevron per stage above I. The most literal progress counter (you can count your stage) and the quietest silhouette in dense lists.'},
   {k:'E',name:'Crown',blurb:'Crest points grow along the top edge with light-dot jewels: one point at II, three at III, five plus side flares at IV. Reads as "royalty climbing" and keeps the bottom edge clean for lists.'},
 ];
 document.getElementById('concepts').innerHTML=CONCEPTS.map(c=>`

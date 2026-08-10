@@ -122,7 +122,7 @@
   <h1>The torq ranking system</h1>
   <div class="sub">
     The full picture as it stands after the 2026-08-04 planning round (locked in <b>PATH.md</b>) and the
-    badge design sessions. Every lift answers <b>"how good am I, compared to whom?"</b> — normalized to
+    badge design sessions. Every lift answers <b>"how good am I, compared to whom?"</b>, normalized to
     your body, backed by real data, framed by world records, shared with friends.
   </div>
   <div style="margin-top:12px">
@@ -137,7 +137,7 @@
 <section>
   <h2>1 · How a set becomes a rank</h2>
   <div class="desc">
-    Pure TypeScript over bundled JSON — <b>offline-first, no server round-trip</b>. The big barbell
+    Pure TypeScript over bundled JSON: <b>offline-first, no server round-trip</b>. The big barbell
     lifts get <b>real percentiles</b> (OpenPowerlifting dump, sex × weight class); ~50 popular
     accessories get a <b>calibrated DOTS-style formula</b>; the long tail stays PR-only (unranked) at first.
   </div>
@@ -155,18 +155,18 @@ flowchart LR
     TIER --> UP["rank-up celebration<br/>+ share card"]
   </pre>
   <div class="grid g3" style="margin-top:14px">
-    <div class="cell"><h3>Sex + bodyweight only</h3><p>The only inputs to the math — the science-backed pair every points formula uses. <b>Height and age</b> show on the profile but stay out of the formula (no accepted formula exists; masters coefficients are a later open question).</p></div>
-    <div class="cell"><h3>e1RM rules</h3><p>Epley estimate is rank-eligible only from sets of <b>≤10 reps</b> (it degrades beyond that). <b>Warmups never count</b> — consistent with the existing PR engine in <b>stats.ts</b>.</p></div>
-    <div class="cell"><h3>Honest framing</h3><p>OpenPowerlifting samples competitive lifters, so the claim reads <b>"top 18% of competitive lifters"</b> — honest and more impressive-sounding.</p></div>
+    <div class="cell"><h3>Sex + bodyweight only</h3><p>The only inputs to the math, the science-backed pair every points formula uses. <b>Height and age</b> show on the profile but stay out of the formula (no accepted formula exists; masters coefficients are a later open question).</p></div>
+    <div class="cell"><h3>e1RM rules</h3><p>Epley estimate is rank-eligible only from sets of <b>≤10 reps</b> (it degrades beyond that). <b>Warmups never count</b>, consistent with the existing PR engine in <b>stats.ts</b>.</p></div>
+    <div class="cell"><h3>Honest framing</h3><p>OpenPowerlifting samples competitive lifters, so the claim reads <b>"top 18% of competitive lifters"</b>, honest and more impressive-sounding.</p></div>
   </div>
 </section>
 
 <!-- ===== 2. LADDER ===== -->
 <section>
-  <h2>2 · The ladder — 9 tiers × 4 stages</h2>
+  <h2>2 · The ladder, 9 tiers × 4 stages</h2>
   <div class="desc">
     The shield + orbit system from the last design round, with a <b>new emblem</b> replacing the mountain:
-    one orbit ring that grows with the stage — <b>I bare · II ring · III ball · IV two balls</b> —
+    one orbit ring that grows with the stage, <b>I bare · II ring · III ball · IV two balls</b>,
     and the <b>laurel wreath reserved for World Class</b>, which also gets the cycling holographic frame.
     Elite wears the brand lime. Percentile bands below are calibration placeholders to tune against the real data.
   </div>
@@ -177,14 +177,14 @@ flowchart LR
 
 <!-- ===== 3. DATA ===== -->
 <section>
-  <h2>3 · The data — curated, versioned, bundled</h2>
+  <h2>3 · The data, curated, versioned, bundled</h2>
   <div class="desc">Never live-scraped. Shipped like the ExerciseDB snapshot: JSON in the repo with a version stamp, refreshed with releases.</div>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Source</th><th>Covers</th><th>Access</th><th>Used for</th></tr></thead>
       <tbody>
         <tr><td><b>OpenPowerlifting</b></td><td>Squat / bench / deadlift across federations, every sex × weight class</td><td>Open CSV dump, permissive license, monthly updates</td><td>Percentile curves for the big lifts + "WR in your class (74&nbsp;kg raw): <b>261&nbsp;kg</b>"</td></tr>
-        <tr><td><b>IPF / IWF records</b></td><td>Powerlifting + Olympic lifts (snatch, clean &amp; jerk)</td><td>Public record tables, hand-curated</td><td>Authoritative names — "Record: John Haack" reads better than a bare number</td></tr>
+        <tr><td><b>IPF / IWF records</b></td><td>Powerlifting + Olympic lifts (snatch, clean &amp; jerk)</td><td>Public record tables, hand-curated</td><td>Authoritative names, "Record: John Haack" reads better than a bare number</td></tr>
         <tr><td><b>Guinness / misc</b></td><td>Pull-ups in 24h, plank, odd lifts</td><td>Manual curation</td><td>Fun context for accessories the federations don't track</td></tr>
       </tbody>
     </table>
@@ -259,7 +259,7 @@ flowchart LR
       </div>
       <div class="mcard">
         <div class="khead">Privacy line</div>
-        <div style="font-size:12.5px;margin-top:4px" class="dimtxt">Friends see tiers + opted-in best lifts, <b style="color:var(--ink)">never your full log</b>. Bodyweight optional — tiers already encode it.</div>
+        <div style="font-size:12.5px;margin-top:4px" class="dimtxt">Friends see tiers + opted-in best lifts, <b style="color:var(--ink)">never your full log</b>. Bodyweight optional, tiers already encode it.</div>
       </div>
     </div>
   </div>
@@ -272,9 +272,9 @@ flowchart LR
     <div class="cell">
       <h3 style="color:var(--warn)">The Liftoff lesson</h3>
       <ul class="tight">
-        <li><b>Friends-first visibility</b> — your friends know you don't bench 300 kg; self-policing, zero moderation</li>
-        <li><b>Plausibility caps</b> — claims above the world record for your class get flagged / unranked</li>
-        <li><b>Video-verified badge</b> — later, for top-of-ladder spots; global leaderboards only in Phase 4 with this stack in place</li>
+        <li><b>Friends-first visibility</b>, your friends know you don't bench 300 kg; self-policing, zero moderation</li>
+        <li><b>Plausibility caps</b> (claims above the world record for your class get flagged / unranked</li>
+        <li><b>Video-verified badge</b>) later, for top-of-ladder spots; global leaderboards only in Phase 4 with this stack in place</li>
       </ul>
     </div>
     <div class="cell">
@@ -282,9 +282,9 @@ flowchart LR
       <ul class="tight">
         <li>✅ Space Grotesk shipped app-wide · sharp-τ logo direction locked</li>
         <li>✅ Badge system designed (shield + mountain + orbit + laurel, 36-badge matrix)</li>
-        <li>⬜ Standards dataset — curate + bundle percentiles, formula calibration, records JSON</li>
-        <li>⬜ Rank math module — points, tier, percentile, "N pts to next tier"</li>
-        <li>⬜ Ranks surfaces — Rank Card, exercise rank page, tier badges in exercise info</li>
+        <li>⬜ Standards dataset, curate + bundle percentiles, formula calibration, records JSON</li>
+        <li>⬜ Rank math module, points, tier, percentile, "N pts to next tier"</li>
+        <li>⬜ Ranks surfaces, Rank Card, exercise rank page, tier badges in exercise info</li>
       </ul>
     </div>
   </div>
@@ -302,7 +302,7 @@ flowchart LR
     {tag:'choice',text:'Next: '+v+' · emblem: '+emName,element:event.currentTarget,data:{question:'rank-next-step',answer:v,emblem:emName,notes:n}});
 ">
   <h2>What do we build next?</h2>
-  <div class="desc">Tap an emblem card in section 2 to preview it across every badge — the one left selected is sent along with your answer. Annotate anything that looks off, then pick the next move.</div>
+  <div class="desc">Tap an emblem card in section 2 to preview it across every badge. The one left selected is sent along with your answer. Annotate anything that looks off, then pick the next move.</div>
   <div class="optgrid">
     <label class="opt"><input type="radio" name="next" value="standards dataset first (percentiles + records pipeline to bundled JSON)"><span><span class="on">Dataset first</span><span class="od">curate OpenPowerlifting percentiles + records into bundled JSON</span></span></label>
     <label class="opt"><input type="radio" name="next" value="rank math module first (points/tier/percentile, pure TS, tested)"><span><span class="on">Rank math first</span><span class="od">pure TS engine with a placeholder dataset, swap real data in later</span></span></label>
@@ -414,7 +414,7 @@ function orbit(t,stage,animate,dur){
   return {backs:backArc+ballsBack, fronts:frontArc+ballsFront, defs};}
 const LAUREL={stem:'#35502F',inner:'#41633B',outer:'#6B9457',tip:'#87B36A'};
 /* a real leaf blade, not an oval: pointed base at the stem (0,0), the belly
-   swelling just before the middle, curving to a sharp tip at (L,0) — the
+   swelling just before the middle, curving to a sharp tip at (L,0), the
    asymmetric bulge (fatter near the base, long taper to the tip) is what
    makes it read as a laurel leaf like the reference art */
 function leafPath(L,W){
@@ -455,7 +455,7 @@ function wreath(){
 /* ===== silver crown (traced from the reference art): outlined center spire
    with a filled drop inside, two open side triangles leaning outward, and a
    double-stroke band dipping at the center with pointed ends. Line-art with
-   a steel gradient — stays silver outside the holo layer, like the wreath ===== */
+   a steel gradient, stays silver outside the holo layer, like the wreath ===== */
 function crown(){
   const cid=id('cr');
   const grad=`<linearGradient id="${cid}" x1="0" y1="0" x2="0" y2="1">
@@ -478,17 +478,17 @@ function crown(){
 const FIELD='#131510';
 /* three sharp emblem candidates, all in a 100-box like the old mountain */
 const EMBLEMS={
-  /* angular lightning bolt with a notch — energy / power */
+  /* angular lightning bolt with a notch, energy / power */
   bolt:{
     body:'M58 4 L24 54 L44 54 L34 96 L78 40 L54 40 L70 4 Z',
     cuts:['M50 44 L54 38 L58 44 L54 50 Z'],
   },
-  /* sharp Greek tau — the brand mark: flat caps, beveled ends, kicked foot */
+  /* sharp Greek tau, the brand mark: flat caps, beveled ends, kicked foot */
   tau:{
     body:'M16 22 L84 22 L90 38 L62 38 L62 82 L74 96 L44 96 L46 82 L46 38 L22 38 Z',
     cuts:['M46 30 L62 30 L62 34 L46 34 Z'],
   },
-  /* 4-point star burst with twin side sparks — rank-up flash */
+  /* 4-point star burst with twin side sparks, rank-up flash */
   star:{
     body:'M50 4 L60 40 L96 50 L60 60 L50 96 L40 60 L4 50 L40 40 Z',
     cuts:['M50 32 L54 46 L68 50 L54 54 L50 68 L46 54 L32 50 L46 46 Z'],

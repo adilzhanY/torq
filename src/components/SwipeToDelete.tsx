@@ -5,7 +5,7 @@
  * `react-native-gesture-handler`'s Swipeable, for the same reason the keyboard
  * handling is hand-rolled: the dependency is not currently in this project, its
  * legacy Swipeable is deprecated in favour of a Reanimated one, and Reanimated
- * needs a babel plugin — and this app has NO babel.config.js at all, because
+ * needs a babel plugin, and this app has NO babel.config.js at all, because
  * NativeWind v5 is CSS-first. Trading a 60-line gesture for a build-config
  * change is a bad deal when the gesture is one axis with two rest positions.
  *
@@ -15,7 +15,7 @@
  * scrolling the session all behave exactly as before.
  *
  * Opening is CONTROLLED by the parent (`isOpen` + `onOpenChange`) so only one
- * row can sit open at a time — two half-open rows read as a rendering bug.
+ * row can sit open at a time. Two half-open rows read as a rendering bug.
  */
 import { useEffect, useRef } from "react";
 import { Animated, PanResponder, Pressable, View, type ViewStyle } from "react-native";
@@ -73,7 +73,7 @@ export function SwipeToDelete({
       // CAPTURE, not bubble: the row is full of Pressables and TextInputs, and
       // once a child holds the responder an ancestor can only take it during
       // the capture phase. The threshold is what keeps taps and vertical
-      // scrolling with the child — they never travel 12 px sideways.
+      // scrolling with the child, they never travel 12 px sideways.
       onMoveShouldSetPanResponderCapture: (_, g) =>
         Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 1.6,
       onPanResponderMove: (_, g) => {

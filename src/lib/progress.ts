@@ -1,5 +1,5 @@
 /**
- * Progress — the maths behind the Stats page rebuild (Adilzhan picked
+ * Progress: the maths behind the Stats page rebuild (Adilzhan picked
  * "the climb + the dumbbell chart" from the lavish review
  * `.lavish/torq-stats.html`, 2026-08-09).
  *
@@ -7,12 +7,12 @@
  * functions measure how STRONG YOU GOT, which is the only thing torq is
  * uniquely able to answer:
  *
- *  - `rankHistory` — DOTS points over time, so the tier ladder becomes a
+ *  - `rankHistory`, DOTS points over time, so the tier ladder becomes a
  *    climb you can see rather than nine numbers you have to remember.
- *  - `liftMovement` — every lift's best e1RM then vs now, which is what
+ *  - `liftMovement`, every lift's best e1RM then vs now, which is what
  *    makes a STALL visible. A flat row is the most useful thing a training
  *    app can tell you and nothing in torq said it before.
- *  - `recentRecords` — the PR feed. Records were previously visible only
+ *  - `recentRecords`, the PR feed. Records were previously visible only
  *    inside a workout summary that scrolls away.
  *
  * All pure and React-free, so vitest runs them directly.
@@ -22,7 +22,7 @@ import { est1RM } from "./stats";
 import { LB_TO_KG } from "./units";
 import type { Workout } from "../types";
 
-/** Body state at a moment — bodyweight moves DOTS, so it moves the line. */
+/** Body state at a moment: bodyweight moves DOTS, so it moves the line. */
 export interface BodyAt {
   weightKg: number;
   sex: "male" | "female";
@@ -78,7 +78,7 @@ function pointsFrom(best: Map<string, number>, toKg: number, body: BodyAt): numb
  * lifter who gained 5 kg without adding load genuinely scores lower, and
  * pretending otherwise would draw a flat line over a real decline.
  *
- * Cost is O(workouts + samples × exercises) — the running-best map is
+ * Cost is O(workouts + samples × exercises). The running-best map is
  * advanced through the workouts once, not recomputed per sample, because the
  * naive version is quadratic and this runs on every Stats render.
  */
@@ -123,7 +123,7 @@ export interface LiftMove {
   from: number;
   /** Best e1RM (display unit) at the window's end. */
   to: number;
-  /** No history before the window — `from` is its debut, not a plateau. */
+  /** No history before the window: `from` is its debut, not a plateau. */
   isNew: boolean;
 }
 
@@ -176,7 +176,7 @@ export interface RecordEvent {
 
 /**
  * The e1RM record feed, newest first. Only improvements on a lift's own
- * previous best count, and a lift's FIRST appearance is not a record — it is
+ * previous best count, and a lift's FIRST appearance is not a record. It is
  * a debut, and calling it a PR would spray the feed on day one.
  */
 export function recentRecords(workouts: Workout[], limit = 8): RecordEvent[] {
@@ -252,7 +252,7 @@ export function tierDates(
  * How many overall points each session ADDED, keyed by workout id.
  *
  * The History timeline's "+4 pts" chip. Both sides of the subtraction use
- * the SAME bodyweight — the one on the day of the session — so the number
+ * the SAME bodyweight (the one on the day of the session), so the number
  * is what the lifting was worth, not what the scales did that week.
  *
  * Sessions sharing a timestamp are folded in sequentially rather than as a

@@ -29,7 +29,7 @@ interface AuthValue {
   signOut: () => Promise<void>;
   /** Dismiss the auth gate and use the app offline. */
   continueAsGuest: () => void;
-  /** Leave guest mode — sends the user back to the auth gate. */
+  /** Leave guest mode: sends the user back to the auth gate. */
   exitGuest: () => void;
 }
 
@@ -39,13 +39,13 @@ function friendly(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("invalid login")) return "Wrong email or password.";
   if (m.includes("already registered") || m.includes("already been registered"))
-    return "That email already has an account — try signing in.";
+    return "That email already has an account. Try signing in.";
   if (m.includes("email not confirmed"))
-    return "Confirm your email first — check your inbox for the link.";
+    return "Confirm your email first. Check your inbox for the link.";
   if (m.includes("rate limit") || m.includes("too many"))
     return "Too many attempts. Wait a minute and try again.";
   if (m.includes("password should be") || m.includes("weak password"))
-    return "That password is too weak — pick a stronger one.";
+    return "That password is too weak. Pick a stronger one.";
   if (m.includes("network") || m.includes("fetch"))
     return "No connection. You can still use torq offline.";
   return message || "Something went wrong. Please try again.";
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // A username picked on the register screen has nowhere to live until a
   // session exists (sign-up returns none while email confirmation is on), so
-  // it is claimed here — on whichever sign-in finally produces one.
+  // it is claimed here, on whichever sign-in finally produces one.
   const userId = session?.user?.id ?? null;
   useEffect(() => {
     if (!userId) return;

@@ -133,7 +133,7 @@ const TICK_LEN = 9;
 /**
  * Radial segmented gauge. `progress` sweeps in tick by tick via an animated
  * counter (SVG props aren't natively animatable, so the Animated.Value
- * drives React state through a listener — 24 discrete steps is cheap).
+ * drives React state through a listener, 24 discrete steps is cheap).
  */
 export function ArcGauge({
   value,

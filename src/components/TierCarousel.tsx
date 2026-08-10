@@ -7,7 +7,7 @@
  *
  * It replaces the separate hero badge too: the centred card IS the hero, so
  * landing on the screen you see your own tier at full size, and swiping
- * either way walks the whole ladder — earned tiers behind you with the date
+ * either way walks the whole ladder, earned tiers behind you with the date
  * you got them, locked ones ahead with what they cost.
  *
  * Mechanics follow DateRuler, which already solved this in this codebase:
@@ -18,7 +18,7 @@
  *
  * Items are laid out at a FIXED slot width while the centred badge scales
  * past it. The numbers are chosen so the big badge's edge (SLOT_W × SCALE_C
- * ÷ 2) still clears its neighbour's — overlapping cards would read as a
+ * ÷ 2) still clears its neighbour's, overlapping cards would read as a
  * stack, not a ladder.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -35,7 +35,7 @@ import { TIER_COLORS, TIER_NAMES, stageOf, type TierName, type TierState } from 
  * not move. The numbers are solved, not guessed: the centred badge renders
  * BADGE × SCALE_CENTER = 240 wide, so its edge sits 120 from centre, while a
  * neighbour's inner edge sits SLOT_W − (BADGE × SCALE_NEAR)/2 = 133 away.
- * 13 px of daylight — any tighter and the cards read as a stack.
+ * 13 px of daylight, any tighter and the cards read as a stack.
  */
 const SLOT_W = 172;
 const BADGE = 150;
@@ -58,7 +58,7 @@ export function TierCarousel({
   scale = 3,
   window: windowSize = 2,
 }: {
-  /** The user's own overall rank — decides what is earned and what is next. */
+  /** The user's own overall rank: decides what is earned and what is next. */
   state: TierState;
   /** Tier → when it was first reached (lib/progress tierDates). */
   dates: Map<TierName, number>;
@@ -80,11 +80,11 @@ export function TierCarousel({
   const focusRef = useRef(currentIndex);
 
   // Side padding so the first and last tier can sit dead centre. The
-  // carousel is rendered full-bleed, so the page gutter is NOT subtracted —
+  // carousel is rendered full-bleed, so the page gutter is NOT subtracted,
   // doing that shifted every centred badge 16 px to the left.
   const sidePad = Math.max(0, (screenW - SLOT_W) / 2);
 
-  // Open on the user's own tier — the screen should look like their rank
+  // Open on the user's own tier: the screen should look like their rank
   // card before it looks like a museum.
   useEffect(() => {
     const x = currentIndex * SLOT_W;
@@ -170,8 +170,8 @@ export function TierCarousel({
                   ],
                 }}
               >
-                {/* Locked tiers still show their real art — dimmed, never a
-                    silhouette — and stand still. Motion is the reward.
+                {/* Locked tiers still show their real art (dimmed, never a
+                    silhouette) and stand still. Motion is the reward.
                     Only the badges NEAR the centre are mounted: each one is a
                     2 500-character traced path, and drawing all nine at once
                     was a measurable share of the tab's open time. */}

@@ -1,5 +1,5 @@
 /**
- * Warm-up ramps — the maths behind the "Add warm-up sets" dialog.
+ * Warm-up ramps: the maths behind the "Add warm-up sets" dialog.
  *
  * The defaults are Strong's: an empty bar for 5, then 50% × 3 and 80% × 3 of
  * the work set. That is deliberately NOT the old 40/60/80 ramp this replaced.
@@ -9,7 +9,7 @@
  *
  * There is no per-exercise default, because no honest one exists: nothing in
  * the catalog tells you whether an exercise is a heavy barbell triple or a
- * lateral raise. What the app does instead is REMEMBER — the ramp is stored
+ * lateral raise. What the app does instead is REMEMBER. The ramp is stored
  * on the Exercise, so a percentage you tune for squats stays with squats.
  *
  * The bar row is a fixed weight, not a percentage, and that distinction is
@@ -37,7 +37,7 @@ function roundToStep(w: number, step: number): number {
 /**
  * The weight one ramp row works out to, in the display unit. Percentages are
  * rounded to the loadable step for the equipment (2.5 kg on a barbell, 1 kg
- * on dumbbells) — a warm-up you cannot actually load is not a warm-up.
+ * on dumbbells). A warm-up you cannot actually load is not a warm-up.
  */
 export function warmupWeight(
   row: WarmupRow,

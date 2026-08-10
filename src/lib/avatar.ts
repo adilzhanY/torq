@@ -21,7 +21,7 @@ import { supabase } from "./supabase";
 const PREFIX = "avatar-";
 const BUCKET = "avatars";
 
-/** Where the server copy lives — one object per user, folder-scoped by RLS. */
+/** Where the server copy lives: one object per user, folder-scoped by RLS. */
 function objectPath(userId: string): string {
   return `${userId}/avatar.jpg`;
 }
@@ -33,7 +33,7 @@ function clearStored(dir: Directory): void {
       try {
         item.delete();
       } catch {
-        // A leftover file is harmless — never fail a pick over cleanup.
+        // A leftover file is harmless. Never fail a pick over cleanup.
       }
     }
   }
@@ -41,7 +41,7 @@ function clearStored(dir: Directory): void {
 
 /**
  * Open the system picker and keep the chosen square. Returns a null uri with
- * a null error when the user simply cancelled — that is not a failure.
+ * a null error when the user simply cancelled. That is not a failure.
  */
 export async function pickAvatar(): Promise<{ uri: string | null; error: string | null }> {
   try {
@@ -71,8 +71,8 @@ export async function pickAvatar(): Promise<{ uri: string | null; error: string 
 
 /**
  * Push the local picture to Supabase Storage and point the public profile at
- * it. Signed out is not an error the user needs shouting at them — the
- * picture still works on this phone — so the caller decides what to show.
+ * it. Signed out is not an error the user needs shouting at them (the
+ * picture still works on this phone), so the caller decides what to show.
  */
 export async function uploadAvatar(localUri: string): Promise<{ url: string | null; error: string | null }> {
   const sb = supabase();

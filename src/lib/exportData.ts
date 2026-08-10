@@ -4,7 +4,7 @@
  * Deleting an account should never be the only way out of an app. This
  * writes the whole local database to a JSON file and hands it to the system
  * share sheet, so a user can keep their training history whatever they
- * decide about the account — and so "delete everything" is a choice rather
+ * decide about the account, and so "delete everything" is a choice rather
  * than a threat.
  *
  * The format is the raw DB shape plus a version stamp: readable, and the
@@ -46,7 +46,7 @@ export function exportPayload(db: DB, now: Date): string {
 /**
  * Write the DB to a file and open the share sheet.
  *
- * Uses the SDK 57 File/Paths API — `FileSystem.cacheDirectory` and
+ * Uses the SDK 57 File/Paths API, `FileSystem.cacheDirectory` and
  * `writeAsStringAsync` moved to `expo-file-system/legacy` in this version.
  */
 export async function exportData(db: DB, now = new Date()): Promise<ExportResult> {

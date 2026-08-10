@@ -1,5 +1,5 @@
 /**
- * SubPage — the frame every "row that opens a page" uses: a slide-up sheet
+ * SubPage: the frame every "row that opens a page" uses: a slide-up sheet
  * with a back header, its own hardware-back handler, and a keyboard-aware
  * scroll body.
  *

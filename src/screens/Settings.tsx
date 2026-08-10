@@ -1,5 +1,5 @@
 /**
- * Settings — the grouped hub (idea 2 of the lavish profile review,
+ * Settings: the grouped hub (idea 2 of the lavish profile review,
  * `.lavish/torq-profile.html`, 2026-08-09). Everything adjustable moved off
  * Profile and landed here.
  *
@@ -8,7 +8,7 @@
  * whose control is a single switch keep it inline; anything with more than
  * one field gets a focused sub-page, so no screen is ever a wall again.
  *
- * Sub-pages are plain state, not a router — this app has no router, and one
+ * Sub-pages are plain state, not a router. This app has no router, and one
  * `sub` key plus a shared frame is the whole mechanism.
  */
 import { useEffect, useState } from "react";
@@ -86,7 +86,7 @@ function Row({
   return onPress ? <Pressable onPress={onPress}>{body}</Pressable> : body;
 }
 
-/** Sex / birth year / height / fallback weight — feeds calorie estimation. */
+/** Sex / birth year / height / fallback weight: feeds calorie estimation. */
 function BodyProfile({
   settings,
   updateSettings,
@@ -207,7 +207,7 @@ function BodyProfile({
   );
 }
 
-/** The one typed goal — daily calorie burn. The rest come from the plan. */
+/** The one typed goal: daily calorie burn. The rest come from the plan. */
 function DailyGoals({
   settings,
   updateSettings,
@@ -242,7 +242,7 @@ function DailyGoals({
 }
 
 /**
- * Account. The sign-in FORM lives on the auth gate (src/screens/Auth.tsx) —
+ * Account. The sign-in FORM lives on the auth gate (src/screens/Auth.tsx),
  * here a guest just gets a button back to it, so there is exactly one place
  * in the app that validates a password.
  */
@@ -255,7 +255,7 @@ function Account() {
     return (
       <Txt size={13} color={C.inkFaint}>
         Cloud sync is off. Add EXPO_PUBLIC_SUPABASE_URL and
-        EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to .env to enable it — the app
+        EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY to .env to enable it: the app
         works fully offline without them.
       </Txt>
     );
@@ -284,7 +284,7 @@ function Account() {
   return (
     <View style={{ gap: 10 }}>
       <Txt size={13} color={C.inkFaint}>
-        You are using torq offline — everything lives on this phone only.
+        You are using torq offline, everything lives on this phone only.
         Sign in to back it up and sync across devices.
       </Txt>
       <PrimaryButton label="Sign in or create an account" onPress={exitGuest} />
@@ -365,7 +365,7 @@ function DataSection() {
           title="Delete your account?"
           message={
             "This erases your account, your workouts, your rank and your " +
-            "friendships — on the server AND on this phone. It cannot be " +
+            "friendships: on the server AND on this phone. It cannot be " +
             "undone. Export your data first if you want to keep it."
           }
           confirmLabel="Delete everything"
@@ -419,7 +419,7 @@ function Developer() {
         onPress={removeDemoWorkouts}
       />
       <Txt size={11} color={C.inkFaint}>
-        Fake progressive PPL history for trying the charts — tagged, so
+        Fake progressive PPL history for trying the charts: tagged, so
         removal only deletes seeded workouts.
       </Txt>
     </View>
@@ -486,7 +486,7 @@ export function Settings({
         <Row
           icon="BicepsFlexed"
           title="Body profile"
-          value={bodyValue || "Not set — calories and rank use defaults"}
+          value={bodyValue || "Not set, calories and rank use defaults"}
           onPress={() => setSub("body")}
         />
         <Divider />

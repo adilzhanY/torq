@@ -1,7 +1,7 @@
 /**
  * Post-workout summary (Strong's workout detail screen, Torq-themed):
  * auto-named title, long date, ALL exercises in one card (compact sections
- * split by dividers — separate cards ate too much vertical space) with an
+ * split by dividers, separate cards ate too much vertical space) with an
  * estimated-1RM column per set, trophy PR badges on record-setting sets,
  * and a duration / volume / calories / PR-count stats bar above the
  * exercises (was a floating footer; it covered the navbar area). The
@@ -116,7 +116,7 @@ export function WorkoutSummary({
     ].filter(Boolean).join(" · ");
     const lines = workout.entries.map((e) => {
       const top = Math.max(...e.sets.map((s) => s.weight), 0);
-      return `${e.sets.length} × ${name(e.exerciseId)} — ${top} ${settings.unit}`;
+      return `${e.sets.length} × ${name(e.exerciseId)}, ${top} ${settings.unit}`;
     });
     void Share.share({
       message: `${workout.name}\n${fmtLongDate(workout.startedAt)}\n${stats}\n\n${lines.join("\n")}`,
@@ -176,7 +176,7 @@ export function WorkoutSummary({
         >
           <StatItem
             icon="Clock"
-            text={workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : "—"}
+            text={workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : "-"}
           />
           <StatItem
             icon="Scale"
@@ -240,7 +240,7 @@ export function WorkoutSummary({
                             {set.weight} {settings.unit} × {set.reps}
                           </Txt>
                           <Txt size={14} weight="bold" color={C.inkSoft}>
-                            {est1RM(set.weight, set.reps) || "—"}
+                            {est1RM(set.weight, set.reps) || "-"}
                           </Txt>
                         </View>
                         {setPrs ? (
@@ -324,7 +324,7 @@ export function WorkoutSummary({
           stats={[
             {
               icon: "Clock",
-              value: workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : "—",
+              value: workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : "-",
               label: "DURATION",
             },
             { icon: "CheckCheck", value: String(workoutSets(workout)), label: "SETS" },
@@ -342,7 +342,7 @@ export function WorkoutSummary({
           prs={prLines}
           exercises={workout.entries.map(
             (e) =>
-              `${e.sets.length} × ${name(e.exerciseId)} — ${Math.max(...e.sets.map((x) => x.weight), 0)} ${settings.unit}`,
+              `${e.sets.length} × ${name(e.exerciseId)}, ${Math.max(...e.sets.map((x) => x.weight), 0)} ${settings.unit}`,
           )}
           onClose={() => setShareCard(false)}
         />
