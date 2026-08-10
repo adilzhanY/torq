@@ -317,6 +317,46 @@ points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
 auto-added to app.json by `npx expo install`; it is a no-op here (its
 options default to disabled) because we only SEND shares.
 
+## Screenshots + the README product page
+
+**The README is a product page, and its artwork is GENERATED. Never hand-make
+it, and never let it go stale.** When a feature changes a screen that appears
+there, re-shoot that one screen and rebuild — the layout is code.
+
+```bash
+./run_android.sh torq2      # emulator + Metro
+./scripts/snap.sh home      # one screenshot -> docs/shots/home.png
+./scripts/build-shots.py    # -> docs/shots/framed/* and hero.png
+```
+
+- `scripts/snap.sh <name>` grabs the emulator and crops `1080x2232+0+120`,
+  which removes exactly the Android status bar (40 dp) and the gesture pill
+  (16 dp) at 3x while KEEPING the dock — the dock is the product, the status
+  bar is not. Different density or a notch means re-measuring, not nudging.
+- `scripts/build-shots.py` rounds/bezels/shadows every shot into
+  `docs/shots/framed/` and composes the 2600x1400 `hero.png` (wordmark in the
+  real Space Grotesk from node_modules, the vortex dimmed to 6% bleeding off
+  the corner, three phones with Home in front). It is deterministic —
+  re-running it reproduces the committed PNGs pixel for pixel.
+- **`docs/shots/HOW.md` is the operating manual**: the shot list (what each
+  screenshot must show), how to STAGE the app before shooting (seed the demo
+  history, have a plan, no live session before the Home shot, dismiss the IME
+  toolbar with keyevent 111), and what to do if the device changes. Read it
+  before refreshing anything.
+
+Two traps, both hit while building this:
+
+- An ImageMagick mask drawn on `xc:none` with no `-fill` uses the DEFAULT
+  fill, which is BLACK. As a CopyOpacity source that makes the whole image
+  transparent, so you composite an empty bezel and cannot see why. The mask
+  must be `xc:black -fill white`.
+- Every claim in the README was checked against the code, and two were wrong
+  from memory: the tier ladder starts at **Rust** (Rust → Iron → Bronze →
+  Silver → Gold → Platinum → Diamond → Elite → World Class, no "Master"), and
+  the percentile sample is 2.2M **lifters**, not results. The README also
+  repeats the percentile rule — never "top N% of people", always "of
+  competitive lifters".
+
 ## Modals — RULE FOR EVERY OVERLAY
 
 **Every overlay in the app goes through `src/components/CustomModal.tsx`.**
@@ -601,7 +641,8 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   content. Verified on the emulator (home, live session, set-check flow).
 - 2026-07-05: Showcase README added (view-only, no setup instructions, per
   Adilzhan) with the brand SVG at `assets/logo.svg` and emulator screenshots
-  in `docs/screens/`.
+  in `docs/screens/`. SUPERSEDED 2026-08-10 by the generated product page —
+  see the "Screenshots + the README product page" section.
 - 2026-07-05: Full ExerciseDB catalog (1500 exercises, gif demos) integrated —
   see "ExerciseDB catalog" above. Exercises tab now searches the user library
   AND the catalog (paged 30 at a time); catalog cards expand to gif +
@@ -1853,6 +1894,14 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10 (later): THE SCREENSHOT PIPELINE IS NOW REPEATABLE (Adilzhan:
+  "we will add new features, so these screenshots should be updated, and you
+  need to remember how you did that"). The one-off scratchpad commands became
+  `scripts/snap.sh`, `scripts/build-shots.py` and `docs/shots/HOW.md`, and the
+  rule lives in the "Screenshots + the README product page" section above.
+  Verified by regenerating from the committed screenshots: `magick compare
+  -metric AE` reports 0 differing pixels against both hero.png and a framed
+  shot, so the scripts reproduce the artwork exactly rather than approximately.
 - 2026-08-10 (later): README REBUILT AS A PRODUCT PAGE (Adilzhan: "make great
   screenshots of my app, cut the bar where time is shown, upload it on README
   but in the way like you are selling it, not just 3 screenshots").
