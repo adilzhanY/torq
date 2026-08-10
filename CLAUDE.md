@@ -1853,6 +1853,29 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10 (later): README REBUILT AS A PRODUCT PAGE (Adilzhan: "make great
+  screenshots of my app, cut the bar where time is shown, upload it on README
+  but in the way like you are selling it, not just 3 screenshots").
+  11 screenshots captured off emulator-5554 into `docs/shots/`, each cropped
+  `1080x2232+0+120` — that strips the Android status bar (40 dp) and the
+  gesture pill (16 dp) while keeping the dock, which is part of the app.
+  `docs/shots/framed/` holds the same shots rounded, bezelled and shadowed by
+  a scratchpad `frame.sh` (ImageMagick), so a raw screenshot reads as a
+  device. `docs/shots/hero.png` is a 2600x1400 banner: wordmark set in the
+  real Space Grotesk TTF from node_modules, the vortex dimmed to 6% bleeding
+  off the bottom-left (the same watermark idea as the app's hero panel), and
+  three phones with Home in front.
+  GOTCHA in frame.sh: a mask drawn on `xc:none` with no `-fill` uses IM's
+  DEFAULT fill, which is BLACK — as a CopyOpacity source that makes the whole
+  image transparent and you get a bezel with nothing in it. `-fill white`.
+  The old `docs/screens/` shots were deleted; they showed the clay/bento
+  design from before the rebrand.
+  FACTS CHECKED AGAINST THE CODE rather than written from memory, and two
+  were wrong on the first pass: the tier ladder is Rust → Iron → Bronze →
+  Silver → Gold → Platinum → Diamond → Elite → World Class (there is no
+  "Master"), and the percentile sample is 2.2M LIFTERS, not results. The
+  README also repeats the rule from the percentiles section: it never says
+  "top N% of people", always "of competitive lifters".
 - 2026-08-10 (later): HOME'S RECENTS ARE THE TIMELINE ROW (Adilzhan: "recent
   workouts on the home page have an old design, change it to what is shown
   now in History page"). History's node was extracted into
