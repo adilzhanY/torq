@@ -37,12 +37,14 @@ import { StreakDialog } from "../components/StreakDialog";
 import { computeStreak, type Streak } from "../lib/streak";
 import { addDays, dayStart } from "../components/DateRuler";
 import { RankBadge } from "../components/RankBadge";
-import { WorkoutCard } from "../components/WorkoutCard";
+import { WorkoutRow } from "../components/WorkoutRow";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { bodyProfileAt } from "../lib/calories";
+import { prTotals } from "../lib/stats";
+import { pointsPerWorkout } from "../lib/progress";
 import { closestTierUp, overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
 import { routineMinutes, routineSets } from "../lib/plan";
-import { partLabel, recovering, routineMuscles, sessionTag } from "../lib/muscles";
+import { partLabel, recovering, routineMuscles, sessionTag, workoutMuscles } from "../lib/muscles";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
 import type { Routine, Workout } from "../types";
@@ -589,6 +591,19 @@ export function Home() {
   const recent = [...workouts].sort((a, b) => b.startedAt - a.startedAt).slice(0, 3);
   const listed = isToday ? recent : [...dayFinished].sort((a, b) => b.startedAt - a.startedAt);
 
+  // The timeline row's two numbers. ONE chronological pass each rather than
+  // one per row — computing them per card is what made History cost 600 ms
+  // to open before it was virtualised.
+  const prs = useMemo(() => prTotals(workouts), [workouts]);
+  const rowPoints = useMemo(
+    () =>
+      pointsPerWorkout(workouts, settings.unit, (ms) => {
+        const b = bodyProfileAt(settings, measurements, ms);
+        return { weightKg: b.weightKg, sex: b.sex };
+      }),
+    [workouts, settings, measurements],
+  );
+
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
@@ -817,12 +832,22 @@ export function Home() {
               : "No workouts on this day."}
           </Txt>
         ) : (
-          listed.map((w, i) => (
-            <View key={w.id}>
-              {i > 0 ? <Divider /> : null}
-              <WorkoutCard workout={w} onPress={() => setSelected(w)} />
-            </View>
-          ))
+          /* One wrapper, because the ScrollView sets `gap: 14` on its
+             children and that gap would cut the rail between every row. */
+          <View>
+            {listed.map((w, i) => (
+              <WorkoutRow
+                key={w.id}
+                workout={w}
+                prCount={prs.get(w.id) ?? 0}
+                points={rowPoints.get(w.id) ?? 0}
+                muscles={workoutMuscles(w, exercises).map(partLabel)}
+                first={i === 0}
+                last={i === listed.length - 1}
+                onPress={() => setSelected(w)}
+              />
+            ))}
+          </View>
         )}
       </ScrollView>
 

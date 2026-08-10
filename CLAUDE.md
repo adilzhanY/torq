@@ -1853,6 +1853,23 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10 (later): HOME'S RECENTS ARE THE TIMELINE ROW (Adilzhan: "recent
+  workouts on the home page have an old design, change it to what is shown
+  now in History page"). History's node was extracted into
+  `src/components/WorkoutRow.tsx` and both screens now render the SAME
+  component — rail, PR dot, "15 PRs" / "+4 pts" / muscle chips — rather than
+  Home keeping the old WorkoutCard with its exercise inventory, volume and
+  calories.
+  Two props keep the two contexts honest rather than forking the design:
+  Home passes no `onDelete` (a glance list should not offer to destroy
+  anything; History keeps its trash) and no `gapDays` (rest-day markers are
+  History's way of showing your PATTERN — on three teaser rows they are
+  noise).
+  GOTCHA worth remembering: Home's ScrollView sets `gap: 14` on its children,
+  which cut the rail between every row. The rows are wrapped in one View so
+  the gap applies to the section, not between nodes.
+  `WorkoutCard` survives — the exercise-info History tab still uses it, and
+  there the per-exercise inventory is the point.
 - 2026-08-10 (later): THE STREAK PILL, LEVEL FOR REAL (Adilzhan: "doesn't
   look equal isn't it? place them on the same line"). Measured before
   touching anything, and the pill was geometrically PERFECT: centred on

@@ -19,27 +19,24 @@
  * one tap away in the summary, where it always was.
  */
 import { useCallback, useMemo, useState } from "react";
-import { Pressable, SectionList, View } from "react-native";
-import { C, R, TOP_BAR_SPACE } from "../theme";
-import { Icon } from "../components/Icon";
+import { SectionList, View } from "react-native";
+import { C, TOP_BAR_SPACE } from "../theme";
 import { PageTitle, Txt } from "../components/ui";
 import { ConfirmModal } from "../components/CustomModal";
+import { WorkoutRow } from "../components/WorkoutRow";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { useStore } from "../lib/store";
-import { fmtDuration, prTotals } from "../lib/stats";
+import { prTotals } from "../lib/stats";
 import { pointsPerWorkout } from "../lib/progress";
 import { partLabel, workoutMuscles } from "../lib/muscles";
 import { bodyProfileAt } from "../lib/calories";
-import { workoutSets, type Workout } from "../types";
+import type { Workout } from "../types";
 
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
 ];
-const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_MS = 86400000;
-/** Distance from a node row's top edge to the centre of its dot. */
-const DOT_MID = 25;
 
 /** Local midnight — gaps are counted in calendar days, not 24-hour blocks. */
 function dayStart(ms: number): number {
@@ -69,152 +66,6 @@ function monthSections(sorted: Workout[]): { title: string; data: Workout[] }[] 
     s.data.push(w);
   }
   return out;
-}
-
-function Chip({ text, tone }: { text: string; tone?: "gold" | "accent" }) {
-  const [bg, fg] =
-    tone === "gold"
-      ? ["rgba(233,185,32,0.14)", C.gold]
-      : tone === "accent"
-        ? ["rgba(200,254,35,0.14)", C.accent]
-        : [C.page2, C.inkSoft];
-  return (
-    <View style={{ backgroundColor: bg, borderRadius: R.sm, paddingHorizontal: 9, paddingVertical: 3 }}>
-      <Txt size={10.5} weight="bold" color={fg}>{text}</Txt>
-    </View>
-  );
-}
-
-/**
- * The rail segment every row draws for itself. `capTop`/`capBottom` stop it at
- * the dot instead of the row edge, so a month's first and last nodes end the
- * line rather than leaving it hanging into the whitespace.
- */
-function Rail({ capTop, capBottom }: { capTop?: boolean; capBottom?: boolean }) {
-  return (
-    <View
-      style={{
-        position: "absolute",
-        left: 9,
-        top: capTop ? DOT_MID : 0,
-        ...(capBottom ? { height: capTop ? 0 : DOT_MID } : { bottom: 0 }),
-        width: 2,
-        backgroundColor: C.hair,
-      }}
-    />
-  );
-}
-
-/**
- * One session on the rail.
- *
- * Each row draws its OWN slice of the rail rather than the list drawing one
- * long line: a virtualised list unmounts rows as they leave the screen, so a
- * single continuous rail would be cut wherever windowing decided. Stacked
- * segments are seamless and survive recycling.
- */
-function Node({
-  workout,
-  prCount,
-  points,
-  muscles,
-  gapDays,
-  first,
-  last,
-  onPress,
-  onDelete,
-}: {
-  workout: Workout;
-  prCount: number;
-  points: number;
-  muscles: string[];
-  /** Rest days between this session and the older one below it. */
-  gapDays: number | null;
-  /** First / last session of its month, so the rail can cap at the dot. */
-  first: boolean;
-  last: boolean;
-  onPress: () => void;
-  onDelete: () => void;
-}) {
-  const d = new Date(workout.startedAt);
-  const when =
-    `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()].slice(0, 3)} · ` +
-    `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
-  const sets = workoutSets(workout);
-  const meta = [
-    workout.endedAt ? fmtDuration(workout.startedAt, workout.endedAt) : null,
-    `${sets} set${sets === 1 ? "" : "s"}`,
-    `${workout.entries.length} exercise${workout.entries.length === 1 ? "" : "s"}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
-  const hasPr = prCount > 0;
-
-  return (
-    <View>
-      <Pressable onPress={onPress}>
-        <View style={{ paddingLeft: 30, paddingVertical: 12 }}>
-          <Rail capTop={first} capBottom={last} />
-          <View
-            style={{
-              position: "absolute",
-              left: 4,
-              top: 19,
-              width: 12,
-              height: 12,
-              borderRadius: 6,
-              backgroundColor: hasPr ? C.accent : C.page,
-              borderWidth: 2,
-              borderColor: hasPr ? C.accent : C.inkFaint,
-            }}
-          />
-
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-            <Txt size={10} weight="extrabold" color={C.inkFaint} style={{ letterSpacing: 1, flex: 1 }}>
-              {when.toUpperCase()}
-            </Txt>
-            <Pressable hitSlop={10} onPress={onDelete}>
-              <Icon name="Trash2" size={15} color={C.inkFaint} />
-            </Pressable>
-          </View>
-          <Txt size={16} weight="extrabold" style={{ marginTop: 2 }} numberOfLines={1}>
-            {workout.name}
-          </Txt>
-          <Txt size={11.5} color={C.inkFaint} style={{ marginTop: 2 }}>{meta}</Txt>
-
-          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
-            {hasPr ? <Chip tone="gold" text={`${prCount} PR${prCount === 1 ? "" : "s"}`} /> : null}
-            {points >= 1 ? <Chip tone="accent" text={`+${Math.round(points)} pts`} /> : null}
-            {muscles.map((m) => (
-              <Chip key={m} text={m} />
-            ))}
-          </View>
-        </View>
-      </Pressable>
-
-      {gapDays != null && gapDays > 0 ? (
-        <View style={{ paddingLeft: 30, paddingVertical: 7 }}>
-          <Rail />
-          <View
-            style={{
-              position: "absolute",
-              left: 5,
-              top: 11,
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: C.page,
-              borderWidth: 1.5,
-              borderColor: C.line,
-            }}
-          />
-          <Txt size={10.5} weight="bold" color={C.inkFaint} style={{ letterSpacing: 0.6 }}>
-            {gapDays === 1 ? "1 day off" : `${gapDays} days off`}
-          </Txt>
-        </View>
-      ) : null}
-    </View>
-  );
 }
 
 export function History() {
@@ -262,7 +113,7 @@ export function History() {
 
   const renderItem = useCallback(
     ({ item, index, section }: { item: Workout; index: number; section: { data: Workout[] } }) => (
-      <Node
+      <WorkoutRow
         workout={item}
         first={index === 0}
         last={index === section.data.length - 1}
