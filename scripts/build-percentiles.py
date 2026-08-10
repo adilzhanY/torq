@@ -41,7 +41,7 @@ with z.open(name) as fh:
         rows += 1
         if rows % 1_000_000 == 0:
             print(f"  {rows:,} rows…", file=sys.stderr, flush=True)
-        # Raw (classic) only — equipped lifts are a different sport, and the
+        # Raw (classic) only. Equipped lifts are a different sport, and the
         # app's users are lifting raw.
         if r["Equipment"] != "Raw":
             continue

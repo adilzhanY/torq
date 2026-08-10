@@ -34,7 +34,7 @@ FONT_BOLD = FONTS / "700Bold" / "SpaceGrotesk_700Bold.ttf"
 FONT_MED = FONTS / "500Medium" / "SpaceGrotesk_500Medium.ttf"
 LOGO = REPO / "assets" / "logo.svg"
 
-# torq's own tokens — the artwork has to look like the app it is selling.
+# torq's own tokens. The artwork has to look like the app it is selling.
 PAGE, LIME, INK, SOFT, BEZEL = "#0E0F0E", "#C8FE23", "#F2F4EE", "#9AA294", "#2A2F27"
 
 # The three phones in the hero, back to front. Home leads because it is the
@@ -104,7 +104,7 @@ def build_hero(work: Path):
     for name, width in HERO:
         src = SHOTS / f"{name}.png"
         if not src.exists():
-            sys.exit(f"hero needs {src} — capture it with ./scripts/snap.sh {name}")
+            sys.exit(f"hero needs {src}: capture it with ./scripts/snap.sh {name}")
         phones[name] = frame(src, work / f"h-{name}.png", width)
 
     hero = SHOTS / "hero.png"
@@ -114,7 +114,7 @@ def build_hero(work: Path):
         "-resize", "1600x1400!", work / "glow.png")
     run("magick", work / "canvas.png", work / "glow.png",
         "-geometry", "+1150+0", "-composite", work / "base.png")
-    # The vortex, huge and dimmed, bleeding off the bottom-left — the same
+    # The vortex, huge and dimmed, bleeding off the bottom-left. Same
     # watermark idea as the app's own hero panel.
     run("rsvg-convert", "-w", "900", "-h", "900", LOGO, "-o", work / "mark.png")
     run("magick", work / "mark.png", "-alpha", "set", "-channel", "A",
@@ -139,13 +139,13 @@ def build_hero(work: Path):
         annotate(hero, 150, 790 + i * 60, line, 44, SOFT, FONT_MED)
     run("magick", hero, "-fill", LIME, "-draw", "rectangle 150,920 330,928", hero)
     for i, line in enumerate(CLAIMS):
-        annotate(hero, 150, 1010 + i * 66, "—   " + line, 40, INK, FONT_MED)
+        annotate(hero, 150, 1010 + i * 66, "-   " + line, 40, INK, FONT_MED)
     print(f"hero.png  {size(hero)[0]}x{size(hero)[1]}")
 
 
 def main():
     if not FONT_BOLD.exists():
-        sys.exit("run `npm install` first — the hero is set in the real Space Grotesk")
+        sys.exit("run `npm install` first, the hero is set in the real Space Grotesk")
     FRAMED.mkdir(parents=True, exist_ok=True)
     work = SHOTS / ".work"
     work.mkdir(exist_ok=True)

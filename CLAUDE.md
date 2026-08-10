@@ -317,6 +317,19 @@ points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
 auto-added to app.json by `npx expo install`; it is a no-op here (its
 options default to disabled) because we only SEND shares.
 
+## Writing rule: no em dashes
+
+The user's global CLAUDE.md now opens with this rule, and it applies to
+everything written here too: **never output "—" or "–"**, in prose, code
+comments, docs, commit messages or text baked into generated images. Use a
+comma, a full stop, a colon, parentheses, or a plain "-" when a dash is
+genuinely right. Em dashes read as AI-written text and the user does not want
+their work to look generated.
+
+`README.md`, `docs/shots/HOW.md` and everything in `scripts/` are clean. This
+file and the comments in `src/` still carry plenty from before the rule was
+enforced; fix them as those lines are touched rather than in one sweep.
+
 ## Screenshots + the README product page
 
 **The README is a product page, and its artwork is GENERATED. Never hand-make

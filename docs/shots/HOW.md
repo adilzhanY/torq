@@ -1,7 +1,7 @@
 # Refreshing the README screenshots
 
 The README is a product page. Its artwork is generated, not hand-made, so
-when a screen changes you re-shoot that one screen and rebuild — you never
+when a screen changes you re-shoot that one screen and rebuild. You never
 redo the layout.
 
 ```bash
@@ -18,21 +18,22 @@ hero is set in the real Space Grotesk shipped in `node_modules`).
 
 The whole reason these look good is that the app was **put into a good state
 first**. An honest screenshot of an empty app sells nothing, and a screenshot
-of fake data would be a lie — so use the seeded demo history, which is real
+of fake data would be a lie, so use the seeded demo history, which is real
 data produced by the real code.
 
-- **Seed history** — Profile → Settings → Developer → *Seed demo workouts*.
+- **Seed history**: Profile → Settings → Developer → *Seed demo workouts*.
   Twelve weeks of progressive PPL with a plateau and a deload, which is what
   makes the Progress chart and the History timeline worth showing.
-- **Have a plan** — Profile → Training plan → *Rebuild plan*, so Home shows a
+- **Have a plan**: Profile → Training plan → *Rebuild plan*, so Home shows a
   training day rather than "No plan yet".
 - **No live session** before shooting Home, or the hero becomes the
   "Workout in progress" card instead of the training-day panel.
 - **Dismiss the keyboard** with `adb shell input keyevent 111` before any
   shot: Android's floating IME toolbar (a white pill) sits over the app and
   ruins the frame.
-- After editing code, **force-stop Expo Go** before relaunching — `am start`
-  alone happily serves the cached bundle and you will shoot the old build.
+- After editing code, **force-stop Expo Go** before relaunching, because
+  `am start` alone happily serves the cached bundle and you will shoot the
+  old build.
 
 ## The shot list
 
@@ -53,8 +54,8 @@ it; if a feature adds a screen worth selling, add it here first.
 | `workout` | Workout, no session | Quick start, routines, recommended |
 | `profile` | Profile | Avatar, rank strip, best lifts with percentiles |
 
-`hero.png` is composed from `home`, `ranks` and `stats` — refresh any of
-those three and the banner updates on the next build.
+`hero.png` is composed from `home`, `ranks` and `stats`, so refreshing any of
+those three updates the banner on the next build.
 
 ## If the device changes
 

@@ -2,7 +2,7 @@
 """Split the ExerciseDB snapshot into a small core file and a lazy one.
 
 Why: the full snapshot is ~1.14 MB minified, and materialising it cost
-~270 ms of every COLD START, before the first frame — measured, not guessed.
+~270 ms of every COLD START, before the first frame. Measured, not guessed.
 Of that, `instructions` alone is 786 KB (69%) and is needed on exactly one
 screen (the exercise About tab), while `gifUrl` (89 KB) is pure duplication
 of a template around `exerciseId`.
@@ -10,7 +10,7 @@ of a template around `exerciseId`.
 So: the core file keeps only what browsing and searching need, and the
 instructions live in a second file that is required on demand.
 
-Usage — refreshing the catalog:
+Usage, refreshing the catalog:
     curl 'https://oss.exercisedb.dev/api/v1/exercises?limit=25&after=<cursor>' ...
     # assemble the full dump as full-dump.json, then:
     python3 scripts/split-catalog.py full-dump.json

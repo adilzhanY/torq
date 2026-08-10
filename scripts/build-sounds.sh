@@ -5,7 +5,7 @@
 # WHY SYNTHESIZED rather than downloaded: stock "free" SFX packs come with
 # attribution strings and licence terms that have to survive into a paid app,
 # and most of them are cinematic whooshes that fight this design. These are
-# plucked sine tones with a fast exponential decay — the audio equivalent of
+# plucked sine tones with a fast exponential decay, the audio equivalent of
 # the app itself: dark, sharp, no ornament. Being generated also means they
 # are unambiguously ours to ship, and tweaking one is editing a number here.
 #
@@ -35,7 +35,7 @@ enc() { # out.m4a
 A4=440; C5=523.25; D5=587.33; E5=659.25; G5=783.99; A5=880; C6=1046.50; E6=1318.51
 
 # ── set done: crisp two-note blip, the sound you'll hear most ──────────────
-# Short and dry on purpose — a long tone every set would grate by set 20.
+# Short and dry on purpose: a long tone every set would grate by set 20.
 ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i "$(note $E5 26 0.20 0.55)" \
   -f lavfi -i "$(note $A5 24 0.24 0.42)" \
