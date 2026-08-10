@@ -317,6 +317,36 @@ points, so the 1080×1350 output comes from dividing by `PixelRatio.get()`
 auto-added to app.json by `npx expo install`; it is a no-op here (its
 options default to disabled) because we only SEND shares.
 
+## Modals — RULE FOR EVERY OVERLAY
+
+**Every overlay in the app goes through `src/components/CustomModal.tsx`.**
+There is exactly one implementation and a test enforces it
+(`src/lib/__tests__/motion.test.ts` fails if a second file imports
+react-native's `Modal`, paints its own `rgba(0,0,0,…)` scrim, or springs on
+the old ringing config).
+
+- `CustomModal` — centered dialog (menus, confirms, editors, pickers).
+- `ConfirmModal` — the ready-made destructive confirmation.
+- `AnchoredModal` — popover pinned under the button that opened it. The
+  CALLER still positions it (`style`), in WINDOW coordinates, because the
+  four call sites anchor differently; the shell owns the wrapper, the
+  tap-outside close, `statusBarTranslucent` and the animation.
+- `ModalBackdrop` — the dim on its own, for sheets that bring their own body.
+- `MenuRow` — icon + label row for menus.
+- `useModalClose()` — animated close for a child. GOTCHA: it reads a context
+  the modal PROVIDES, so calling it in the component that RENDERS the modal
+  is outside the provider and silently returns a no-op. Put closing buttons
+  in their own child component (ConfirmButtons is the pattern).
+
+Timing lives in `MOTION` (`src/lib/motion.ts`, re-exported by theme.ts) —
+150 ms in, 110 ms out, scale 0.96 → 1. Do not hand-write an overlay duration.
+
+Centered shells are inline absolute overlays, NOT react-native Modals (those
+clip on this emulator), so mount them inside a flex-1 screen root. They sit
+UNDER the dock, which is long-standing behaviour. `AnchoredModal` is the one
+exception that uses a real Modal — see the history entry for why that costs
+~47 ms and is kept anyway.
+
 ## Keyboard — RULE FOR EVERY NEW INPUT
 
 **Any screen or overlay that gains a `TextInput` must keep that input
@@ -1823,6 +1853,58 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10: EVERY MODAL REBUILT ON ONE SHELL (Adilzhan: "now it opens good,
+  but slowly, and it takes time for me to be able to actually press on
+  buttons there"). See the "Modals" section above for the rule; this is what
+  was measured and why.
+  THE ANIMATION, simulated and then measured on the emulator. Every overlay
+  sprang in with `friction: 6, tension: 140`. Those are ORIGAMI units — RN
+  maps them to stiffness 592 / damping 19 before solving, which the first
+  pass at this got wrong — so the real damping ratio is 0.39: a 26% overshoot
+  (the card sprang past full size and bounced back) and 967 ms before RN's
+  rest thresholds stop it. Frame-differencing a screen recording showed
+  150 ms of VISIBLE movement, the rest being sub-pixel ring. Replaced with a
+  150 ms `Easing.out(cubic)` timing, measured at 117 ms of visible movement,
+  no overshoot. The card also starts at 0.96 instead of 0.85: travel is what
+  makes a target hard to hit, and 0.85 displaced a control near the dialog's
+  edge by ~48 px mid-open, against ~6 px now.
+  THE BIGGER HALF WAS NEVER THE ANIMATION, and this is the part worth
+  keeping. Stamping the opening tap and logging the overlay's mount gave:
+  a modal opened from HOME renders 30 ms after the tap and starts animating
+  at 57 ms; the same code opened from the LIVE SESSION renders at 124 ms and
+  starts animating at 218 ms. So the dominant cost is React re-rendering the
+  whole ActiveSession tree (~124 ms) because the menu's state lives inside
+  it, plus ~47 ms for react-native's Modal to inflate an Android window
+  (measured as the render→effect gap: 47 ms inline vs 94 ms through a Modal
+  on the same screen). NOT FIXED, deliberately — memoising ActiveSession's
+  exercise blocks is a real refactor of a 1800-line file and belongs in its
+  own change. The live session also re-renders the open popover every second
+  via the elapsed-time ticker.
+  WHY AnchoredModal KEEPS THE RN MODAL despite those 47 ms: an inline
+  popover would sit under the dock (which the centered dialogs already do,
+  but they are centered) and would need page coordinates translated into the
+  screen root's space, which is exactly the status-bar bug this project has
+  already fixed once. Paying 47 ms to keep four popovers correct is the right
+  trade; the note is here so nobody "optimises" it blind.
+  PROOF OF PRESSABILITY, since that was the complaint: firing the opening tap
+  and a tap on the dialog's Cancel 100 ms apart from one adb shell dismisses
+  the dialog — a control is live while the entrance is still running. At
+  14 ms apart the second tap lands on the screen underneath, which is just
+  the mount cost above, not the animation.
+  ALSO IN THIS CHANGE: `Dialog.tsx` deleted and 15 files migrated
+  (`CenterDialog`→`CustomModal`, `ConfirmDialog`→`ConfirmModal`,
+  `useDialogClose`→`useModalClose`); the three live-session popovers and the
+  exercise-browser order menu moved onto `AnchoredModal`; `PopIn` and
+  `SlideUp` retuned off the same MOTION tokens (they were the same spring —
+  SlideUp rang for 567 ms); hardware BACK now closes the top-most modal
+  instead of falling through to the screen; the scrim color became
+  `C.scrim`/`C.scrimDeep` after the new test caught two files painting their
+  own; and the order menu now anchors off its button's page Y like every
+  other popover, because AnchoredModal positions in window coordinates and
+  its old hardcoded `TOP_BAR_SPACE + 42` was a local one.
+  tsc + 198 tests + android export clean; verified on emulator-5554 (streak
+  dialog, filter dialog, confirm dialog, set-type / exercise-⋯ / order
+  popovers, the new-exercise sheet's backdrop, and Back-to-close).
 - 2026-08-09 (later): WARM-UP SETS ARE NOW A DIALOG, Strong's (Adilzhan sent
   the screenshot and asked "idk if you count it the way Strong counts warm up
   sets. maybe there are different warm up set percentages for different

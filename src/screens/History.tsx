@@ -23,7 +23,7 @@ import { Pressable, SectionList, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "../components/Icon";
 import { PageTitle, Txt } from "../components/ui";
-import { ConfirmDialog } from "../components/Dialog";
+import { ConfirmModal } from "../components/CustomModal";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { useStore } from "../lib/store";
 import { fmtDuration, prTotals } from "../lib/stats";
@@ -320,7 +320,7 @@ export function History() {
       />
 
       {confirming ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete workout?"
           message={`"${confirming.name}" will be removed from your history. Records may change.`}
           onConfirm={() => deleteWorkout(confirming.id)}

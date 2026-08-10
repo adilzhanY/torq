@@ -5,9 +5,9 @@
  * estimated-1RM column per set, trophy PR badges on record-setting sets,
  * and a duration / volume / calories / PR-count stats bar above the
  * exercises (was a floating footer; it covered the navbar area). The
- * header's ⋯ button opens a CenterDialog menu: Repeat workout (disabled
+ * header's ⋯ button opens a CustomModal menu: Repeat workout (disabled
  * while a session is live), Save as routine, Share workout (system sheet),
- * Delete workout (ConfirmDialog). Shown right after finishing a session and
+ * Delete workout (ConfirmModal). Shown right after finishing a session and
  * when tapping a History card. Full-screen inline overlay, same pattern as
  * ExercisePicker.
  */
@@ -17,7 +17,7 @@ import { C, R, SET_TYPE_META, TOP_BAR_SPACE, clay } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Divider, Txt } from "./ui";
-import { CenterDialog, ConfirmDialog, MenuRow } from "./Dialog";
+import { CustomModal, ConfirmModal, MenuRow } from "./CustomModal";
 import { useStore } from "../lib/store";
 import { useUi } from "../lib/ui";
 import { bodyProfileAt, workoutCalories } from "../lib/calories";
@@ -261,7 +261,7 @@ export function WorkoutSummary({
       </ScrollView>
 
       {menuOpen ? (
-        <CenterDialog onClose={() => setMenuOpen(false)}>
+        <CustomModal onClose={() => setMenuOpen(false)}>
           <Txt size={18} weight="extrabold">{workout.name}</Txt>
           <View>
             <MenuRow
@@ -314,7 +314,7 @@ export function WorkoutSummary({
               }}
             />
           </View>
-        </CenterDialog>
+        </CustomModal>
       ) : null}
 
       {shareCard ? (
@@ -349,7 +349,7 @@ export function WorkoutSummary({
       ) : null}
 
       {confirmingDelete ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete workout?"
           message={`"${workout.name}" and its ${workoutSets(workout)} sets will be removed from your history.`}
           onConfirm={() => {

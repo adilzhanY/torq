@@ -24,7 +24,7 @@ import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
 import { Avatar } from "../components/Avatar";
 import { RankBadge } from "../components/RankBadge";
-import { CenterDialog } from "../components/Dialog";
+import { CustomModal } from "../components/CustomModal";
 import { ShareRankCard } from "../components/ShareCard";
 import { Paywall } from "../components/Paywall";
 import { Divider, Eyebrow, PageTitle, PrimaryButton, TextField, Txt } from "../components/ui";
@@ -140,7 +140,7 @@ function EditDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <View style={{ gap: 14 }}>
         <Txt size={18} weight="extrabold">Edit profile</Txt>
 
@@ -191,7 +191,7 @@ function EditDialog({ onClose }: { onClose: () => void }) {
         {note ? <Txt size={11} color={C.warnAcc}>{note}</Txt> : null}
         <PrimaryButton label="Done" onPress={onClose} />
       </View>
-    </CenterDialog>
+    </CustomModal>
   );
 }
 

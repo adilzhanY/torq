@@ -21,6 +21,10 @@ export const C = {
   line: "#262A24",
   /** Hairline divider on the bare page. */
   hair: "#22261F",
+  /** Dim behind a modal or sheet — one definition, used by every overlay. */
+  scrim: "rgba(0,0,0,0.55)",
+  /** Near-opaque scrim for overlays that ARE the background (share card). */
+  scrimDeep: "rgba(0,0,0,0.9)",
 
   // Brand: the logo's dark square + lime vortex mark.
   primary: "#1A1B1A",
@@ -81,6 +85,13 @@ export const SET_TYPE_META = {
   drop: { letter: "D", color: C.prAcc, label: "Drop set" },
   failure: { letter: "F", color: C.badAcc, label: "Failure" },
 } as const;
+
+/**
+ * Overlay timing tokens. Defined in `lib/motion.ts` (pure, so the numbers can
+ * be asserted in tests without a react-native harness) and re-exported here
+ * so components read every design token from one import.
+ */
+export { MOTION } from "./lib/motion";
 
 export const FONT = {
   regular: "SpaceGrotesk_400Regular",

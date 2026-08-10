@@ -111,7 +111,7 @@ export function ShareSheet({
         right: 0,
         top: 0,
         bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.9)",
+        backgroundColor: C.scrimDeep,
         alignItems: "center",
         justifyContent: "center",
         padding: 20,

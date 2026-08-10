@@ -1,12 +1,13 @@
 /**
  * Animation primitives (ported from grit mobile):
  *  - Collapsible → smooth expand/collapse
- *  - PopIn      → modal/pill entrance
+ *  - PopIn      → pill/badge entrance (shares MOTION with the modals)
  *  - FloatUp    → one-shot "+N" float
  *  - Squish     → pressable clay squish
  */
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Easing, Pressable, View, type ViewStyle } from "react-native";
+import { MOTION } from "../theme";
 
 /** Smooth expand/collapse by animating height. */
 export function Collapsible({ open, children }: { open: boolean; children: React.ReactNode }) {
@@ -101,17 +102,41 @@ export function GrowIn({ children, style }: { children: React.ReactNode; style?:
   );
 }
 
-/** Spring scale+fade in — the modal/pill entrance. */
+/**
+ * Scale + fade in — the pill/badge entrance.
+ *
+ * Retuned 2026-08-10 with the modal work: this was the same
+ * `friction: 6, tension: 140` spring, which overshoots 26% and rings for
+ * 967 ms before RN calls it settled. It is a TIMING now, shared with every
+ * overlay through MOTION, and starts at 0.94 instead of 0.85 — a badge that
+ * grows 15% reads as a zoom, not an appearance.
+ */
 export function PopIn({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.spring(v, { toValue: 1, useNativeDriver: true, friction: 6, tension: 140 }).start();
+    Animated.timing(v, {
+      toValue: 1,
+      duration: MOTION.pop,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
   }, [v]);
   return (
     <Animated.View
       style={[
         style,
-        { opacity: v, transform: [{ scale: v.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] },
+        {
+          opacity: v,
+          transform: [
+            {
+              scale: v.interpolate({
+                inputRange: [0, 1],
+                outputRange: [MOTION.popoverScaleFrom, 1],
+                extrapolate: "clamp",
+              }),
+            },
+          ],
+        },
       ]}
     >
       {children}
@@ -119,11 +144,22 @@ export function PopIn({ children, style }: { children: React.ReactNode; style?: 
   );
 }
 
-/** Slides its content up from below on mount (bottom-sheet entrance). */
+/**
+ * Slides its content up from below on mount (sheet / full-screen overlay
+ * entrance). Also retuned 2026-08-10: the old spring (ζ = 0.68) overshot 5%
+ * and kept moving for 567 ms, so a sheet's buttons were still drifting under
+ * your thumb. It travels furthest of the three, so it keeps the longest
+ * duration.
+ */
 export function SlideUp({ children, style }: { children: React.ReactNode; style?: ViewStyle }) {
   const v = useRef(new Animated.Value(0)).current;
   useEffect(() => {
-    Animated.spring(v, { toValue: 1, useNativeDriver: true, friction: 10, tension: 120 }).start();
+    Animated.timing(v, {
+      toValue: 1,
+      duration: MOTION.sheet,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
   }, [v]);
   return (
     <Animated.View

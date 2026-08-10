@@ -28,7 +28,7 @@ import { Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, Txt } fr
 import { Sparkline, fmtShort } from "../components/charts";
 import { MuscleBreakdown, ProBars } from "../components/ProCharts";
 import { Dumbbell, Meter, RankLine } from "../components/ProgressCharts";
-import { ConfirmDialog } from "../components/Dialog";
+import { ConfirmModal } from "../components/CustomModal";
 import { useStore } from "../lib/store";
 import { bodyProfileAt } from "../lib/calories";
 import { computeStreak } from "../lib/streak";
@@ -501,7 +501,7 @@ function MeasurementsPage({
       )}
 
       {confirming ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete measurement?"
           message={`${confirming.kind} — ${confirming.value} ${confirming.unit} will be removed from the log.`}
           onConfirm={() => onDelete(confirming.id)}

@@ -20,7 +20,7 @@ import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp } from "./anim";
 import { Divider, Eyebrow, Pill, PrimaryButton, Txt } from "./ui";
-import { ConfirmDialog } from "./Dialog";
+import { ConfirmModal } from "./CustomModal";
 import { RankBadge } from "./RankBadge";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
@@ -736,7 +736,7 @@ export function ExerciseInfo({
       </ScrollView>
 
       {confirmingDelete && libRow ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete exercise?"
           message={`"${libRow.name}" will be removed from your library. Logged workouts keep their history.`}
           onConfirm={() => {

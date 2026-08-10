@@ -16,7 +16,7 @@
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { C, R } from "../theme";
-import { CenterDialog, useDialogClose } from "./Dialog";
+import { CustomModal, useModalClose } from "./CustomModal";
 import { Icon } from "./Icon";
 import { NumberField, Txt } from "./ui";
 import { BAR_WEIGHT, DEFAULT_WARMUP, warmupWeight } from "../lib/warmup";
@@ -89,15 +89,15 @@ function Row({
 }
 
 /**
- * Footer as its OWN component, because `useDialogClose()` reads a context
- * that CenterDialog provides — calling it in the component that RENDERS the
+ * Footer as its OWN component, because `useModalClose()` reads a context
+ * that CustomModal provides — calling it in the component that RENDERS the
  * dialog lands outside the provider and silently returns the no-op fallback.
  * (Which is exactly the bug this shipped with for one build: Insert inserted
  * and the dialog stayed open.) ConfirmButtons in Dialog.tsx exists for the
  * same reason.
  */
 function Footer({ onRestore, onInsert }: { onRestore: () => void; onInsert: () => void }) {
-  const close = useDialogClose();
+  const close = useModalClose();
   return (
     <View
       style={{
@@ -153,7 +153,7 @@ export function WarmupDialog({
     setRows(rows.map((r, k) => (k === i ? next : r)));
 
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <Txt size={18} weight="extrabold">Add warm-up sets</Txt>
 
       <NumberField
@@ -214,6 +214,6 @@ export function WarmupDialog({
         onRestore={() => setRows(DEFAULT_WARMUP)}
         onInsert={() => onInsert(rows, workNum)}
       />
-    </CenterDialog>
+    </CustomModal>
   );
 }

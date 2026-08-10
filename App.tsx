@@ -20,7 +20,7 @@ import { BottomNav } from "./src/components/BottomNav";
 import { ErrorBoundary } from "./src/components/ErrorBoundary";
 import { Icon } from "./src/components/Icon";
 import { Txt } from "./src/components/ui";
-import { ConfirmDialog } from "./src/components/Dialog";
+import { ConfirmModal } from "./src/components/CustomModal";
 import { Auth } from "./src/screens/Auth";
 import { Home } from "./src/screens/Home";
 import { Ranks } from "./src/screens/Ranks";
@@ -107,7 +107,7 @@ function Root() {
       ) : null}
 
       {dataNoteOpen ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Your saved data could not be read"
           message={
             "torq is running on an empty database right now. The unreadable " +
@@ -156,7 +156,7 @@ function Root() {
       <BottomNav onProfile={() => setProfileOpen(true)} />
 
       {configNoteOpen ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Cloud sync is not configured"
           message={
             "This build shipped without EXPO_PUBLIC_SUPABASE_URL / " +

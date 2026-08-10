@@ -1,5 +1,5 @@
 /**
- * Custom calendar in the app's CenterDialog: ‹ Month Year › header stepping
+ * Custom calendar in the app's CustomModal: ‹ Month Year › header stepping
  * months; tapping the title flips to a month grid with a ‹ Year › stepper
  * (jump to any month/year), then back to days. Mo–Su grid, adjacent-month
  * days faint, selected day is a black capsule, today is ringed, future days
@@ -9,7 +9,7 @@ import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
-import { CenterDialog } from "./Dialog";
+import { CustomModal } from "./CustomModal";
 import { Txt } from "./ui";
 import { dayStart } from "./DateRuler";
 
@@ -65,7 +65,7 @@ export function CalendarDialog({
     (year === new Date(today).getFullYear() && month >= new Date(today).getMonth());
 
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       {/* Header: month stepper, or year stepper while picking a month */}
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
         <Chevron dir="left" onPress={() => (pickingMonth ? setYear(year - 1) : step(-1))} />
@@ -174,6 +174,6 @@ export function CalendarDialog({
           ))}
         </View>
       )}
-    </CenterDialog>
+    </CustomModal>
   );
 }

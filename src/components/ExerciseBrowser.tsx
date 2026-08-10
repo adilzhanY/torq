@@ -12,8 +12,8 @@ import { BackHandler, Pressable, SectionList, View } from "react-native";
 import { Image } from "expo-image";
 import { C, R, TOP_BAR_SPACE, clay, claySm } from "../theme";
 import { Icon } from "./Icon";
-import { PopIn, SlideUp, Squish } from "./anim";
-import { CenterDialog } from "./Dialog";
+import { SlideUp, Squish } from "./anim";
+import { AnchoredModal, CustomModal, ModalBackdrop } from "./CustomModal";
 import { Divider, PageTitle, SectionTitle, TextField, Txt } from "./ui";
 import { useKeyboardHeight } from "./KeyboardAware";
 import { useStore } from "../lib/store";
@@ -178,7 +178,15 @@ export function ExerciseBrowser({
   const [q, setQ] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState<Sort>("name");
-  const [orderOpen, setOrderOpen] = useState(false);
+  /** Page Y of the Order button, so its menu anchors under the real icon.
+   *  (It used to hardcode `TOP_BAR_SPACE + 42` in the browser's own
+   *  coordinates; AnchoredModal positions in WINDOW coordinates, so the
+   *  anchor has to come from the press like every other popover's does.) */
+  const [orderAt, setOrderAt] = useState<number | null>(null);
+  const orderOpen = orderAt !== null;
+  const setOrderOpen = (open: boolean) => {
+    if (!open) setOrderAt(null);
+  };
   const [filterOpen, setFilterOpen] = useState(false);
   const [bodyF, setBodyF] = useState<Set<BodyPart>>(new Set());
   const [equipF, setEquipF] = useState<Set<Equipment>>(new Set());
@@ -330,7 +338,13 @@ export function ExerciseBrowser({
             <Icon name="Filter" size={21} color={filtersOn ? C.accentInk : C.inkSoft} />
           </View>
         </Pressable>
-        <Pressable hitSlop={8} onPress={() => setOrderOpen(true)}>
+        <Pressable
+          hitSlop={8}
+          onPress={(e) => {
+            const ne = e.nativeEvent;
+            setOrderAt(ne.pageY - ne.locationY + 32);
+          }}
+        >
           <Icon name="ArrowUpDown" size={21} color={C.inkSoft} />
         </Pressable>
         <Pressable hitSlop={8} onPress={() => setCreating(true)}>
@@ -386,12 +400,8 @@ export function ExerciseBrowser({
       ) : null}
 
       {/* Order menu — anchored under the toolbar's sort icon */}
-      {orderOpen ? (
-        <Pressable
-          style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-          onPress={() => setOrderOpen(false)}
-        >
-          <PopIn style={{ position: "absolute", top: TOP_BAR_SPACE + 42, right: 16, width: 210 }}>
+      <AnchoredModal open={orderOpen} onClose={() => setOrderOpen(false)}>
+          <View style={{ position: "absolute", top: orderAt ?? 0, right: 16, width: 210 }}>
             <View style={[{ backgroundColor: C.surface, borderRadius: R.md, padding: 4 }, clay()]}>
               {SORTS.map((s) => (
                 <Pressable
@@ -415,13 +425,12 @@ export function ExerciseBrowser({
                 </Pressable>
               ))}
             </View>
-          </PopIn>
-        </Pressable>
-      ) : null}
+          </View>
+      </AnchoredModal>
 
       {/* Filter dialog */}
       {filterOpen ? (
-        <CenterDialog onClose={() => setFilterOpen(false)}>
+        <CustomModal onClose={() => setFilterOpen(false)}>
                 <Txt size={18} weight="extrabold">Filter ({chipFiltered.length})</Txt>
                 <SectionTitle>Body part</SectionTitle>
                 <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
@@ -474,23 +483,13 @@ export function ExerciseBrowser({
                     <Txt size={14} weight="extrabold" color={C.goodAcc}>OK</Txt>
                   </Pressable>
                 </View>
-        </CenterDialog>
+        </CustomModal>
       ) : null}
 
       {/* New-exercise bottom sheet */}
       {creating ? (
         <>
-          <Pressable
-            style={{
-              position: "absolute",
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-              backgroundColor: "rgba(0,0,0,0.55)",
-            }}
-            onPress={() => setCreating(false)}
-          />
+          <ModalBackdrop onPress={() => setCreating(false)} />
           {/* Bottom-anchored, so the keyboard would sit right on top of the
               name field. Lift the whole sheet by the keyboard height. */}
           <SlideUp style={{ position: "absolute", left: 0, right: 0, bottom: keyboard }}>

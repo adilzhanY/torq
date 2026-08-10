@@ -19,7 +19,7 @@ import { Icon } from "../components/Icon";
 import { RankBadge } from "../components/RankBadge";
 import { Avatar } from "../components/Avatar";
 import { PopIn } from "../components/anim";
-import { ConfirmDialog } from "../components/Dialog";
+import { ConfirmModal } from "../components/CustomModal";
 import { FriendCompare } from "../components/FriendCompare";
 import { Divider, Eyebrow, PrimaryButton, Txt } from "../components/ui";
 import { useAuth } from "../lib/auth";
@@ -542,7 +542,7 @@ export function Friends() {
       ) : null}
 
       {unfriending ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Remove friend?"
           message={`@${unfriending.handle} will no longer see your rank, and you won't see theirs.`}
           onConfirm={() => {

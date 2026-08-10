@@ -14,7 +14,7 @@ import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "./Icon";
 import { SlideUp, Squish } from "./anim";
 import { NumberField, Txt } from "./ui";
-import { CenterDialog, MenuRow } from "./Dialog";
+import { CustomModal, MenuRow } from "./CustomModal";
 import { ExercisePicker } from "./ExercisePicker";
 import { useStore } from "../lib/store";
 import type { Routine, WorkoutEntry } from "../types";
@@ -220,7 +220,7 @@ export function RoutineEditor({
       </KeyboardAwareScrollView>
 
       {menuFor != null ? (
-        <CenterDialog onClose={() => setMenuFor(null)}>
+        <CustomModal onClose={() => setMenuFor(null)}>
           <Txt size={18} weight="extrabold" numberOfLines={1}>
             {name(entries[menuFor].exerciseId)}
           </Txt>
@@ -244,7 +244,7 @@ export function RoutineEditor({
               }}
             />
           </View>
-        </CenterDialog>
+        </CustomModal>
       ) : null}
 
       <ExercisePicker

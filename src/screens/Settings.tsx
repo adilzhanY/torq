@@ -18,7 +18,7 @@ import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
 import { SubPage } from "../components/SubPage";
-import { ConfirmDialog } from "../components/Dialog";
+import { ConfirmModal } from "../components/CustomModal";
 import { Divider, Eyebrow, NumberField, PageTitle, PrimaryButton, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
 import { useAuth } from "../lib/auth";
@@ -361,7 +361,7 @@ function DataSection() {
       )}
 
       {confirming === "account" ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete your account?"
           message={
             "This erases your account, your workouts, your rank and your " +
@@ -375,7 +375,7 @@ function DataSection() {
       ) : null}
 
       {confirming === "local" ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Erase everything on this phone?"
           message={
             "Every workout, routine and measurement stored locally will be " +

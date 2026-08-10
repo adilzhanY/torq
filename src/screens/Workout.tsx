@@ -8,7 +8,6 @@ import {
   Animated,
   Dimensions,
   Easing,
-  Modal,
   Pressable,
   ScrollView,
   Share,
@@ -32,7 +31,7 @@ import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
 import { Card, Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, TextField, Txt } from "../components/ui";
 import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
-import { CenterDialog, ConfirmDialog, MenuRow } from "../components/Dialog";
+import { AnchoredModal, ConfirmModal, CustomModal, MenuRow } from "../components/CustomModal";
 import { useStore } from "../lib/store";
 import { countdown, play, resetCountdown } from "../lib/sounds";
 import {
@@ -998,19 +997,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       />
       <PrimaryButton label="Discard" background={C.badSurf} color={C.badAcc} onPress={discardWorkout} />
 
-      <Modal
-        visible={typeMenu !== null}
-        transparent
-        // Align the modal window with the edge-to-edge app window: without
-        // this it starts below the status bar and every pageY-anchored
-        // position lands ~a status bar too low.
-        statusBarTranslucent
-        animationType="none"
-        onRequestClose={() => setTypeMenu(null)}
-      >
-        <Pressable style={{ flex: 1 }} onPress={() => setTypeMenu(null)}>
+      <AnchoredModal open={typeMenu !== null} onClose={() => setTypeMenu(null)}>
           {typeMenu ? (
-            <PopIn
+            <View
               style={{
                 position: "absolute",
                 // −16 (menu padding 4 + item padding 12) lines the W/D/F
@@ -1050,22 +1039,14 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   );
                 })}
               </View>
-            </PopIn>
+            </View>
           ) : null}
-        </Pressable>
-      </Modal>
+      </AnchoredModal>
 
       {/* Set a Focus Metric — anchored under the exercise's metric pill. */}
-      <Modal
-        visible={metricMenu !== null}
-        transparent
-        statusBarTranslucent
-        animationType="none"
-        onRequestClose={() => setMetricMenu(null)}
-      >
-        <Pressable style={{ flex: 1 }} onPress={() => setMetricMenu(null)}>
+      <AnchoredModal open={metricMenu !== null} onClose={() => setMetricMenu(null)}>
           {metricMenu && w.entries[metricMenu.ei] ? (
-            <PopIn
+            <View
               style={{
                 position: "absolute",
                 right: 16,
@@ -1118,22 +1099,14 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   );
                 })}
               </View>
-            </PopIn>
+            </View>
           ) : null}
-        </Pressable>
-      </Modal>
+      </AnchoredModal>
 
       {/* Exercise ⋯ menu — Strong's list; only Remove exercise acts yet. */}
-      <Modal
-        visible={dotsMenu !== null}
-        transparent
-        statusBarTranslucent
-        animationType="none"
-        onRequestClose={() => setDotsMenu(null)}
-      >
-        <Pressable style={{ flex: 1 }} onPress={() => setDotsMenu(null)}>
+      <AnchoredModal open={dotsMenu !== null} onClose={() => setDotsMenu(null)}>
           {dotsMenu ? (
-            <PopIn
+            <View
               style={{
                 position: "absolute",
                 right: 16,
@@ -1204,10 +1177,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   </View>
                 ))}
               </View>
-            </PopIn>
+            </View>
           ) : null}
-        </Pressable>
-      </Modal>
+      </AnchoredModal>
 
     </KeyboardAwareScrollView>
 
@@ -1382,7 +1354,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
       />
 
       {confirmRemove != null ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Remove exercise?"
           message={`${name(w.entries[confirmRemove].exerciseId)} and its sets will be removed from this workout.`}
           confirmLabel="Remove"
@@ -1501,7 +1473,7 @@ function RenameDialog({
 }) {
   const [draft, setDraft] = useState(initial);
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <Txt size={18} weight="extrabold">Rename routine</Txt>
       <TextField value={draft} onChange={setDraft} placeholder="Routine name" />
       <View style={{ flexDirection: "row", justifyContent: "flex-end", gap: 22, marginTop: 2 }}>
@@ -1518,7 +1490,7 @@ function RenameDialog({
           <Txt size={14} weight="extrabold" color={C.goodAcc}>Save</Txt>
         </Pressable>
       </View>
-    </CenterDialog>
+    </CustomModal>
   );
 }
 
@@ -1683,7 +1655,7 @@ export function Workout() {
     </ScrollView>
 
       {menu?.kind === "mine" ? (
-        <CenterDialog onClose={() => setMenu(null)}>
+        <CustomModal onClose={() => setMenu(null)}>
           <Txt size={18} weight="extrabold" numberOfLines={1}>{menu.routine.name}</Txt>
           <View>
             {!menu.routine.archived ? (
@@ -1749,11 +1721,11 @@ export function Workout() {
               }}
             />
           </View>
-        </CenterDialog>
+        </CustomModal>
       ) : null}
 
       {menu?.kind === "rec" ? (
-        <CenterDialog onClose={() => setMenu(null)}>
+        <CustomModal onClose={() => setMenu(null)}>
           <Txt size={18} weight="extrabold" numberOfLines={1}>{menu.rec.name}</Txt>
           <View>
             <MenuRow
@@ -1769,7 +1741,7 @@ export function Workout() {
               }}
             />
           </View>
-        </CenterDialog>
+        </CustomModal>
       ) : null}
 
       {renaming ? (
@@ -1785,7 +1757,7 @@ export function Workout() {
       ) : null}
 
       {confirmRoutine ? (
-        <ConfirmDialog
+        <ConfirmModal
           title="Delete routine?"
           message={`"${confirmRoutine.name}" will be deleted. Finished workouts stay in your history.`}
           onConfirm={() => deleteRoutine(confirmRoutine.id)}
@@ -1817,12 +1789,12 @@ function NoteDialog({
   onClose: () => void;
 }) {
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <Txt size={17} weight="extrabold">{title}</Txt>
       <Txt size={12} color={C.inkFaint}>{hint}</Txt>
       <TextField value={value} onChange={onChange} placeholder="Type a note" autoFocus />
       <PrimaryButton label="Save" onPress={onSave} />
-    </CenterDialog>
+    </CustomModal>
   );
 }
 
@@ -1838,7 +1810,7 @@ function RestAllDialog({
 }) {
   const OPTIONS = [60, 90, 120, 180, 240, 300];
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <Txt size={17} weight="extrabold">Rest for every set</Txt>
       <Txt size={12} color={C.inkFaint}>
         Applies to all sets of this exercise, replacing any per-set rest.
@@ -1866,6 +1838,6 @@ function RestAllDialog({
           );
         })}
       </View>
-    </CenterDialog>
+    </CustomModal>
   );
 }

@@ -16,7 +16,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { C } from "../theme";
 import { StreakMarkLive } from "./StreakMark";
 import { Icon } from "./Icon";
-import { CenterDialog } from "./Dialog";
+import { CustomModal } from "./CustomModal";
 import { Txt } from "./ui";
 import type { Streak } from "../lib/streak";
 import type { Workout } from "../types";
@@ -64,7 +64,7 @@ export function StreakDialog({
       : "Start a new streak today — one workout is all it takes.";
 
   return (
-    <CenterDialog onClose={onClose}>
+    <CustomModal onClose={onClose}>
       <View style={{ alignItems: "center", gap: 2, paddingTop: 6 }}>
         {/* Soft halo behind the flame, like the reference */}
         <View
@@ -148,6 +148,6 @@ export function StreakDialog({
           Longest: {streak.longest} day{streak.longest === 1 ? "" : "s"}
         </Txt>
       </View>
-    </CenterDialog>
+    </CustomModal>
   );
 }
