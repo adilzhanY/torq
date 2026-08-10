@@ -1853,6 +1853,24 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
   every session, so it sits with the exercise's identity; the session note is
   about today ("shoulder felt off"), so it sits inside today's list. Editing
   is unchanged — tap either to open the existing dialog.
+- 2026-08-10 (later): THE VORTEX AS A WATERMARK on Home's hero (Adilzhan saw
+  a dimmed shape behind the training-day card and asked for it to be our
+  logo — what he was actually seeing was the lime gradient falling off, so
+  there was nothing there yet).
+  `HeroMark` in Home.tsx draws VORTEX_PATH from Logo.tsx at 340 px with 44%
+  of it hanging off the right edge, at 8% opacity, clipped by the panel's own
+  radius (`overflow: "hidden"` on the LinearGradient) and `pointerEvents:
+  "none"`.
+  THE SIZE IS THE WHOLE TRICK, and the first attempt got it wrong: a 260 px
+  mark fits INSIDE the panel, so you see a complete vortex and it reads as a
+  second logo arguing with the headline. Bigger and cropped, you see blades
+  cutting in from the corner, which reads as texture. If you ever retune it,
+  make it larger and push it further out, never smaller.
+  Only on the LIT faces (training day, done today). The rest-day panel spends
+  its space saying what is recovering and how long since, and a brand mark
+  behind that is decoration competing with the one thing the panel is for.
+  Verified both faces on emulator-5554 (the done face by temporarily forcing
+  its branch, then reverting).
 - 2026-08-10: EVERY MODAL REBUILT ON ONE SHELL (Adilzhan: "now it opens good,
   but slowly, and it takes time for me to be able to actually press on
   buttons there"). See the "Modals" section above for the rule; this is what

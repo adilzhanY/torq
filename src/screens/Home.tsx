@@ -25,9 +25,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import Svg, { G, Path } from "react-native-svg";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "../components/Icon";
 import { StreakMark } from "../components/StreakMark";
+import { VORTEX_PATH } from "../components/Logo";
 import { PopIn, Squish } from "../components/anim";
 import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
 import { CalendarDialog } from "../components/CalendarDialog";
@@ -174,6 +176,47 @@ function GhostCta({ label, onPress }: { label: string; onPress: () => void }) {
  * the entire point of the redesign, so resist the urge to unify them back
  * into one block with a variable noun.
  */
+/**
+ * The vortex, huge and dimmed, bleeding off the panel's right edge — the
+ * hero's watermark (Adilzhan asked for the shape he saw behind the training
+ * card to be our logo).
+ *
+ * Three things make it read as texture rather than a second logo: it is
+ * BIGGER than the panel (so no full silhouette is visible, only blades
+ * cutting across), it sits at single-digit opacity, and it is cropped by the
+ * panel's own radius. The parent needs `overflow: "hidden"`.
+ *
+ * It is only on the LIT faces of the hero. The rest-day panel spends its
+ * space telling you what is recovering, and a brand mark behind that would
+ * be decoration arguing with the one thing the panel is for.
+ */
+function HeroMark({ color = C.accent, opacity = 0.08 }: { color?: string; opacity?: number }) {
+  const SIZE = 340;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        position: "absolute",
+        // Nearly half of it hangs off the edge on purpose: a whole vortex
+        // sitting in the panel reads as a second logo competing with the
+        // headline, where blades cutting in from the corner read as texture.
+        right: -SIZE * 0.44,
+        top: "50%",
+        marginTop: -SIZE / 2,
+        opacity,
+      }}
+    >
+      <Svg width={SIZE} height={SIZE} viewBox="0 0 1024 1024">
+        {/* potrace emits math-axis coords, so the mark is y-flipped here the
+            same way Logo.tsx does it. */}
+        <G transform="translate(0,1024) scale(0.1,-0.1)">
+          <Path fill={color} d={VORTEX_PATH} />
+        </G>
+      </Svg>
+    </View>
+  );
+}
+
 function TodayHero({
   routine,
   done,
@@ -248,8 +291,10 @@ function TodayHero({
           padding: 16,
           borderWidth: 1,
           borderColor: "rgba(200,254,35,0.34)",
+          overflow: "hidden",
         }}
       >
+        <HeroMark opacity={0.07} />
         <Kicker color={C.accent}>DONE TODAY</Kicker>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: 4 }}>
           <Txt size={26} weight="extrabold">{routine.name}</Txt>
@@ -275,8 +320,10 @@ function TodayHero({
           padding: 16,
           borderWidth: 1,
           borderColor: "rgba(200,254,35,0.38)",
+          overflow: "hidden",
         }}
       >
+        <HeroMark />
         <Kicker color={C.accent}>TRAINING DAY</Kicker>
         <Txt size={27} weight="extrabold" style={{ marginTop: 4 }}>{routine.name}</Txt>
         <Txt size={12.5} color={C.inkSoft} style={{ marginTop: 4 }}>
