@@ -1,7 +1,7 @@
 /**
  * Custom calendar in the app's CustomModal: ‹ Month Year › header stepping
  * months; tapping the title flips to a month grid with a ‹ Year › stepper
- * (jump to any month/year), then back to days. Mo–Su grid, adjacent-month
+ * (jump to any month/year), then back to days. Mo-Su grid, adjacent-month
  * days faint, selected day is a black capsule, today is ringed, future days
  * disabled. Picking a day calls onPick(local-midnight ms) and closes.
  */

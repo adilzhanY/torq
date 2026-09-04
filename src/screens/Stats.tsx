@@ -31,6 +31,8 @@ import { Dumbbell, Meter, RankLine } from "../components/ProgressCharts";
 import { ConfirmModal } from "../components/CustomModal";
 import { useStore } from "../lib/store";
 import { bodyProfileAt } from "../lib/calories";
+import { monthRange, wrappedFor } from "../lib/wrapped";
+import { ShareWrappedCard } from "../components/ShareCard";
 import { computeStreak } from "../lib/streak";
 import { liftMovement, rankHistory, recentRecords } from "../lib/progress";
 import { closestTierUp, overallRank, rankLifts, tierLabel, TIER_COLORS } from "../lib/rank";
@@ -132,10 +134,20 @@ export function Stats() {
   } = useStore();
   const [range, setRange] = useState<Range>("6M");
   const [sub, setSub] = useState<"measure" | "load" | null>(null);
+  const [wrappedOpen, setWrappedOpen] = useState(false);
   const [width, setWidth] = useState(0);
 
   const now = Date.now();
   const finished = useMemo(() => workouts.filter((w) => w.endedAt), [workouts]);
+
+  // This calendar month, reduced to the five numbers worth posting.
+  const wrapped = useMemo(
+    () => wrappedFor(workouts, exercises, settings.unit, (ms) => {
+      const b = bodyProfileAt(settings, measurements, ms);
+      return { weightKg: b.weightKg, sex: b.sex };
+    }, monthRange(now)),
+    [workouts, exercises, settings, measurements, now],
+  );
 
   const from = useMemo(() => {
     if (range !== "All") return now - RANGE_DAYS[range] * DAY;
@@ -237,6 +249,37 @@ export function Stats() {
           <PageTitle style={{ flex: 1 }}>Progress</PageTitle>
           <Segmented value={range} onChange={setRange} />
         </View>
+
+        {/* WRAPPED: the month reduced to what is worth posting. Hidden until
+            there is a month worth wrapping, because "1 session" is not it. */}
+        {!wrapped.empty ? (
+          <Pressable
+            onPress={() => setWrappedOpen(true)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              borderRadius: R.lg,
+              borderWidth: 1,
+              borderColor: "rgba(200,254,35,0.34)",
+              backgroundColor: "rgba(200,254,35,0.06)",
+              paddingHorizontal: 14,
+              paddingVertical: 12,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Txt size={10} weight="extrabold" color={C.accent} style={{ letterSpacing: 1.3 }}>
+                {wrapped.label.toUpperCase()}, WRAPPED
+              </Txt>
+              <Txt size={14.5} weight="extrabold" style={{ marginTop: 3 }}>
+                {wrapped.sessions} sessions
+                {wrapped.rankGain >= 1 ? ` · +${wrapped.rankGain} pts` : ""}
+                {wrapped.records > 0 ? ` · ${wrapped.records} records` : ""}
+              </Txt>
+            </View>
+            <Icon name="Share2" size={17} color={C.accent} />
+          </Pressable>
+        ) : null}
 
         {/* ── 1. the climb ────────────────────────────────────────────── */}
         <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
@@ -395,6 +438,15 @@ export function Stats() {
           onPress={() => setSub("load")}
         />
       </ScrollView>
+
+      {wrappedOpen ? (
+        <ShareWrappedCard
+          wrapped={wrapped}
+          unit={settings.unit}
+          displayName={settings.name?.trim() || "torq"}
+          onClose={() => setWrappedOpen(false)}
+        />
+      ) : null}
 
       {sub === "measure" ? (
         <MeasurementsPage

@@ -114,6 +114,21 @@ describe("suggestWeight", () => {
   });
 });
 
+describe("suggestWeight edge cases (2026-09-04 audit)", () => {
+  it("does not count a high-rep back-off set as hitting a low-rep target", () => {
+    // 100 x 20 satisfies reps >= 5, but it is a different session, not a
+    // pass on a 5-rep target. Repeat, don't increase.
+    const ws = [session([{ weight: 100, reps: 20 }], 1)];
+    expect(suggestWeight("bench", 5, ws, "kg")).toEqual({ kind: "repeat", weight: 100 });
+  });
+
+  it("treats two misses at floating-point-equal weights as the same weight", () => {
+    // 102.50000000000001 comes out of a unit round trip; it is still 102.5.
+    const ws = [session(three(102.5, 3), 2), session(three(102.50000000000001, 3), 1)];
+    expect(suggestWeight("bench", 5, ws, "kg")?.kind).toBe("deload");
+  });
+});
+
 describe("targetRepsOf", () => {
   it("takes the most common working rep count", () => {
     expect(targetRepsOf([

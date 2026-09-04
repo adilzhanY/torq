@@ -135,6 +135,12 @@ create policy "request as self" on public.friendships
 drop policy if exists "answer as addressee" on public.friendships;
 create policy "answer as addressee" on public.friendships
   for update using (auth.uid() = addressee) with check (auth.uid() = addressee);
+-- The row policy cannot pin the OTHER columns to their old values, so an
+-- addressee could rewrite `requester` to any uuid and mint a friendship with
+-- a stranger. Column-level grant: an update may touch `status` and nothing
+-- else (2026-09-04 audit).
+revoke update on public.friendships from anon, authenticated;
+grant update (status) on public.friendships to authenticated;
 
 drop policy if exists "remove own edges" on public.friendships;
 create policy "remove own edges" on public.friendships
@@ -150,6 +156,21 @@ create policy "read own or friends" on public.rank_snapshots
 drop policy if exists "write own snapshot" on public.rank_snapshots;
 create policy "write own snapshot" on public.rank_snapshots
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- COLUMN-level grants on top of the row-level policy above, because RLS
+-- alone cannot express "a friend may read this row but not these two
+-- columns". `bodyweight_kg` and `sex` are inputs to the rank engine, not
+-- published facts, and the policy above would happily hand them to any
+-- accepted friend that asked for them.
+--
+-- Nothing ever needs to read them back: the device already knows its own
+-- bodyweight from Settings, and publishRankFromData only re-reads
+-- (tier, lifts) to diff the feed. So SELECT is revoked for everyone,
+-- including the owner, while INSERT and UPDATE keep the full column set.
+revoke select on public.rank_snapshots from anon, authenticated;
+grant select (user_id, points, tier, stage, lifts, updated_at)
+  on public.rank_snapshots to authenticated;
+grant insert, update, delete on public.rank_snapshots to authenticated;
 
 -- ── find_profile ───────────────────────────────────────────────────────────
 -- The ONLY way to discover someone you are not already connected to, and it
@@ -319,6 +340,14 @@ begin
   delete from public.measurements  where user_id = me;
   delete from public.settings      where user_id = me;
   delete from public.active        where user_id = me;
+
+  -- Storage has NO foreign key to auth.users, so the avatar does not
+  -- cascade with everything else. Without this the picture outlives the
+  -- account in a public bucket, which would make the deletion promise in
+  -- docs/launch/PRIVACY.md a lie.
+  delete from storage.objects
+   where bucket_id = 'avatars'
+     and (storage.foldername(name))[1] = me::text;
 
   -- Last: removing the auth row invalidates the caller's own JWT.
   delete from auth.users where id = me;
@@ -495,9 +524,21 @@ on conflict (id) do update set public = true;
 -- Writes are folder-scoped to the owner: the client uploads to
 -- "<user_id>/avatar.jpg", and the first path segment must be the caller.
 -- Without this, any signed-in user could overwrite anyone's picture.
+-- Readable by SIGNED-IN users only. The original policy had no role
+-- restriction, so anyone holding the publishable key (which ships inside
+-- every APK, by design) could LIST the bucket and pull down every user's
+-- photo, including users who never claimed a handle. Scoping to
+-- `authenticated` closes the enumeration hole.
+--
+-- CAVEAT, and it is not fixed by this policy: the bucket is still
+-- `public = true`, so an object whose exact path is known is served by the
+-- public endpoint without consulting RLS at all. Paths are
+-- "<user_id>/avatar.jpg" and search_profiles hands out user_id, so a
+-- signed-in user can still fetch any visible profile's picture directly.
+-- Closing that needs public = false plus signed URLs in src/lib/avatar.ts.
 drop policy if exists "avatars are readable" on storage.objects;
 create policy "avatars are readable" on storage.objects
-  for select using (bucket_id = 'avatars');
+  for select to authenticated using (bucket_id = 'avatars');
 
 drop policy if exists "write own avatar" on storage.objects;
 create policy "write own avatar" on storage.objects

@@ -50,10 +50,21 @@ function workingSets(w: Workout, exerciseId: string): WorkoutSet[] {
 }
 
 /** Every set at the session's top weight reached the target reps. */
+/** Reps above this many past the target are a different session (a 20-rep
+ * back-off at the working weight must not "hit" a 5-rep target). */
+const REP_SLACK = 5;
+
 function hitTarget(sets: WorkoutSet[], topWeight: number, targetReps: number): boolean {
   const top = sets.filter((s) => s.weight >= topWeight);
-  return top.length > 0 && top.every((s) => s.reps >= targetReps);
+  return (
+    top.length > 0 &&
+    top.every((s) => s.reps >= targetReps && s.reps <= targetReps + REP_SLACK)
+  );
 }
+
+/** Weights that came through unit conversion or a sync round trip differ in
+ * the last bits; treat anything within 10 g as the same load. */
+const sameWeight = (a: number, b: number) => Math.abs(a - b) < 0.01;
 
 /** Most common prescribed reps among non-warmup sets (the entry's target). */
 export function targetRepsOf(sets: WorkoutSet[]): number {
@@ -104,7 +115,7 @@ export function suggestWeight(
   // Missed last time. Two consecutive misses at the same top weight → deload.
   if (prev) {
     const prevTop = Math.max(...prev.sets.map((s) => s.weight));
-    if (prevTop === topWeight && !hitTarget(prev.sets, prevTop, targetReps)) {
+    if (sameWeight(prevTop, topWeight) && !hitTarget(prev.sets, prevTop, targetReps)) {
       const deload = Math.max(step, Math.min(roundToStep(topWeight * 0.9, step), topWeight - step));
       if (deload < topWeight) return { kind: "deload", weight: deload };
     }

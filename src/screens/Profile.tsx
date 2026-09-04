@@ -23,7 +23,7 @@ import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
 import { Avatar } from "../components/Avatar";
-import { RankBadge } from "../components/RankBadge";
+import { BADGE_ROW, RankBadge } from "../components/RankBadge";
 import { CustomModal } from "../components/CustomModal";
 import { ShareRankCard } from "../components/ShareCard";
 import { Paywall } from "../components/Paywall";
@@ -36,7 +36,11 @@ import { avatarSource, pickAvatar, removeAvatar, uploadAvatar } from "../lib/ava
 import { loadFriends, myProfile } from "../lib/social";
 import { bodyProfileAt } from "../lib/calories";
 import { computeStreak } from "../lib/streak";
-import { percentileForExercise, percentileLabel } from "../lib/percentile";
+import {
+  percentileForExercise,
+  percentileLabel,
+  percentileLabelQualified,
+} from "../lib/percentile";
 import { overallRank, rankLifts, stageOf, tierLabel, TIER_COLORS } from "../lib/rank";
 import { workoutVolume } from "../types";
 
@@ -271,7 +275,7 @@ export function Profile({
     const ex = exercises.find((e) => e.id === exerciseId);
     if (!ex) return null;
     const p = percentileForExercise(ex.name, ex.equipment, body.sex, points);
-    return p ? percentileLabel(p) : null;
+    return p ? percentileLabelQualified(p) : null;
   };
 
   /** Strongest percentile across the ranked lifts: the share card's line. */
@@ -357,7 +361,7 @@ export function Profile({
               padding: 12,
             }}
           >
-            <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={64} />
+            <RankBadge tier={s.tier} stage={stageOf(s.progress)} size={BADGE_ROW} />
             <View style={{ flex: 1, gap: 1 }}>
               <View style={{ flexDirection: "row", alignItems: "baseline", gap: 5 }}>
                 <Txt size={20} weight="extrabold">{Math.round(s.points)}</Txt>
@@ -427,7 +431,7 @@ export function Profile({
                         paddingVertical: 8,
                       }}
                     >
-                      <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={46} />
+                      <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={BADGE_ROW} />
                       <View style={{ flex: 1, gap: 1 }}>
                         <Txt size={14} weight="semibold" numberOfLines={1}>
                           {exName(l.exerciseId)}

@@ -65,6 +65,20 @@ export interface WorkoutSet {
   done: boolean;
   /** Per-set rest override in seconds (falls back to Settings.restSec). */
   restSec?: number;
+  /**
+   * When this set was ticked, in epoch ms. Recorded from 2026-08-11.
+   *
+   * It is the richest signal a barbell app can collect about itself: real
+   * rest intervals rather than planned ones, whether a session was lived or
+   * backfilled afterwards, and pacing that decays as the sets get hard. That
+   * feeds honest rest analytics and the realism half of the trust ladder in
+   * FEATURES.md. Recorded from the day it shipped because history that was
+   * never captured can never be scored later.
+   *
+   * Optional forever: every set logged before this date has none, and a set
+   * un-ticked drops it.
+   */
+  doneAt?: number;
   /** Live-session marker: the weight was prefilled by the progression
    *  engine (up = increase, down = deload). Cleared on edit; stripped when
    *  the workout finishes. */
@@ -101,7 +115,7 @@ export type PlanGoal = "muscle" | "lean" | "strength" | "fit";
 
 export interface PlanPrefs {
   goal: PlanGoal;
-  /** Chosen training weekdays (0 = Sunday … 6 = Saturday), 2–6 of them,
+  /** Chosen training weekdays (0 = Sunday … 6 = Saturday), 2-6 of them,
    *  the rest are rest days. */
   weekdays: number[];
   /** Muscle groups to emphasize (extra volume + accessory slots). */
@@ -134,6 +148,19 @@ export interface Measurement {
 }
 
 export interface Settings {
+  /**
+   * The gym's bar and plate set, for plate math. Undefined means the
+   * standard olympic set for the display unit (see lib/plates.ts), which is
+   * right for most gyms and keeps this optional forever.
+   */
+  barWeight?: number;
+  plates?: number[];
+  /**
+   * Epoch ms until which a deload week is running. While it is in the
+   * future, `startWorkout` prefills working weights at DELOAD_FACTOR.
+   * Set by accepting the fatigue check on Home; expires on its own.
+   */
+  deloadUntil?: number;
   id: "settings";
   name: string;
   unit: Unit;

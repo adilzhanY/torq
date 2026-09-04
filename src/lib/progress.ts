@@ -41,7 +41,7 @@ interface Best {
 
 /**
  * Rank-eligible sets, matching rankLifts exactly: finished workouts only, no
- * warmups, weight > 0, reps 1–10 (Epley degrades past 10). Kept in one place
+ * warmups, weight > 0, reps 1-10 (Epley degrades past 10). Kept in one place
  * so the history and the current rank can never disagree.
  */
 function bestsPerWorkout(workouts: Workout[]): Best[] {

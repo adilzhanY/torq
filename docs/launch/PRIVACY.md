@@ -36,7 +36,9 @@ Only if you create an account.
 | Email address | To sign you in and let you recover your account | Only you and the operator |
 | Workouts, exercises, routines, measurements, settings | Backup and sync across your devices | **Only you** |
 | Handle and display name | So friends can find you | Anyone, once you publish a profile |
-| Rank snapshot (points, tier, your top lifts and their estimated 1RMs, bodyweight and sex used for normalization) | To compare ranks with friends | Your accepted friends; everyone if you join the Arena |
+| Rank snapshot (points, tier, your top lifts and their estimated 1RMs) | To compare ranks with friends | Your accepted friends. The Arena shows only your handle, display name, tier and points |
+| The bodyweight and sex used to normalize that rank | DOTS scoring is meaningless without them | **Only you.** Stored on the same row, but no other user can read those two columns |
+| Profile picture, if you set one | Shown next to your handle | Any signed-in user who can already see your handle |
 | Rank-up events (a tier change) | The friends activity feed | Your accepted friends |
 | Friend relationships | To know who your friends are | You and the other person |
 | Push notification token | To tell you a friend request arrived | Only the server |
@@ -55,19 +57,22 @@ Both can be switched off at any time.
 
 ## What we do not collect
 
-- No location, no contacts, no photos, no health-platform data.
+- No location, no contacts, no health-platform data.
 - No advertising identifiers.
 - No analytics or crash-reporting SDK.
-- No microphone or camera access.
+- No microphone or camera access. The app can open your photo library, but
+  only when you tap to choose a profile picture, and only that one image is
+  read.
+
+We do collect **one photo**, if you choose to set a profile picture. It is
+listed in the table above. Nothing else in your photo library is read.
 
 ## Third parties
 
-- **Supabase** hosts the database and authentication. Data is stored under
-  the project's region and protected by row-level security.
+- **Supabase** hosts the database, file storage and authentication. Data is
+  stored under the project's region and protected by row-level security.
 - **Expo Push Service / Firebase Cloud Messaging** deliver notifications, if
   you enable them. They receive a device token and the notification text.
-- **GitHub** serves the exercise demonstration images. Your device requests
-  images from `raw.githubusercontent.com`; no account data is sent.
 
 Nothing else. No advertising or analytics vendor receives anything.
 
@@ -78,13 +83,14 @@ their data.
 
 ## Your rights, and how to actually use them
 
-- **Export**: Profile → Your data → *Export my data*. Produces a JSON file of
-  everything stored on your device.
-- **Delete your account**: Profile → Your data → *Delete my account*. This
-  erases your account, workouts, rank, friendships and tokens from the
-  server **and** wipes the copy on your phone. It cannot be undone.
-- **Erase locally without an account**: Profile → Your data → *Erase all data
-  on this phone*.
+- **Export**: Profile → Settings → *Export and delete* → *Export my data*.
+  Produces a JSON file of everything stored on your device.
+- **Delete your account**: Profile → Settings → *Export and delete* →
+  *Delete my account*. This erases your account, workouts, rank,
+  friendships, profile picture and notification tokens from the server
+  **and** wipes the copy on your phone. It cannot be undone.
+- **Erase locally without an account**: Profile → Settings → *Export and
+  delete* → *Erase all data on this phone*.
 
 You do not need to email anyone to do any of this.
 

@@ -9,7 +9,7 @@ import { Pressable, ScrollView, View } from "react-native";
 import { C, R, TOP_BAR_SPACE } from "../theme";
 import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
 import { Icon } from "../components/Icon";
-import { RankBadge } from "../components/RankBadge";
+import { BADGE_ROW, RankBadge } from "../components/RankBadge";
 import { TierCarousel } from "../components/TierCarousel";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { ShareRankCard } from "../components/ShareCard";
@@ -20,7 +20,11 @@ import { Friends } from "./Friends";
 import { DB_GIF_BY_ID } from "../lib/exercisedb";
 import { bodyProfileAt } from "../lib/calories";
 import { overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
-import { percentileForExercise, percentileLabel } from "../lib/percentile";
+import {
+  percentileForExercise,
+  percentileLabel,
+  percentileLabelQualified,
+} from "../lib/percentile";
 import { useStore } from "../lib/store";
 import { tierDates } from "../lib/progress";
 import { useUi } from "../lib/ui";
@@ -80,7 +84,7 @@ export function Ranks() {
     const ex = exercises.find((e) => e.id === exerciseId);
     if (!ex) return null;
     const p = percentileForExercise(ex.name, ex.equipment, profile.sex, points);
-    return p ? percentileLabel(p) : null;
+    return p ? percentileLabelQualified(p) : null;
   };
   const s = overall.state;
 
@@ -249,7 +253,7 @@ export function Ranks() {
                     onPress={() => setInfo(l.exerciseId)}
                     style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 8 }}
                   >
-                    <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={62} />
+                    <RankBadge tier={l.tier.tier} stage={stageOf(l.tier.progress)} size={BADGE_ROW} />
                     <View style={{ flex: 1, gap: 1 }}>
                       <Txt size={15} weight="bold" numberOfLines={1}>{name(l.exerciseId)}</Txt>
                       <Txt size={12} color={C.inkSoft}>

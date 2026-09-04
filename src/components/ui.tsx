@@ -269,6 +269,11 @@ export const NumberField = React.forwardRef<
   },
   ref,
 ) {
+  // While focused the field shows exactly what was typed. The parent stores
+  // a parsed NUMBER and echoes it back as `value`, so without this a typed
+  // "1," re-rendered as "1" and the comma vanished under the thumb (and an
+  // unparseable draft used to blank the field entirely).
+  const [draft, setDraft] = React.useState<string | null>(null);
   return (
     <View style={{ gap: 4, width }}>
       {label ? (
@@ -293,14 +298,20 @@ export const NumberField = React.forwardRef<
       >
         <TextInput
           ref={ref}
-          value={value}
-          onChangeText={onChange}
+          value={draft ?? value}
+          onChangeText={(t) => {
+            setDraft(t);
+            onChange(t);
+          }}
           keyboardType="numeric"
           placeholder={placeholder}
           placeholderTextColor={C.inkFaint}
           autoFocus={autoFocus}
           selectTextOnFocus={selectTextOnFocus}
-          onBlur={onBlur}
+          onBlur={() => {
+            setDraft(null);
+            onBlur?.();
+          }}
           style={{
             flex: 1,
             fontFamily: FONT.semibold,

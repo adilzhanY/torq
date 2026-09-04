@@ -20,6 +20,7 @@ import { CustomModal, useModalClose } from "./CustomModal";
 import { Icon } from "./Icon";
 import { NumberField, Txt } from "./ui";
 import { BAR_WEIGHT, DEFAULT_WARMUP, warmupWeight } from "../lib/warmup";
+import { parseNum } from "../lib/units";
 import type { Equipment, Unit, WarmupRow } from "../types";
 
 /** A row's two editable numbers, kept as strings while being typed. */
@@ -60,7 +61,7 @@ function Row({
       ) : (
         <NumberField
           value={row.pct ? String(row.pct) : ""}
-          onChange={(v) => onChange({ ...row, pct: Number(v) || 0 })}
+          onChange={(v) => onChange({ ...row, pct: parseNum(v) })}
           width={52}
           suffix="%"
           compact
@@ -71,7 +72,7 @@ function Row({
       <Txt size={12} color={C.inkFaint}>×</Txt>
       <NumberField
         value={row.reps ? String(row.reps) : ""}
-        onChange={(v) => onChange({ ...row, reps: Number(v) || 0 })}
+        onChange={(v) => onChange({ ...row, reps: parseNum(v) })}
         width={46}
         compact
         center

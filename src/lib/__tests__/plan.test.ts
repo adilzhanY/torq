@@ -88,7 +88,7 @@ describe("buildPlan", () => {
   });
 
   /**
-   * The sweep: every goal x every 2–6 day subset x several focus
+   * The sweep: every goal x every 2-6 day subset x several focus
    * combinations. No day may be empty, over the session cap, or reference a
    * catalog row that does not exist.
    */

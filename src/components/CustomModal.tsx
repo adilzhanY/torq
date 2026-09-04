@@ -334,9 +334,11 @@ function PopoverBody({ children, style }: { children: ReactNode; style?: ViewSty
 function ConfirmButtons({
   confirmLabel,
   onConfirm,
+  tone = "danger",
 }: {
   confirmLabel: string;
   onConfirm: () => void;
+  tone?: ConfirmTone;
 }) {
   const close = useModalClose();
   return (
@@ -351,22 +353,28 @@ function ConfirmButtons({
           close();
         }}
       >
-        <Txt size={14} weight="extrabold" color={C.badAcc}>{confirmLabel}</Txt>
+        <Txt size={14} weight="extrabold" color={tone === "danger" ? C.badAcc : C.accent}>{confirmLabel}</Txt>
       </Pressable>
     </View>
   );
 }
 
+/** "danger" paints the confirm red (deletes, discards); "accent" paints it
+ * lime for a confirmation that commits something rather than destroys it. */
+export type ConfirmTone = "danger" | "accent";
+
 export function ConfirmModal({
   title,
   message,
   confirmLabel = "Delete",
+  tone = "danger",
   onConfirm,
   onClose,
 }: {
   title: string;
   message?: string;
   confirmLabel?: string;
+  tone?: ConfirmTone;
   onConfirm: () => void;
   onClose: () => void;
 }) {
@@ -374,7 +382,7 @@ export function ConfirmModal({
     <CustomModal onClose={onClose}>
       <Txt size={18} weight="extrabold">{title}</Txt>
       {message ? <Txt size={13} color={C.inkSoft}>{message}</Txt> : null}
-      <ConfirmButtons confirmLabel={confirmLabel} onConfirm={onConfirm} />
+      <ConfirmButtons confirmLabel={confirmLabel} onConfirm={onConfirm} tone={tone} />
     </CustomModal>
   );
 }

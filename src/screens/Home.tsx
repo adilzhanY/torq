@@ -28,7 +28,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import Svg, { G, Path } from "react-native-svg";
 import { C, R, TOP_BAR_SPACE, claySm } from "../theme";
 import { Icon } from "../components/Icon";
-import { StreakMark } from "../components/StreakMark";
+import { StreakCreature } from "../components/StreakCreature";
 import { VORTEX_PATH } from "../components/Logo";
 import { PopIn, Squish } from "../components/anim";
 import { Divider, Eyebrow, PageTitle, Txt } from "../components/ui";
@@ -36,10 +36,11 @@ import { CalendarDialog } from "../components/CalendarDialog";
 import { StreakDialog } from "../components/StreakDialog";
 import { computeStreak, type Streak } from "../lib/streak";
 import { addDays, dayStart } from "../components/DateRuler";
-import { RankBadge } from "../components/RankBadge";
+import { BADGE_ROW, RankBadge } from "../components/RankBadge";
 import { WorkoutRow } from "../components/WorkoutRow";
 import { WorkoutSummary } from "../components/WorkoutSummary";
 import { bodyProfileAt } from "../lib/calories";
+import { DELOAD_FACTOR, deloadActive, fatigueCheck } from "../lib/deload";
 import { prTotals } from "../lib/stats";
 import { pointsPerWorkout } from "../lib/progress";
 import { closestTierUp, overallRank, rankLifts, stageOf, tierLabel } from "../lib/rank";
@@ -57,9 +58,20 @@ const MONTHS = [
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /**
- * Flame pill on the date heading. Lime = streak safe for today, ink =
- * today's planned session still pending, orange = one missed session from
- * losing it, faint = no live streak.
+ * The streak, next to the date heading (2026-08-11, Adilzhan: "show the icon
+ * in normal color, and number of days in white").
+ *
+ * NO PILL. The filled lime capsule forced its contents to go dark, which
+ * meant the character lost its own colour and the count read as black text
+ * in a blob. Bare on the page, the creature keeps the lime it was drawn in
+ * and the number is plain white, which is also what the cardless system
+ * wants: surfaces are for interactive things, and this is a label you can
+ * tap, not a button.
+ *
+ * State is carried by the CREATURE's colour rather than a background: lime
+ * when the streak is safe, amber one missed session from resetting, faint
+ * when there is no streak at all. The number dims only when the streak is
+ * dead, because a live count should never look disabled.
  */
 function StreakPill({
   streak,
@@ -71,36 +83,26 @@ function StreakPill({
   onPress: () => void;
 }) {
   const dead = streak.current === 0;
-  const [bg, fg] = streak.atRisk
-    ? [C.warnSurf, C.warnAcc]
-    : dead
-      ? [C.page2, C.inkFaint]
-      : todayPending
-        ? [C.page2, C.ink]
-        : [C.accent, C.accentInk];
+  const mark = streak.atRisk ? C.warnAcc : dead ? C.inkFaint : C.accent;
   return (
     <Squish
       onPress={onPress}
-      // The pill is 48 x 26 dp of ink; the slop brings the TAP target up to
-      // the 48 dp minimum without inflating the shape.
-      hitSlop={11}
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        // The mark's box is now its ink, so these are the real visual gaps.
-        gap: 6,
-        backgroundColor: bg,
-        borderRadius: R.pill,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-      }}
+      // No background to grow, so the slop is what carries the tap target to
+      // Android's 48 dp minimum.
+      hitSlop={14}
+      style={{ flexDirection: "row", alignItems: "center", gap: 6 }}
     >
-      {/* Sized to the digits: 13 px of flame against a ~9.8 px cap height
-          reads as level, where a 15 px square left it towering. */}
-      <StreakMark size={13} color={fg} />
+      {/* The eyes go dark-on-lime as drawn, and follow the page when the
+          creature is dimmed, so a faint streak does not stare. */}
+      <StreakCreature size={19} color={mark} eye={dead ? C.page : "#0E0F0E"} />
       {/* Android pads a Text's line box above the glyphs, which pushed the
-          pill's contents ~0.7 dp high inside otherwise symmetric padding. */}
-      <Txt size={14} weight="extrabold" color={fg} style={{ includeFontPadding: false }}>
+          count a fraction high next to the mark. */}
+      <Txt
+        size={17}
+        weight="extrabold"
+        color={dead ? C.inkFaint : C.ink}
+        style={{ includeFontPadding: false }}
+      >
         {streak.current}
       </Txt>
     </Squish>
@@ -591,6 +593,10 @@ export function Home() {
   const recent = [...workouts].sort((a, b) => b.startedAt - a.startedAt).slice(0, 3);
   const listed = isToday ? recent : [...dayFinished].sort((a, b) => b.startedAt - a.startedAt);
 
+  // Fatigue: scans every lift's last three sessions, so memoise it.
+  const fatigue = useMemo(() => fatigueCheck(workouts, exercises, now), [workouts, exercises, now]);
+  const onDeload = deloadActive(settings.deloadUntil, now);
+
   // The timeline row's two numbers. ONE chronological pass each rather than
   // one per row, computing them per card is what made History cost 600 ms
   // to open before it was virtualised.
@@ -743,6 +749,73 @@ export function Home() {
           </View>
         </View>
 
+        {/* FATIGUE CHECK: only when most tracked lifts have stopped moving,
+            or while a deload week is running. Silence is the default, because
+            a card that cries deload every week gets ignored forever. */}
+        {onDeload ? (
+          <View
+            style={{
+              borderRadius: R.lg,
+              padding: 14,
+              backgroundColor: C.page2,
+              borderWidth: 1,
+              borderColor: C.line,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+            }}
+          >
+            <Icon name="TrendingDown" size={17} color={C.warnAcc} />
+            <View style={{ flex: 1 }}>
+              <Txt size={14} weight="extrabold" color={C.warnAcc}>Deload week</Txt>
+              <Txt size={12} color={C.inkSoft} style={{ marginTop: 1 }}>
+                Sessions load at {Math.round(DELOAD_FACTOR * 100)}% until{" "}
+                {new Date(settings.deloadUntil ?? 0).getDate()}{" "}
+                {MONTHS_SHORT[new Date(settings.deloadUntil ?? 0).getMonth()]}. Ride it out.
+              </Txt>
+            </View>
+            <Pressable hitSlop={8} onPress={() => updateSettings({ deloadUntil: undefined })}>
+              <Txt size={12.5} weight="bold" color={C.inkFaint}>End</Txt>
+            </Pressable>
+          </View>
+        ) : fatigue.recommend ? (
+          <View
+            style={{
+              borderRadius: R.lg,
+              padding: 14,
+              backgroundColor: C.warnSurf,
+              borderWidth: 1,
+              borderColor: "rgba(240,167,66,0.35)",
+              gap: 8,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Icon name="TriangleAlert" size={16} color={C.warnAcc} />
+              <Txt size={14} weight="extrabold" color={C.warnAcc}>
+                {fatigue.stalled.length} of {fatigue.tracked} lifts have stalled
+              </Txt>
+            </View>
+            <Txt size={12.5} color={C.inkSoft}>
+              {fatigue.stalled.slice(0, 3).join(", ")} stopped moving over their last three
+              sessions. That is usually fatigue rather than effort. A week at{" "}
+              {Math.round(DELOAD_FACTOR * 100)}% normally fixes it.
+            </Txt>
+            <Pressable
+              onPress={() => updateSettings({ deloadUntil: Date.now() + 7 * 86400000 })}
+              style={{
+                alignSelf: "flex-start",
+                backgroundColor: C.warnAcc,
+                borderRadius: R.ctrl,
+                paddingHorizontal: 14,
+                paddingVertical: 8,
+                marginTop: 2,
+              }}
+            >
+              <Txt size={13} weight="extrabold" color={C.accentInk}>Take a deload week</Txt>
+            </Pressable>
+          </View>
+        ) : null}
+
         {/* Where you stand, three numbers that actually move. */}
         {lifts.length > 0 ? (
           <View>
@@ -789,7 +862,7 @@ export function Home() {
               <RankBadge
                 tier={overall.state.tier}
                 stage={stageOf(overall.state.progress)}
-                size={68}
+                size={BADGE_ROW}
               />
               <View style={{ flex: 1, gap: 1 }}>
                 <Txt size={14} weight="extrabold">{tierLabel(overall.state)}</Txt>

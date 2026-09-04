@@ -61,12 +61,12 @@ const DAY = 24 * 60 * 60 * 1000;
 
 function freqBucket(count: number): string {
   if (count >= 26) return "26+ times";
-  if (count >= 11) return "11–25 times";
-  if (count >= 6) return "6–10 times";
-  if (count >= 1) return "1–5 times";
+  if (count >= 11) return "11-25 times";
+  if (count >= 6) return "6-10 times";
+  if (count >= 1) return "1-5 times";
   return "Not performed";
 }
-const FREQ_ORDER = ["26+ times", "11–25 times", "6–10 times", "1–5 times", "Not performed"];
+const FREQ_ORDER = ["26+ times", "11-25 times", "6-10 times", "1-5 times", "Not performed"];
 
 function lastBucket(at: number, now: number): string {
   if (!at) return "Never";
@@ -113,10 +113,20 @@ const Row = React.memo(function Row({
         alignItems: "center",
         gap: 12,
         paddingHorizontal: 16,
-        paddingVertical: 7,
+        // 7 was right when a 44px thumbnail set the row height. With the
+        // thumbnail gone the two text lines are only ~33px, which would put
+        // the row under Android's 48dp minimum touch target.
+        paddingVertical: 10,
         backgroundColor: selected ? "rgba(160,210,20,0.42)" : "transparent",
       }}
     >
+      {/*
+        No thumbnail when demo media is off. The old fallback was a dumbbell
+        tile, which is right for ONE custom exercise in a list of photos and
+        wrong when it is every row: 1500 identical grey squares carry no
+        information and just push the name in by 56px. The name plus the
+        "chest · barbell" line under it is the whole row now.
+      */}
       {item.gifUrl ? (
         <Image
           source={{ uri: item.gifUrl }}
@@ -124,20 +134,7 @@ const Row = React.memo(function Row({
           contentFit="cover"
           cachePolicy="memory-disk"
         />
-      ) : (
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: R.sm,
-            backgroundColor: C.page2,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Icon name="Dumbbell" size={22} color={C.inkSoft} />
-        </View>
-      )}
+      ) : null}
       <View style={{ flex: 1, gap: 1 }}>
         <Txt weight="semibold" numberOfLines={1}>{item.name}</Txt>
         <Txt size={11} color={C.inkFaint}>

@@ -26,7 +26,7 @@ import { Animated, Pressable, useWindowDimensions, View } from "react-native";
 import { C, R } from "../theme";
 import { Icon } from "./Icon";
 import { Txt } from "./ui";
-import { RankBadge } from "./RankBadge";
+import { BADGE_ASPECT, RankBadge } from "./RankBadge";
 import { TIER_FLOOR } from "../lib/progress";
 import { TIER_COLORS, TIER_NAMES, stageOf, type TierName, type TierState } from "../lib/rank";
 
@@ -43,7 +43,7 @@ const SCALE_CENTER = 1.6;
 const SCALE_NEAR = 0.52;
 const SCALE_FAR = 0.42;
 /** Layout height must reserve the SCALED badge, or it overlaps its heading. */
-const ROW_H = Math.ceil(((BADGE * 136) / 170) * SCALE_CENTER);
+const ROW_H = Math.ceil(BADGE * BADGE_ASPECT * SCALE_CENTER);
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 

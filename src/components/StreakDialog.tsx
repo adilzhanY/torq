@@ -4,18 +4,17 @@
  * a personalised line, a Monday-first week strip and the longest-streak
  * trophy. Auto-pops once per trained day from Home; the pill reopens it.
  *
- * The mark used to be a hand-authored Lottie (assets/flame.json). It was
- * replaced 2026-08-09 by `StreakMarkLive` when the app got its OWN streak
- * icon: keeping the Lottie would have meant this dialog celebrating with a
- * different flame from the pill that opened it. The motion it had that
- * mattered (squash-and-stretch flicker, rising embers) came with it.
- * assets/flame.json is kept in the repo but is no longer referenced.
+ * The flame has been three things: a hand-authored Lottie
+ * (assets/flame.json), then a hand-rolled vector mark, and now the designed
+ * Lottie in assets/Streak.json that Adilzhan installed. Both earlier
+ * versions are deleted, because the celebration here and the still beside
+ * the day count on Home are finally the same creature, which is what neither
+ * of the first two managed.
  */
 import { View } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
 import { C } from "../theme";
-import { StreakMarkLive } from "./StreakMark";
 import { Icon } from "./Icon";
+import LottieView from "lottie-react-native";
 import { CustomModal } from "./CustomModal";
 import { Txt } from "./ui";
 import type { Streak } from "../lib/streak";
@@ -66,18 +65,25 @@ export function StreakDialog({
   return (
     <CustomModal onClose={onClose}>
       <View style={{ alignItems: "center", gap: 2, paddingTop: 6 }}>
-        {/* Soft halo behind the flame, like the reference */}
+        {/* The celebration is a designed Lottie now (assets/Streak.json,
+            recoloured to the brand lime by scripts/recolor-lottie.py) rather
+            than the hand-rolled flicker loop it replaced. */}
         <View
           style={{
-            width: 136,
-            height: 136,
-            borderRadius: 68,
-            backgroundColor: "rgba(255,138,61,0.10)",
+            width: 152,
+            height: 152,
+            borderRadius: 76,
+            backgroundColor: "rgba(200,254,35,0.07)",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <StreakMarkLive size={112} color="#FF8A3D" />
+          <LottieView
+            source={require("../../assets/Streak.json")}
+            autoPlay
+            loop
+            style={{ width: 148, height: 148 }}
+          />
         </View>
         <Txt size={52} weight="extrabold" style={{ marginTop: -4 }}>
           {streak.current}
@@ -105,20 +111,19 @@ export function StreakDialog({
               {day.letter}
             </Txt>
             {day.done ? (
-              <LinearGradient
-                colors={["#FFB03F", "#FF7B33"]}
-                start={{ x: 0.2, y: 0 }}
-                end={{ x: 0.8, y: 1 }}
+              <View
                 style={{
                   width: 34,
                   height: 34,
                   borderRadius: 17,
+                  backgroundColor: C.accent,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
-                <Icon name="Check" size={16} color="#fff" strokeWidth={3.5} />
-              </LinearGradient>
+                {/* Lime is light, so the check is accentInk, never white. */}
+                <Icon name="Check" size={16} color={C.accentInk} strokeWidth={3.5} />
+              </View>
             ) : (
               <View style={{ height: 34, alignItems: "center", justifyContent: "center" }}>
                 <Txt

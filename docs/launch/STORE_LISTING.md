@@ -3,6 +3,12 @@
 Copy for Play Console → Main store listing. Character limits are Google's;
 the counts below are the current drafts.
 
+**Only the text inside the fenced blocks goes into Play Console.** Everything
+outside them is commentary for us. This matters: the prose below names
+competitors, and Play's store listing policy forbids referencing other apps
+or brands in listing metadata. Pasting a whole section of this file into the
+console would carry that text in with it.
+
 ## App name (30 max)
 
 ```
@@ -24,7 +30,7 @@ to say torq answers "how good am I?".
 ## Full description (4000 max)
 
 ```
-Every workout tracker tells you what you did. torq tells you how good it was.
+Most workout trackers tell you what you did. torq tells you how good it was.
 
 Log your session, and torq scores every lift against real competition data,
 normalized for your bodyweight and sex, so a 60 kg lifter and a 95 kg lifter
@@ -37,7 +43,7 @@ RANK EVERY LIFT
 • See exactly how many kilos stand between you and the next tier
 
 KNOW WHERE YOU STAND
-• Percentiles built from 2.2 million competition results
+• Percentiles from up to 400,000 competitive raw lifters per lift
 • World-record marks for your weight class, next to your own numbers
 • No vague "intermediate/advanced" labels, real distributions
 
@@ -48,7 +54,7 @@ TRAIN WITH FRIENDS
 
 A PROPER TRAINING LOG
 • Fast set logging with rest timers and per-set rest
-• 1500+ exercises with demonstrations
+• 1,500 exercises with step-by-step instructions and muscle maps
 • Suggested weights that follow double progression, it notices when you
   stall and tells you when to deload
 • A training plan built around the days you can actually train
@@ -56,11 +62,12 @@ A PROPER TRAINING LOG
 
 YOURS, NOT OURS
 • Works completely offline. An account is optional
-• Your workout logs are never shown to other users, only a computed rank
+• Your workout logs are never shown to other users. Friends see your
+  rank and your top lifts, nothing else
 • Export everything as a file whenever you like
-• Delete your account from inside the app, in two taps
+• Delete your account from inside the app
 
-Free to log. Always.
+Logging your workouts is free.
 ```
 
 ## Graphics checklist
@@ -69,7 +76,7 @@ Free to log. Always.
 | --- | --- | --- |
 | App icon | 512×512 PNG | `assets/icon.png`: the vortex mark |
 | Feature graphic | 1024×500 | Lime vortex on #0E0F0E, wordmark + "rank your strength" |
-| Phone screenshots | 2–8, min 1080px | Order below |
+| Phone screenshots | 2-8, min 1080px | Order below |
 | Short promo video | optional | The rank share card animating is the obvious hook |
 
 ### Screenshot order (the first two are what people actually see)
@@ -90,14 +97,27 @@ Caption each with the benefit, not the feature name.
 
 ## Content rating
 
-Answer the IARC questionnaire honestly; torq has no objectionable content
-and should come back **Everyone**. It does have user-to-user interaction
-(friends and handles), declare that. It is a required question.
+Answer the IARC questionnaire honestly. torq has no objectionable content,
+but it is **not** an "Everyone" app, and answering that way is a
+misdeclaration.
+
+The app has unmoderated user-to-user interaction: searchable handles, free
+text display names, uploaded profile pictures, friend requests and a global
+leaderboard. Declare all of it. Expect **Teen / PEGI 12** as a result, which
+is the correct outcome and costs nothing.
+
+Target audience: **13+ at the lowest**. Do not include under-13. That pulls
+the app into Families policy, which would require locking down the whole
+social layer.
+
+Ads: **none**.
 
 ## Before you can publish
 
 - [ ] Privacy policy URL live and public (`docs/launch/PRIVACY.md`, host it,
       GitHub Pages is enough)
+- [ ] Web account-deletion URL live on the same host. Play wants a page a
+      person can reach without installing the app, not only the in-app path
 - [ ] Data Safety form filled from `DATA_SAFETY.md`
 - [ ] Content rating questionnaire done
 - [ ] Target audience and ads declaration (no ads)

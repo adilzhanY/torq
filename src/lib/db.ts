@@ -89,6 +89,11 @@ export async function loadDB(): Promise<DB> {
   try {
     const parsed = JSON.parse(raw) as Partial<DB>;
     const base = emptyDB();
+    // Shape check, not just a parse: a blob where `workouts` is null or a
+    // string parses fine and then crashes every consumer on first render,
+    // and the next save would have written that shape back as the truth.
+    const bad = validate(parsed);
+    if (bad) throw new Error(bad);
     return {
       ...base,
       ...parsed,
@@ -108,8 +113,75 @@ export async function loadDB(): Promise<DB> {
   }
 }
 
-export async function saveDB(db: DB): Promise<void> {
-  await AsyncStorage.setItem(KEY, JSON.stringify(db));
+/** Which table is malformed, or null when the blob has the right shape. */
+function validate(parsed: Partial<DB>): string | null {
+  if (typeof parsed !== "object" || parsed === null) return "Saved data is not an object.";
+  const lists = ["exercises", "routines", "workouts", "measurements", "tombstones"] as const;
+  for (const k of lists) {
+    if (parsed[k] !== undefined && !Array.isArray(parsed[k])) return `Saved ${k} is not a list.`;
+  }
+  if (parsed.settings !== undefined && (typeof parsed.settings !== "object" || parsed.settings === null)) {
+    return "Saved settings are not an object.";
+  }
+  if (parsed.activeWorkout !== undefined && parsed.activeWorkout !== null && typeof parsed.activeWorkout !== "object") {
+    return "Saved active workout is malformed.";
+  }
+  return null;
+}
+
+/**
+ * Set when the most recent save failed (quota, storage error). The store
+ * shows it; the in-memory DB stays the truth and the next commit retries.
+ * Before 2026-09-04 a failed save was an unhandled rejection: the user kept
+ * logging into memory and lost the session on the next app kill.
+ */
+let saveFailure: string | null = null;
+export function getSaveFailure(): string | null {
+  return saveFailure;
+}
+
+// Writes are COALESCED: one in flight, at most one queued. Every commit used
+// to fire its own JSON.stringify + setItem, so a fast typist could have a
+// dozen overlapping writes of a growing blob, and `wipeLocal` could race one
+// of them and be undone. Now a commit during a write just marks the next
+// write needed, and wipe waits for the queue to drain.
+let inflight: Promise<void> | null = null;
+let queued: DB | null = null;
+
+async function writeOnce(db: DB): Promise<void> {
+  try {
+    await AsyncStorage.setItem(KEY, JSON.stringify(db));
+    saveFailure = null;
+  } catch (e) {
+    saveFailure = e instanceof Error ? e.message : "Could not save.";
+  }
+}
+
+export function saveDB(db: DB): Promise<void> {
+  if (inflight) {
+    queued = db;
+    return inflight;
+  }
+  inflight = (async () => {
+    let next: DB | null = db;
+    while (next) {
+      const cur = next;
+      next = null;
+      await writeOnce(cur);
+      if (queued) {
+        next = queued;
+        queued = null;
+      }
+    }
+  })().finally(() => {
+    inflight = null;
+  });
+  return inflight;
+}
+
+/** Resolves once no write is pending. */
+export async function flushDB(): Promise<void> {
+  while (inflight) await inflight;
 }
 
 /**
@@ -118,6 +190,8 @@ export async function saveDB(db: DB): Promise<void> {
  * account skip rows it has never actually pulled).
  */
 export async function wipeLocal(): Promise<void> {
+  queued = null;
+  await flushDB();
   const keys = await AsyncStorage.getAllKeys();
   const ours = keys.filter(
     (k) => k === KEY || k === BACKUP_KEY || k.startsWith("torq."),

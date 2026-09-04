@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, BackHandler, PixelRatio, Pressable, View } from "react-native";
 import { captureRef } from "react-native-view-shot";
 import * as Sharing from "expo-sharing";
+import type { Wrapped } from "../lib/wrapped";
 import { C, R } from "../theme";
 import { Icon } from "./Icon";
 import { Logo } from "./Logo";
@@ -202,7 +203,7 @@ export function ShareRankCard({
       <CardBrand right={`${Math.round(bodyweightKg)} KG · ${sex === "male" ? "M" : "F"}`} />
 
       <View style={{ alignItems: "center", marginTop: 10 }}>
-        <RankBadge tier={state.tier} stage={stage} size={132} />
+        <RankBadge tier={state.tier} stage={stage} size={132} animated={false} />
         <Txt size={19} weight="extrabold" color={C.accent} style={{ marginTop: 2 }}>
           {tierLabel(state)}
         </Txt>
@@ -319,6 +320,87 @@ export function ShareWorkoutCard({
 
       <View style={{ flex: 1 }} />
       <CardFooter text="TRACKED WITH TORQ" />
+    </ShareSheet>
+  );
+}
+
+/**
+ * Face 3: a month, wrapped.
+ *
+ * Five numbers, chosen because each is a sentence about the person rather
+ * than about the data: showing up, getting stronger, what changed, the
+ * moments, the story. Anything more and it stops being postable.
+ */
+export function ShareWrappedCard({
+  wrapped,
+  unit,
+  handle,
+  displayName,
+  onClose,
+}: {
+  wrapped: Wrapped;
+  unit: string;
+  handle?: string;
+  displayName: string;
+  onClose: () => void;
+}) {
+  return (
+    <ShareSheet dialogTitle="Share your month" onClose={onClose}>
+      <CardBrand right={wrapped.label.toUpperCase()} />
+
+      <View style={{ marginTop: 14 }}>
+        <Txt size={13} weight="extrabold" color={C.accent} style={{ letterSpacing: 1.4 }}>
+          WRAPPED
+        </Txt>
+        <View style={{ flexDirection: "row", alignItems: "baseline", gap: 6, marginTop: 2 }}>
+          <Txt size={54} weight="extrabold">{wrapped.sessions}</Txt>
+          <Txt size={15} weight="extrabold" color={C.inkSoft}>sessions</Txt>
+        </View>
+        <Txt size={12.5} weight="bold" color={C.inkSoft}>
+          {wrapped.sets} sets{wrapped.records > 0 ? ` · ${wrapped.records} records` : ""}
+        </Txt>
+      </View>
+
+      {wrapped.rankGain >= 1 ? (
+        <View
+          style={{
+            marginTop: 12,
+            alignSelf: "flex-start",
+            borderRadius: R.pill,
+            backgroundColor: "rgba(200,254,35,0.14)",
+            paddingHorizontal: 12,
+            paddingVertical: 5,
+          }}
+        >
+          <Txt size={12} weight="extrabold" color={C.accent}>
+            +{wrapped.rankGain} rank points this month
+          </Txt>
+        </View>
+      ) : null}
+
+      {wrapped.moved.length > 0 ? (
+        <View style={{ marginTop: 14, gap: 6 }}>
+          <Txt size={10} weight="extrabold" color={C.inkFaint} style={{ letterSpacing: 1.2 }}>
+            WHAT MOVED
+          </Txt>
+          {wrapped.moved.slice(0, 3).map((m) => (
+            <View key={m.name} style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View style={{ width: 3, height: 3, borderRadius: 99, backgroundColor: C.accent }} />
+              <Txt size={11.5} weight="semibold" color={C.inkSoft} numberOfLines={1} style={{ flex: 1 }}>
+                {m.name}
+              </Txt>
+              <Txt size={11.5} color={C.inkFaint}>{m.from} → {m.to} {unit}</Txt>
+              <Txt size={11.5} weight="extrabold" color={C.accent}>+{m.delta}</Txt>
+            </View>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={{ flex: 1 }} />
+      <Txt size={11} weight="bold" color={C.inkSoft} numberOfLines={1}>
+        {handle ? `@${handle}` : displayName}
+      </Txt>
+      <CardFooter text="RANK YOUR STRENGTH · DOTS-NORMALIZED" />
     </ShareSheet>
   );
 }

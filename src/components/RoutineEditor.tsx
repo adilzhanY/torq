@@ -17,6 +17,7 @@ import { NumberField, Txt } from "./ui";
 import { CustomModal, MenuRow } from "./CustomModal";
 import { ExercisePicker } from "./ExercisePicker";
 import { useStore } from "../lib/store";
+import { parseNum } from "../lib/units";
 import type { Routine, WorkoutEntry } from "../types";
 
 /** Deep-copied entries so edits never touch the stored routine. */
@@ -159,14 +160,14 @@ export function RoutineEditor({
                 </Txt>
                 <NumberField
                   value={set.weight ? String(set.weight) : ""}
-                  onChange={(v) => patchSet(ei, si, { weight: Number(v) || 0 })}
+                  onChange={(v) => patchSet(ei, si, { weight: parseNum(v) })}
                   width={64}
                   compact
                   center
                 />
                 <NumberField
                   value={set.reps ? String(set.reps) : ""}
-                  onChange={(v) => patchSet(ei, si, { reps: Number(v) || 0 })}
+                  onChange={(v) => patchSet(ei, si, { reps: parseNum(v) })}
                   width={64}
                   compact
                   center

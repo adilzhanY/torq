@@ -38,7 +38,18 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "torq needs access to your photos so you can set a profile picture."
+          "photosPermission": "torq needs access to your photos so you can set a profile picture.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
         }
       ],
       "expo-audio",

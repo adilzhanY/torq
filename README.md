@@ -7,7 +7,7 @@
   <img src="https://img.shields.io/badge/Expo-SDK%2057-0E0F0E?style=for-the-badge&labelColor=0E0F0E&color=C8FE23" alt="Expo SDK 57" />
   <img src="https://img.shields.io/badge/React%20Native-0.86-0E0F0E?style=for-the-badge&labelColor=0E0F0E&color=C8FE23" alt="React Native 0.86" />
   <img src="https://img.shields.io/badge/TypeScript-strict-0E0F0E?style=for-the-badge&labelColor=0E0F0E&color=C8FE23" alt="TypeScript strict" />
-  <img src="https://img.shields.io/badge/tests-198%20passing-0E0F0E?style=for-the-badge&labelColor=0E0F0E&color=C8FE23" alt="198 tests passing" />
+  <img src="https://img.shields.io/badge/tests-243%20passing-0E0F0E?style=for-the-badge&labelColor=0E0F0E&color=C8FE23" alt="243 tests passing" />
 </div>
 
 <br/>
@@ -82,7 +82,8 @@ so it is normalised for bodyweight and sex. The same 100&nbsp;kg bench is a
 different achievement at 60&nbsp;kg than at 110&nbsp;kg, and the number knows it.
 
 Every competition lift also carries a **percentile**, measured against
-2.2&nbsp;million lifters in the OpenPowerlifting database. It never says
+up to 401,000 competitive raw lifters per lift in the OpenPowerlifting
+database. It never says
 "top 10% of people", because that population is everyone who entered a
 sanctioned meet, a far stronger crowd than the gym floor. The app says
 *"of competitive lifters"* every single time it shows the number.
@@ -133,7 +134,7 @@ across a year says more than any single session's numbers.
 
 <table>
 <tr>
-<td width="25%" align="center"><img src="docs/shots/framed/library.png" alt="Exercise library" /><br/><b>1,500 exercises</b><br/><sub>Animated demos, muscle maps and instructions, searchable by any word</sub></td>
+<td width="25%" align="center"><img src="docs/shots/framed/library.png" alt="Exercise library" /><br/><b>1,500 exercises</b><br/><sub>Step by step instructions and muscle maps, searchable by any word</sub></td>
 <td width="25%" align="center"><img src="docs/shots/framed/warmup.png" alt="Warm-up dialog" /><br/><b>Warm-up ramps</b><br/><sub>Bar × 5, 50% × 3, 80% × 3, editable and remembered per exercise</sub></td>
 <td width="25%" align="center"><img src="docs/shots/framed/summary.png" alt="Workout summary" /><br/><b>Records, called out</b><br/><sub>1RM, weight and volume PRs flagged on the set that set them</sub></td>
 <td width="25%" align="center"><img src="docs/shots/framed/streak.png" alt="Streak" /><br/><b>Plan-aware streaks</b><br/><sub>Rest days don't break it. Three missed sessions in a row do.</sub></td>
@@ -163,8 +164,8 @@ both are off until you turn them on.
 | **Design** | Cardless near-black system · lime `#C8FE23` · Space Grotesk · Tabler icons |
 | **Storage** | Local-first: one JSON snapshot in AsyncStorage, works with no account |
 | **Cloud** | Supabase auth + last-write-wins delta sync behind row-level security |
-| **Ranking** | Official DOTS polynomial · percentiles from 2.2M OpenPowerlifting lifters |
-| **Tests** | 198 vitest assertions over the pure logic the product's claims live in |
+| **Ranking** | Official DOTS polynomial · percentiles from 134k to 401k OpenPowerlifting lifters per lift |
+| **Tests** | 243 vitest tests over the pure logic the product's claims live in |
 
 A few decisions worth naming:
 

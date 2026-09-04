@@ -1,6 +1,6 @@
 import "./src/global.css";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, View } from "react-native";
+import { ActivityIndicator, LogBox, Pressable, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -24,6 +24,12 @@ import { ConfirmModal } from "./src/components/CustomModal";
 import { Auth } from "./src/screens/Auth";
 import { Home } from "./src/screens/Home";
 import { Ranks } from "./src/screens/Ranks";
+
+// Dev overlay only. A failed background fetch to Supabase (offline, DNS,
+// a paused project) is a normal state for a local-first app, and supabase-js
+// reports it through console.error, which LogBox turns into a red toast
+// parked over the dock. Real failures still surface through their own UI.
+LogBox.ignoreLogs([/UnknownHostException/, /AuthRetryableFetchError/, /fetch failed/]);
 import { Onboarding } from "./src/screens/Onboarding";
 import { Workout } from "./src/screens/Workout";
 import { History } from "./src/screens/History";
@@ -33,7 +39,7 @@ import { Profile } from "./src/screens/Profile";
 
 function Root() {
   const { tab, planWizard, openPlanWizard, closePlanWizard } = useUi();
-  const { ready, settings, loadError } = useStore();
+  const { ready, settings, loadError, saveError } = useStore();
   const auth = useAuth();
   const [profileOpen, setProfileOpen] = useState(false);
   const [configNoteOpen, setConfigNoteOpen] = useState(false);
@@ -81,7 +87,7 @@ function Root() {
           report: the app is running on an empty database, and the damaged
           blob is parked under db.ts's BACKUP_KEY. Say so before the user
           logs a session on top of it. */}
-      {loadError ? (
+      {loadError || saveError ? (
         <Pressable
           onPress={() => setDataNoteOpen(true)}
           style={{
@@ -101,12 +107,31 @@ function Root() {
         >
           <Icon name="TriangleAlert" size={14} color={C.badAcc} />
           <Txt size={11} weight="bold" color={C.badAcc} style={{ flex: 1 }}>
-            Saved data could not be read, tap before logging anything
+            {loadError
+              ? "Saved data could not be read, tap before logging anything"
+              : "Changes are not being saved to this phone, tap for details"}
           </Txt>
         </Pressable>
       ) : null}
 
-      {dataNoteOpen ? (
+      {dataNoteOpen && !loadError ? (
+        <ConfirmModal
+          title="Changes are not being saved"
+          message={
+            "The phone refused the last write" +
+            (saveError ? ` (${saveError})` : "") +
+            ". Everything you log is kept in memory and saving is retried " +
+            "on every change, but if the app is closed before a save " +
+            "succeeds, those changes are lost. Free up storage, then keep " +
+            "going. If you have an account, sync still runs from memory."
+          }
+          confirmLabel="Understood"
+          onConfirm={() => setDataNoteOpen(false)}
+          onClose={() => setDataNoteOpen(false)}
+        />
+      ) : null}
+
+      {dataNoteOpen && loadError ? (
         <ConfirmModal
           title="Your saved data could not be read"
           message={

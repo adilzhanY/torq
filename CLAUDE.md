@@ -10,7 +10,9 @@ the next session knows where the project stands.
 
 **Roadmap:** `PATH.md` holds the business idea, locked redesign decisions,
 rank-system design, and the 4-phase plan. Read it before planning any
-feature work.
+feature work. `FEATURES.md` holds the premium feature slate (ten ideas
+picked 2026-08-11, to be built first and tiered into subscriptions later);
+nothing on it is committed to yet.
 
 ## Stack
 
@@ -79,12 +81,31 @@ Local-first: the whole dataset is one JSON blob in AsyncStorage
 `Exercise`, `Routine`, `Workout` (with `WorkoutEntry` → `WorkoutSet`),
 `Measurement`, `Settings`.
 
+**Units (2026-09-04):** every weight is stored in `settings.unit`. Changing
+the unit CONVERTS the data (`convertDB` in units.ts via `updateSettings`),
+it never relabels it. The audit's "store kg internally" plan was rejected as
+a sixty-site rewrite for the same invariant.
+
+**Persistence guarantees (2026-09-04):** `loadDB` validates shape and parks
+anything malformed under `BACKUP_KEY` with `loadError`; `saveDB` never
+throws, sets `saveError` (red banner in App.tsx), and coalesces writes so a
+burst of commits is at most two writes; `wipeLocal` waits for the queue.
+Store actions REPLACE arrays on every mutation: never `.push` into
+`dbRef.current.*`, or memoised screens will not notice.
+
 Cloud sync (`src/lib/sync.ts`) is grit's last-write-wins delta sync against
 generic Supabase mirror tables `{ user_id, id, data jsonb, updated_at,
 deleted }` with RLS, schema in `supabase/schema.sql` (run it in the Supabase
 SQL editor). Tables: `exercises`, `routines`, `workouts`, `measurements`,
 `settings`, `active` (singleton in-progress session). The server stamps
-`updated_at` via trigger; sync cursors live in AsyncStorage. Configure via
+`updated_at` via trigger; sync cursors live in AsyncStorage.
+ORDER OF A CYCLE (2026-09-04): pull, resolve each row on the CLIENT stamp
+`data.updatedAt` (clamped to cycle time + 5 min), then push survivors and
+tombstones. The server stamp is only the pull cursor; comparing on it made
+sync last-PUSHER-wins. Tombstones are dropped only when acknowledged,
+settings merge over defaults, a local live session is never replaced, own
+echoes are skipped. `sync(db, userId, client?)` takes an injectable client;
+`sync.test.ts` has an in-memory server. Configure via
 `.env` (`EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`,
 see `.env.example`).
 
@@ -116,13 +137,38 @@ Pagination gotchas: pages are capped at 25 rows and the cursor param is
 (you get the same page forever). `src/lib/exercisedb.ts` loads the snapshot
 and maps ExerciseDB body parts/equipment onto Torq's enums.
 
-Gifs: the dataset's `gifUrl` points at `static.exercisedb.dev`, a domain with
-NO DNS record (dead). The app instead builds URLs against Adilzhan's mirror
-`github.com/adilzhanY/exercise-db` (all 1500 gifs under `media/<id>.gif`,
-verified identical dataset) via `raw.githubusercontent.com`. Gifs are
-remote-only (bundling ~1500 would add ~258 MB); `expo-image` caches them with
-`cachePolicy="memory-disk"`. Exercises imported from the catalog carry `dbId`
-on the `Exercise` row, which keys `DB_GIF_BY_ID`.
+**DEMO MEDIA IS OFF (2026-08-16).** `EXERCISE_MEDIA_ENABLED` in
+`exercisedb.ts` is the single seam: false makes `gifUrl` undefined and
+`DB_GIF_BY_ID` empty, and every consumer already branched on a missing gif,
+so no screen needed a redesign to lose them. Two reasons, and the second is
+the real one:
+
+- QUALITY. The gifs are 180x180 with 12 frames. The About tab drew them at
+  `width: "100%"`, which on a 3x phone is 984 physical pixels, a 5.5x
+  upscale that invents 97% of what you see. Measured with ImageMagick
+  against the real files, not estimated.
+- LICENCE. They came from ExerciseDB's open v1 endpoint, which publishes the
+  DATA and never granted commercial rights to the MEDIA. The vendor has
+  since rebranded to AscendAPI and moved its media behind paid plans and
+  signed URLs. Mirroring someone else's artwork in a paid Play app is a
+  takedown risk. The instruction TEXT is not affected, which is why the
+  About tab now leads with the how-to steps.
+
+Historic note, still true if media is ever switched back on: the dataset's
+own `gifUrl` points at `static.exercisedb.dev`, a domain with NO DNS record
+(dead), so `MEDIA_BASE` points at Adilzhan's mirror
+`github.com/adilzhanY/exercise-db` instead (all 1500 under `media/<id>.gif`,
+verified identical dataset) via `raw.githubusercontent.com`. Media is
+remote-only (bundling ~1500 would add ~258 MB); `expo-image` caches with
+`cachePolicy="memory-disk"`. Exercises imported from the catalog carry
+`dbId` on the `Exercise` row, which keys `DB_GIF_BY_ID`.
+
+Buying licensed clips is researched in `.lavish/torq-gif-quality.html`:
+cheapest credible option is Exercise Animatic (~2000 4K clips, $270),
+best-looking is MoveKit (412 clips, one consistent 3D style, EUR 219). The
+correction that matters there: you do NOT need 1500 clips. 15 unique dbIds
+in `recommended.ts` and 30 in `plan.ts` drive every generated plan, so buy
+the head and keep a text-only fallback for the tail.
 
 ## Screens (`src/screens/`, tabs in `src/components/BottomNav.tsx`)
 
@@ -224,17 +270,60 @@ create an account" button that calls `exitGuest()`, and signing out clears
 the flag so the gate returns. Profile no longer contains a sign-in form:
 one screen validates passwords.
 
+## Rank badge (hex track, 2026-09-04)
+
+`src/components/RankBadge.tsx` is the badge Adilzhan picked from the
+artifact "Torq Badge Ladder" after three rivals were drawn against it
+(Loaded Bar, Momentum, Cut Stone; a Loaded Bar second pass was built and
+then dropped). Kept: the vortex emblem, the nine tier metals, the rounded
+hexagon. Changed:
+
+- **Stage is a TRACK, not an orbit.** A thin hexagon outside the frame
+  lights `stage / 4` of its perimeter clockwise from the top, one gem at
+  the lit tip, stage IV closes the loop with the gem at the crown. The old
+  tilted ellipse with balls is gone.
+- **Tier earns DETAIL, one per step, cumulative**, from the `DETAIL` table:
+  Iron bevel, Silver gloss, Gold corner studs, Platinum halo, Diamond
+  facets + glints, Elite eight rays (one per vortex blade) + glow, World
+  Class holographic frame + sheen. Each flag has a `minSize`, so a 34 px
+  feed badge is frame + emblem + track + gem. Tune a tier by editing the
+  table, not the render.
+- Emblem is `EMBLEM_W = 72` on `R = 50` (1.44 x R). Adilzhan first asked
+  for a touch smaller than the artifact, then for bigger once it was on the
+  phone; 72 fills the field and still clears the inner frame.
+- **One row size, `BADGE_ROW = 96`**, used by Home's rank row, Profile's
+  rank strip and best lifts, and the Ranks lift rows. Before it was
+  46 / 62 / 64 / 68 and read as small and inconsistent page to page. The
+  Ranks hero (TierCarousel) and ExerciseInfo's 190 stay their own size.
+- **Animated by default** (`animated = true`): gem glides on the native
+  driver via sampled hex-polyline tables, rays rotate and glints twinkle
+  as native Animated.Views, on every badge on every page. The static path
+  still exists; ShareCard passes `animated={false}` because it captures the
+  view as an image. The World Class sheen is the ONE JS-driven animation
+  (a Rect `x` under an SVG mask), on one badge at a time.
+- ViewBox is 200 x 160, the same 0.8 aspect as before, exported as
+  `BADGE_ASPECT`; no caller layout moved.
+
+App.tsx now ignores the offline-fetch LogBox patterns
+(`UnknownHostException`, `AuthRetryableFetchError`, `fetch failed`): a
+failed background call to Supabase is a normal state for a local-first
+app, and the dev toast sat over the dock and swallowed every tap.
+
 ## Percentiles + plausibility
 
 `src/data/percentiles.json` (2 KB, committed) holds DOTS-point
 distributions per sex per competition lift, built by
 `scripts/build-percentiles.py` from the OpenPowerlifting dump (168 MB zip,
 NOT committed: re-download when refreshing). 2026-08-08 build: 4.0M meet
-results → 2.2M per-lifter bests, raw only, best result per LIFTER.
+results → 1.46M per-lifter-per-lift bests, raw only, best result per
+LIFTER. The per-lift n runs 133,697 (female squat) to 401,158 (male bench);
+distinct lifters is lower still, since one lifter feeds up to three curves.
+NEVER say "2.2 million", that figure was wrong in four places and shipped in
+the paywall copy until 2026-08-17.
 Distributions are over POINTS rather than kilos because DOTS already
 normalizes sex and bodyweight, so one curve per (sex, lift) serves every
 weight class. `src/lib/percentile.ts` interpolates between the stored
-breakpoints and returns 1–99 (clamped at the tails).
+breakpoints and returns 1-99 (clamped at the tails).
 
 NEVER phrase these as "top N% of people". The population is people who
 entered a sanctioned meet (a much stronger crowd than the gym floor), so
@@ -254,7 +343,7 @@ exercise Rank tab shows the reason inline when a lift is gated.
 like schema.sql; re-running is safe). It is deliberately separate from the
 private mirror tables: those hold raw logs and never leave their owner.
 
-- `profiles`, user_id, unique citext `handle` (3–20 of `[a-z0-9_]`),
+- `profiles`, user_id, unique citext `handle` (3-20 of `[a-z0-9_]`),
   display_name, `visible` (opt-in, default false).
 - `friendships`, requester/addressee/status (pending·accepted·blocked),
   unique on the ordered pair. RLS splits the verbs on purpose: you INSERT
@@ -330,6 +419,56 @@ The whole repo is clean as of 2026-08-10: 1,144 em dashes were replaced
 across every tracked file. A grep for the character should only ever find
 the two notes below that name it. Check before committing prose.
 
+## Diagrams: RULE FOR EVERY LAVISH ARTIFACT
+
+Adilzhan liked the flow graph under "How the entity evolves over three years"
+in `.lavish/torq-company-plan.html` and asked for that kind of drawing every
+time. So: **any flow, state machine, architecture, sequence or decision tree
+in a lavish page is a MERMAID graph in a `.mermaid` container**, never
+hand-built divs and arrows, never an ASCII box drawing, and never a paragraph
+describing a flow that could be drawn.
+
+The look is not mermaid's default. It is themed to the app palette, and this
+init block is the one to copy (it is what that page uses):
+
+```js
+import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.esm.min.mjs";
+mermaid.initialize({
+  startOnLoad: true, theme: "base", securityLevel: "strict",
+  fontFamily: "Space Grotesk, system-ui, sans-serif",
+  themeVariables: {
+    background: "#151714", primaryColor: "#151714",
+    primaryTextColor: "#F2F4EE", primaryBorderColor: "#C8FE23",
+    lineColor: "#5C6356", secondaryColor: "#1B1E1A",
+    tertiaryColor: "#1B1E1A", mainBkg: "#151714", nodeBorder: "#262A24",
+    clusterBkg: "#1B1E1A", edgeLabelBackground: "#0E0F0E",
+    textColor: "#9AA294",
+  },
+});
+```
+
+with `.mermaid{background:var(--surface);border:1px solid var(--line);
+border-radius:var(--md);padding:22px 14px;text-align:center;overflow-x:auto}`
+and `.mermaid svg{max-width:100%;height:auto}`.
+
+What makes those graphs readable, and what to repeat:
+
+- **Nodes carry their own facts.** `<b>UG</b><br/>Limited liability, 1 EUR
+  capital<br/>Setup: ~500 EUR` says the whole thing in the box. A node
+  labelled just "UG" pushes the reader back into the prose.
+- **Edges are the TRIGGER, not the verb.** "MRR > 1,500 EUR or first employee"
+  beats "then". The whole point of the picture is what advances a step.
+- **Per-node `style` lines**, lime border (`#C8FE23`) for the live path,
+  `#262A24` for inert or past states, purple (`#9C86E8`) for an outcome.
+  Dotted edges (`-.->`) for the optional or do-nothing branch.
+- **A dense table right under the graph** with the same steps as rows. The
+  graph gives the shape, the table gives the numbers; neither does both well.
+- HTML entities in labels (`&gt;`, `&auml;`), since the page is HTML.
+
+This is the `lavish` skill (its `diagram` playbook), NOT `dataviz`. Reach for
+`dataviz` only when actual DATA is being plotted (bars, lines, distributions,
+a dashboard). Shapes and relationships are mermaid.
+
 ## Screenshots + the README product page
 
 **The README is a product page, and its artwork is GENERATED. Never hand-make
@@ -366,7 +505,8 @@ Two traps, both hit while building this:
 - Every claim in the README was checked against the code, and two were wrong
   from memory: the tier ladder starts at **Rust** (Rust → Iron → Bronze →
   Silver → Gold → Platinum → Diamond → Elite → World Class, no "Master"), and
-  the percentile sample is 2.2M **lifters**, not results. The README also
+  the percentile sample is up to 401k **lifters per lift**, not 2.2M and
+  not results. The README also
   repeats the percentile rule, never "top N% of people", always "of
   competitive lifters".
 
@@ -379,7 +519,11 @@ react-native's `Modal`, paints its own `rgba(0,0,0,…)` scrim, or springs on
 the old ringing config).
 
 - `CustomModal`: centered dialog (menus, confirms, editors, pickers).
-- `ConfirmModal`: the ready-made destructive confirmation.
+- `ConfirmModal`: the ready-made confirmation. `tone="danger"` (default)
+  paints the confirm red for deletes and discards; `tone="accent"` paints it
+  lime for a commit such as Finish workout. Both live-session exits
+  (Finish, Discard) go through it since 2026-09-04, and the message says what
+  is kept and what is lost (unticked sets are dropped on finish).
 - `AnchoredModal`: popover pinned under the button that opened it. The
   CALLER still positions it (`style`), in WINDOW coordinates, because the
   four call sites anchor differently; the shell owns the wrapper, the
@@ -426,10 +570,52 @@ assuming, it measures where the focused input actually landed once the
 keyboard is up and scrolls only if it is genuinely covered. If the OS
 already handled it, the correction is zero and nothing fights anything.
 
+## The streak creature
+
+The streak has ONE character now, in two forms, and they come from the same
+file:
+
+- `assets/Streak.json` is the designed Lottie Adilzhan installed. It plays in
+  the celebration modal (`StreakDialog`), where a five second loop is the
+  point.
+- `assets/streak-creature.svg` and `src/components/StreakCreature.tsx` are
+  the STILL, lifted out of that Lottie as real vector, shown next to the day
+  count on Home where a loop would be noise.
+
+If the animation is ever replaced, re-run both scripts:
+
+```bash
+./scripts/recolor-lottie.py assets/Streak.json --list          # see its palette
+./scripts/recolor-lottie.py assets/Streak.json --map CCFF00=C8FE23
+./scripts/lottie-to-svg.py assets/Streak.json --flat --out assets/streak-creature.svg
+```
+
+Then regenerate the component's paths from that SVG (six paths: four lime
+body, two black eyes) and re-measure the tight viewBox by rasterising at
+2048 px and trimming.
+
+- **Recolour the FILE, do not tint at runtime.** `lottie-react-native`'s
+  `colorFilters` matches on keypaths, which depend on the layer names inside
+  the file; packs name their groups "Group 3" and the behaviour differs by
+  platform. Editing the JSON is exact and free. A second colourway (amber for
+  an at-risk streak) is another `--map` and another small file, which still
+  beats keypath plumbing.
+- **GOTCHA in the SVG extraction: Lottie paints its shape list in REVERSE.**
+  The first shape in the list is on top; in SVG the last element wins.
+  Emitting the list in order buried the creature's eyes under its body, and
+  the first render came out blank-faced. `scripts/lottie-to-svg.py` reverses
+  every list and sets `fill="none"` at the root, because a Lottie path with
+  no fill in its group paints nothing where an SVG path would default to
+  black.
+
+`StreakMark.tsx` and `assets/flame.json`, the two earlier flames, are
+DELETED. The whole point is that the modal and the header show the same
+creature, which neither of them managed.
+
 ## Sound
 
 `assets/sounds/*.m4a` are SYNTHESIZED by `scripts/build-sounds.sh` (ffmpeg,
-plucked sine tones in A minor pentatonic, ~3–14 KB each), not sampled from a
+plucked sine tones in A minor pentatonic, ~3-14 KB each), not sampled from a
 stock library. Reasons, in order: no licence to honour in a paid app, tiny
 files, and they actually match the design, dark and sharp rather than the
 cinematic whoosh every free SFX pack is full of. Pitch rises with
@@ -570,7 +756,7 @@ install, only an unparseable one is an error.
 
 ## Tests
 
-`npm test` (vitest, `src/lib/__tests__/`). 128 assertions over the PURE
+`npm test` (vitest, `src/lib/__tests__/`). 243 tests in 21 files over the PURE
 logic: rank/DOTS, percentiles, plausibility, records matching, password
 policy, streaks, weight progression, plan generation, calories, PRs. No
 component tests: the libs are where the product's claims live, and they
@@ -578,10 +764,10 @@ import no React Native, so vitest runs them directly with no RN harness.
 
 Two things this bought immediately:
 - It caught a REAL bug on the first run: `MAX_DOTS` was 200 on the
-  assumption that elite single lifts score 130–140 DOTS. They don't. DOTS
+  assumption that elite single lifts score 130-140 DOTS. They don't. DOTS
   is calibrated for a three-lift TOTAL, so a world-record single scores
   ~270, and the cap would have silently refused to publish real elite lifts.
-- The `plan.test.ts` sweep (4 goals x every 2–6 day subset x focus combos,
+- The `plan.test.ts` sweep (4 goals x every 2-6 day subset x focus combos,
   1000+ combinations) is the regression net for the generator; that shape of
   check is what caught flat 5x5 producing two-hour sessions.
 
@@ -603,6 +789,57 @@ normalizes on them) even though other users never see them, and publishing a
 rank to another torq user is NOT third-party "sharing" under Play's
 definition. Re-check the whole sheet when analytics, billing or regional
 boards land.
+
+## Play compliance: the open blockers (audited 2026-08-17)
+
+Four parallel audits went over the app before the first Play submission.
+Most findings were fixed the same day (see `docs/HISTORY.md`). **Three
+blockers remain and they need Adilzhan's decision, not code.**
+
+1. **ExerciseDB data has no licence grant.** `src/lib/exercisedb.ts` calls
+   it "the full open-source dataset". That is not supported by anything.
+   The upstream repo is AGPL-3.0 "Copyright (C) 2025 AscendAPI" and covers
+   the API CODE; it contains no dataset and states no data licence. The
+   vendor's paid tier explicitly sells the right to "bundle them in your
+   app", which is the right torq exercises without having bought it. The
+   sharp edge is `exercisedb-instructions.json`: 776 KB of authored prose,
+   which unlike the factual fields is plainly copyrightable. Options: buy
+   the licence, get written permission and archive it, or write our own
+   instructions for the ~45 dbIds `recommended.ts` and `plan.ts` actually
+   use and drop the file.
+2. **`assets/Streak.json` provenance is unknown, and it SHIPS.**
+   `StreakDialog.tsx:83` requires it, and `streak-creature.svg` derives
+   from it for Home. Metadata says `@lottiefiles/creator 1.86.1`, and
+   `Streak.lottie`'s INTERNAL zip timestamps are 2026-04-14, four months
+   before every other streak file, so it was packaged by someone else and
+   downloaded. Recolouring and vectorising it made a derivative, not a new
+   copyright. LottieFiles free-tier terms frequently forbid use in a
+   product sold to end users. Find the source URL and read its licence tab,
+   or regenerate the creature from scratch (`scripts/gen-bench-press.py`
+   proves it is doable, and six paths is far simpler than a bench press).
+3. **No report and no block mechanism for user content.** Play's UGC policy
+   requires both. `display_name` is free text with no validation
+   (`social.ts:193`), avatars are user-uploaded images, and
+   `search_profiles` surfaces both to strangers. `friendships.status =
+   'blocked'` is READ in two places and written by nothing. `removeEdge`
+   deletes the row, so the same account can re-request immediately. Needed:
+   a Report action writing to a `reports` table, a real Block honoured by
+   `sendRequest` and `search_profiles`, and a server-side display-name
+   constraint.
+
+Note that (3) and much of the avatar risk exist only because of avatar
+upload, a feature this file never documented. Deleting avatars collapses
+most of that surface; initials on a coloured circle cost nothing visually.
+
+Two things fixed here that must not regress:
+- `snapshotsByIds` lists snapshot columns ONE BY ONE, and
+  `supabase/social.sql` revokes SELECT on `bodyweight_kg`/`sex` at the
+  COLUMN level. RLS alone cannot say "a friend may read this row but not
+  these two columns", and a `select("*")` would put someone's bodyweight on
+  their friend's phone. Nothing needs to read them back.
+- `app.json` sets `cameraPermission: false` and `microphonePermission:
+  false` on expo-image-picker. Without them the plugin ships CAMERA and
+  RECORD_AUDIO on a workout tracker, neither of which any code calls.
 
 ## Commands
 
@@ -641,1508 +878,38 @@ torq -gpu host`, then `npx expo start --android` (Expo Go).
 
 ## History
 
-- 2026-07-04: Project created. Expo template + NativeWind v5/Tailwind v4 set
-  up; grit mobile design system and Supabase sync layer ported and adapted to
-  the workout domain; five screens scaffolded; pushed to
-  github.com/adilzhanY/torq (branch `main`).
-- 2026-07-04: Local Android emulator installed (JDK 21 + SDK + Pixel 7 AVD,
-  see Dev environment); app verified running in Expo Go on it. Brand logo
-  (lime pulse on dark square) added as `Logo.tsx`, shown in the top bar and
-  loading screens.
-- 2026-07-05: Rethemed to the brand accent: orange → lime `#C8FE23`, primary
-  dark aligned to the logo's `#1A1B1A`, `C.accentInk` added for dark-on-lime
-  content. Verified on the emulator (home, live session, set-check flow).
-- 2026-07-05: Showcase README added (view-only, no setup instructions, per
-  Adilzhan) with the brand SVG at `assets/logo.svg` and emulator screenshots
-  in `docs/screens/`. SUPERSEDED 2026-08-10 by the generated product page,
-  see the "Screenshots + the README product page" section.
-- 2026-07-05: Full ExerciseDB catalog (1500 exercises, gif demos) integrated,
-  see "ExerciseDB catalog" above. Exercises tab now searches the user library
-  AND the catalog (paged 30 at a time); catalog cards expand to gif +
-  instructions and can be imported into the library. An earlier 30-exercise
-  Kaggle sample integration was replaced by this and deleted. expo-image
-  added.
-- 2026-07-05: Gif hosting switched to Adilzhan's own mirror
-  github.com/adilzhanY/exercise-db (raw.githubusercontent.com) after the
-  upstream media hosts proved dead (`static.` no DNS) or bot-challenged
-  (`v1.` behind a Vercel checkpoint). Verified rendering on the emulator:
-  catalog thumbnails + expanded demo gif with instructions.
-- 2026-07-05: Removed the 36-exercise seeded starter library (seed.ts
-  deleted; one-time tombstoning cleanup in the store). Library is now
-  import-from-catalog or custom only; verified import flow end to end.
-- 2026-07-05: Added 3 recommended routines (Push/Pull/Leg Day, a 3-day
-  split) to the Workout tab with gif thumbnails and set×rep schemes;
-  starting one auto-imports its exercises and prefills the live session.
-  Verified on the emulator.
-- 2026-07-06: Strong-style live-session upgrades in `Workout.tsx`
-  (ActiveSession): elapsed workout timer in the header (1s ticker via
-  `useNow`); rest timer, every set row has a `RestDivider` showing the
-  planned rest (`settings.restSec`, default 2:00) that turns into a lime
-  countdown progress bar when its set is checked (tap to skip, vibrates on
-  finish; one active rest at a time, local state only); PREVIOUS column
-  showing last performance per set index from the most recent finished
-  workout containing that exercise (column hidden entirely for first-time
-  exercises); tapping a set number opens a set-type menu (Warm up W orange
-  `C.warnAcc`, Drop set D purple #7c5cd6, Failure F red `C.badAcc`), typed
-  sets show the colored letter instead of a number, normal-set numbering
-  skips them, re-picking the active type reverts to normal. Set rows got a
-  Strong-style SET/PREVIOUS/KG/REPS header row (unit from settings).
-  Verified on the emulator.
-- 2026-07-06 (later): live-session polish, tapping an idle rest divider
-  pops open (PopIn) an inline per-set rest editor, an ATM-style masked
-  m:ss duration input (Adilzhan's preferred pattern; reworked from a plain
-  seconds field): always displays m:ss, digits push in from the right
-  (2 → 0:02 → 0:20 → 2:00), and once all 3 slots are filled new digits
-  shift the seconds only, minute locked (2:00 + 3 → 2:03 + 0 → 2:30).
-  Implemented as a formatted Txt over a hidden TextInput holding the raw
-  digit buffer; prefilled value shows a fake lime "selected" highlight
-  until the first keystroke replaces it (`selectTextOnFocus`). Commit on
-  enter/blur, clamped 5–599s; saved as `WorkoutSet.restSec` (optional
-  field in types.ts, falls back to `settings.restSec`) so it rides along
-  in sync. Set rows are denser (`NumberField` got `compact`, `center`,
-  `autoFocus`, `selectTextOnFocus`, `onBlur` props; done check shrunk
-  38→32) and a done set's whole row tints lime (`rgba(160,210,20,0.42)`),
-  full-bleed to the card edges (margin −16 cancels the Card padding).
-  KG/REPS cells are `SetNumInput` (Workout.tsx, width `FIELD_W`=50,
-  digits centered): an input while the set is open; once done it renders
-  as a plain centered number that turns back into a focused
-  select-on-focus input when tapped, so completed sets stay editable.
-  Verified on the emulator.
-- 2026-07-06 (later): tapping the running rest bar no longer skips, it
-  toggles a Strong-style control pad. NOT a Modal: a Modal clipped its
-  bottom rows on this emulator (content rendered partly below the window),
-  so the pad is an inline overlay inside ActiveSession's root View:
-  full-width, `bottom:0`, top-rounded, `paddingBottom:96` so it slides up
-  from behind the BottomNav (custom `SlideUp` translateY spring, not
-  PopIn). ActiveSession's root is now a flex-1 View wrapping the
-  ScrollView. Grid layout per Adilzhan's sketch: full-width Pause/Resume
-  on top (rest state gained `paused`/`pausedMs`; bar freezes with a pause
-  icon), below it ONE row, all height 56: square 64-wide + / − (±20s via
-  `bumpRest`, ending the rest at zero) then SKIP and RESET splitting the
-  remaining width (SKIP clears rest and focuses the next set's weight
-  input via the `weightRefs` map; RESET stops the rest and reopens that
-  set's inline seconds editor via an `editNonce` prop). Gotcha: Squish
-  applies `style` to its inner Animated.View, so `flex:1` on a Squish
-  does nothing in a row, wrap it in a flex-1 View. Icon gained `Minus`.
-  Verified on the emulator.
-- 2026-07-06 (later): rest countdown is now a Strong-style tall bar
-  (`RestCountdownBar`): 40px lime bar that starts full and drains leftward
-  in one continuous `Animated.timing` (linear, driven by `endsAt`, width
-  interpolated 0–100%), remaining time centered on it, PopIn entrance, tap
-  to skip. The set-type menu is an anchored popover: opens at the tap's
-  pageX/pageY (`animationType="none"` + PopIn, flips above when near the
-  screen bottom) instead of a centered modal. Verified on the emulator.
-- 2026-07-06: Exercise search is now token-based (`matches()` in
-  `src/screens/Exercises.tsx`): every query word must appear somewhere in
-  name/bodyParts/equipment/targetMuscles, any order, "bicep curl" finds
-  "Cable Lying Bicep Curl" etc. Catalog results rank name-matches above
-  muscle-only matches. Also enabled the hardware keyboard on the `torq` AVD
-  (`hw.keyboard = yes` in its config.ini + device setting
-  `show_ime_with_hard_keyboard 0`) so you can type in the emulator with the
-  host keyboard.
-- 2026-07-07: Added `run_android.sh` (see Commands), single script to boot
-  the emulator if needed and start Expo; Adilzhan runs it himself, so don't
-  spend turns launching the app manually.
-- 2026-07-07: Strong-style "Add exercises" picker
-  (`src/components/ExercisePicker.tsx`), replacing the old bottom-sheet
-  picker in the live session. Full-screen inline overlay (NOT a Modal,
-  the emulator Modal-clipping gotcha) over ActiveSession, listing the
-  library merged with the whole ExerciseDB catalog (imported dbIds
-  deduped; catalog rows import on add). Toolbar: Search (toggles the
-  token-search field; `matches()` moved to `src/lib/search.ts`, shared
-  with the Exercises tab), Filter (centered dialog, multi-select body
-  part + category chips, live match count in the title, funnel icon gets
-  a lime badge when active), Order (anchored popover: Name → letter
-  sections / Frequency → Strong buckets "26+ / 11–25 / 6–10 / 1–5 times /
-  Not performed" with per-exercise session counts / Last performed →
-  recency buckets), Plus (bottom-sheet "New exercise" form, name +
-  chips; saving auto-selects the new row). Rows multi-select (lime tint)
-  into an "Add N exercises" CTA that appends all picks to the session.
-  `addExercise` in the store now returns the created row; `SlideUp` moved
-  to `components/anim.tsx`; hardware Back peels overlays then closes.
-  Gotcha hit while verifying: after Metro restarts, Expo Go happily keeps
-  running its cached JS, `adb shell am force-stop host.exp.exponent`
-  then reopen `exp://<host>:8081` to force a fresh bundle. Verified on
-  the emulator (sections, all three sorts, filter counts, create + add
-  flow).
-- 2026-07-07: Custom (gif-less) exercises now show a dumbbell-icon tile in
-  the thumbnail slot (Exercises tab + picker), and "My exercises" rows show
-  body part/equipment as Pill badges like the catalog cards. Verified.
-- 2026-07-07: Strong-style post-workout summary
-  (`src/components/WorkoutSummary.tsx`, full-screen inline overlay like the
-  picker): auto-named title, long date line, per-exercise cards with a
-  per-set estimated-1RM column (Epley, `src/lib/stats.ts`), trophy PR pills
-  (1RM / Weight / Vol.) on record-setting sets, pinned footer with duration ·
-  total volume · PR count. Shows right after Finish workout (finishWorkout
-  now returns the finished Workout; `Workout()` holds `summary` state) and
-  when tapping a History card (History cards are now Pressable).
-  `computePRs` judges each set against all earlier workouts plus earlier
-  sets of the same session (only the record-setting set gets the badge;
-  warmups ineligible; ties don't count). Quick-start sessions are now
-  auto-named by local hour (`workoutName`: Morning/Afternoon/Evening/Night
-  Workout); routine starts keep the routine name. `SET_TYPE_META` moved to
-  `src/theme.ts`; `fmtDuration` moved into stats.ts (History imports it).
-  Verified on the emulator: finish flow, History detail, first-ever-exercise
-  PRs, tie-no-PR, 0-PRs-when-history-is-heavier, Evening auto-name.
-- 2026-07-07: Adding a known exercise to a live session now replays its most
-  recent finished workout (`lastSetsFor` in stats.ts): same set count and
-  types (warmups and drop sets kept, FAILURE sets dropped), KG/REPS/per-set
-  rest prefilled from last time, all unchecked; first-time exercises still
-  get one empty set. Wired into ExercisePicker's onAdd in Workout.tsx.
-  Verified on the emulator against a real 6-set bench session (W 20×15
-  replayed as W with values; PREVIOUS column aligns per index).
-- 2026-07-07: Exercises tab unified with the picker: the shared list core now
-  lives in `src/components/ExerciseBrowser.tsx` (sectioned library+catalog
-  list, Search/Filter/Order/New toolbar, order menu, filter dialog,
-  new-exercise sheet; optional `onBack`, `selected`, `footer` props).
-  `ExercisePicker` is a thin overlay wrapper adding multi-select + the
-  "Add N exercises" CTA (passed as `footer` so the sheet stacks above it).
-  `Exercises.tsx` rewritten: the browser plus a full-screen `ExerciseDetail`
-  overlay on row tap (big gif / dumbbell placeholder, body-part+equipment
-  pills, "in your library" pill, catalog instructions, Add-to-library or
-  Delete-from-library action that flips live). The old My-exercises/
-  Exercise-database card layout and DbExerciseCard are gone. Verified on
-  the emulator: browse, detail open, add→delete round-trip.
-- 2026-07-07: Exercise info page (`src/components/ExerciseInfo.tsx`,
-  Strong-style): About / History / Records pill tabs in a full-screen
-  overlay. Opened from the live session (exercise names are now tappable)
-  and from Exercises-tab rows (replaced the old single-page ExerciseDetail).
-  About = the former detail (gif, muscles, instructions, add/delete).
-  History = History-style cards (extracted into
-  `src/components/WorkoutCard.tsx`, shared with the History tab) for
-  workouts containing the exercise; tapping one opens WorkoutSummary with
-  the new `highlightExerciseId` prop. That exercise's card gets a light
-  green border. Records = personal records (est 1RM / max weight / max
-  single-set volume), a REPS · BEST PERFORMANCE · ESTIMATED rep-max table
-  (best real set at ≥N reps with date; estimated = inverse-Epley `repMax`
-  in stats.ts off the best 1RM; rows to 12), and lifetime totals; warmups
-  can't set records, matching computePRs. Verified on the emulator end to
-  end. Live-session exercise names render as black (`C.primary`) fully
-  rounded badges with white text (still tap-to-open-info).
-- 2026-07-07: BottomNav redesigned as a floating dock (reference: iOS
-  pill-dock pattern): dark `C.primary` pill floating 8px above the safe
-  area (left/right 14, height 62, fully rounded, clay shadow); the active
-  tab is a `C.surface` capsule with icon + bold label, inactive tabs are
-  translucent-white icons. One Animated.Value per tab morphs flex (1→2.6),
-  capsule fill, icon crossfade, and label reveal (maxWidth 0→96 + late
-  opacity ramp) in parallel, so the capsule reads as sliding between tabs.
-  Motion is a 260ms Easing.out(cubic) TIMING, not a spring: spring
-  overshoot fed the unclamped flex interpolation below its floor, making
-  the deflating tab dip narrower and wobble ("old icon drags"); all
-  interpolations are also clamped. useNativeDriver:false (flex is layout).
-  No + button by design. Verified on the emulator.
-- 2026-07-09: Shared centered dialog (`src/components/Dialog.tsx`):
-  `CenterDialog` (dim backdrop + PopIn Card, tap-outside dismiss: the
-  Filter-dialog pattern extracted; inline overlay, NOT a Modal, so mount it
-  inside a flex-1 screen root) and `ConfirmDialog` built on it (title,
-  optional message, Cancel / red confirm-then-close). ExerciseBrowser's
-  filter dialog now uses CenterDialog, and every destructive action
-  confirms via ConfirmDialog: removing an exercise from a live session
-  (the previously unguarded trash button), deleting a routine (Workout
-  start screen), a workout (History), a measurement (Measure, its root
-  gained a flex-1 View wrapper for the overlay), and an exercise from the
-  library (ExerciseInfo About tab). Use these for any future centered
-  modal.
-- 2026-07-09: Home tab added, Profile moved to the top bar. New
-  `src/screens/Home.tsx` dashboard (see Screens above); default tab is now
-  `home` (`Tab` type in `src/lib/ui.tsx` swapped profile → home; dock icon
-  `House` added to Icon.tsx). Profile left the dock: the top bar gained a
-  right-aligned `UserCircle` button (App.tsx holds `profileOpen` state) and
-  `Profile.tsx` became a SlideUp full-screen overlay with a ChevronLeft
-  header and hardware-Back close, rendered above the BottomNav so the dock
-  is covered. Verified on the emulator: Home stats/CTA/recents, profile
-  open/close, dock morph with the new Home tab.
-- 2026-07-10: Animated "Add set", new `GrowIn` primitive in
-  `components/anim.tsx`: mount entrance that grows the content in from zero
-  height (220ms ease-out) while fading/sliding it down, then releases the
-  clip once settled so later inner layout changes flow naturally. GOTCHA:
-  the inner content must be `position: absolute` while animating (same
-  trick as Collapsible), inside the 0-height clipped parent a normal-flow
-  child lays out at height 0 on Fabric, so onLayout never reports a
-  measurable height and the content stays invisible; it returns to normal
-  flow on settle (no remount, style-only change). In Workout.tsx only sets
-  appended via the Add set button animate: their "ei-si" keys go into the
-  `grownSets` ref and the set block wrapper picks GrowIn vs View off it,
-  restored sessions and last-time prefills mount statically. Verified on
-  the emulator via screenrecord frames (grow + fade visible, settled state
-  correct).
-- 2026-07-10: Set-type menu anchored to the set number. It now anchors to
-  the number element's page origin (pageX/Y − locationX/Y from the touch
-  event) instead of the finger position, offset −16 horizontally so the
-  W/D/F letter column sits exactly under the number, top just below the
-  row. GOTCHA fixed along the way: the app is edge-to-edge but a plain
-  Android Modal's window starts below the status bar, so pageY-anchored
-  children rendered ~a status bar (~43dp) too low, `statusBarTranslucent`
-  on the Modal aligns the two coordinate spaces. Verified with exact-tap
-  screenshots.
-- 2026-07-10: Calorie estimation (`src/lib/calories.ts`), built on the
-  personal Mifflin-St Jeor BMR (weight/height/age/sex → resting kcal).
-  Three per-completed-set components; the wall clock is ignored ENTIRELY,
-  per Adilzhan, activity only (v1 billed idle-session time: one light set
-  showed 186 kcal; v2 capped billing at elapsed time, which crushed
-  workouts backfilled from another app in minutes: a real 22-set session
-  showed 89 kcal): (1) lifting work 0.008 kcal per kg·rep (physics +
-  ~20-25% muscle efficiency + eccentric; set weights converted from the
-  display unit; bodyweight-equipment exercises add 0.6× body mass to the
-  load), (2) work time ~15s + 4s/rep at Compendium METs (resistance 3.5 /
-  olympic 6 / cardio 7), (3) planned per-set rest (set override or
-  `settings.restSec`, clamped 30–240s) at 1.8 MET. 0 done sets → 0 kcal;
-  backfilled and live sessions bill identically. Sanity: ~10 kcal for one
-  70kg×5 set, ~246 kcal for a 22-set ~7000kg session. `Settings` gained optional
-  `sex`/`birthYear`/`heightCm`/`weightKg` (ride along in sync; edited in a
-  new Profile "Body profile" card, weight entered in the display unit,
-  stored in kg). Effective weight prefers the latest Measure-tab "Body
-  weight" entry at/before the workout (`bodyProfileAt`), so history
-  reflects weight at the time; missing fields fall back to
-  75kg/175cm/25/male with `complete:false`, which Home surfaces as a "set
-  your body stats in Profile" hint. Shown as a Home "Today" card (finished
-  workouts today + live session, Flame on lime) and a 4th Flame stat in
-  the WorkoutSummary footer (footer text 13px / padding 14 to fit four
-  stats).
-- 2026-07-10: WorkoutCard's date pill now includes the completion time,
-  "Fri, Jul 10 · 9:41" (`endedAt`, falling back to `startedAt`); no schema
-  change, the field was already stored. Also added a calories pill (warm
-  orange `warnAcc`/`warnSurf`, hidden at 0 kcal, computed on the fly via
-  `workoutCalories` with the body profile as of the workout). Both show
-  everywhere the card is used (History, Home recents, exercise-info
-  History).
-- 2026-07-10: Charts upgraded to react-native-gifted-charts (Adilzhan
-  judged the hand-rolled SVG charts "cheap"; reference: iOS strength-app
-  card). New `src/components/ProCharts.tsx`: `TrendLine` (curved area
-  line, grid + vertical rules, y-axis floored near the data via
-  yAxisOffset, sparse date labels, HOLD-to-inspect tooltip (a dark pill
-  reading "Mon, 1 Jun · 79 kg" in lime, pointerConfig with
-  activatePointersOnLongPress so scrolling isn't hijacked) and an
-  optional reference line; GOTCHA: referenceLine1Position takes the RAW
-  value, gifted subtracts yAxisOffset itself, pre-subtracting made the
-  line invisible), `ProBars` (rounded bars, top value labels, lime
-  highlight, maxValue pinned ~1.2× data max, the auto axis leaves short
-  bars swimming), `RangePills` (14D/1M/3M/6M/12M/All), `MetricPills`
-  (outlined chips), `MinMaxTiles`, `MuscleBreakdown` (single stacked bar
-  in a monochrome ink ramp + legend dots with %, top-4 + Other).
-  ExerciseInfo Charts tab redesigned to the reference: big current value +
-  week-over-week trend arrow/line, range + metric selectors (1RM / Top
-  Weight / Volume / Reps), TrendLine with an all-time-PR reference line,
-  Min/Max tiles. Stats tab now uses ProBars / MuscleBreakdown / TrendLine.
-  The old hand-rolled LineChart/BarChart/HBars were deleted from charts.tsx
-  (SegmentedBar/ArcGauge/Sparkline/fmtShort remain). Deps added:
-  react-native-gifted-charts + expo-linear-gradient. Verified on the
-  emulator incl. the live tooltip.
-- 2026-07-10: Stats tab + chart kit + exercise Charts (roadmap task 5,
-  Adilzhan's spec). charts.tsx grew into the shared kit: `LineChart`
-  (min/max + date labels, area fill, lime latest-dot), `BarChart` (value
-  on top, label under, lime highlight), `HBars` (horizontal labeled bars),
-  `fmtShort` (12800→"12.8k"), plus existing SegmentedBar/ArcGauge/
-  Sparkline. Measure tab → Stats (see Screens; Measure.tsx deleted, tab id
-  "stats"). stats.ts gained `exerciseSeries` (per-session best-1RM / top
-  weight / volume / reps, working sets only). ExerciseInfo gained a 4th
-  "Charts" tab: est-1RM line, heaviest-weight line (purple), last-10
-  session-volume bars, total-reps line (teal). Store gained dev actions
-  `seedDemoWorkouts` (12 weeks of progressive PPL, verified catalog dbIds,
-  plateau at week 5 + deload at week 8, tagged notes:"demo-seed") and
-  `removeDemoWorkouts` (deletes only the tag) behind a Profile "Developer"
-  card. Verified on the torq2 emulator: seeded 36 workouts, Stats page +
-  bench Charts all render (progression + deload dip visible). GOTCHA: the
-  Expo Go "Tools button" floating gear overlays the app (it sat on the
-  profile avatar), toggle it off in the Expo dev menu when driving the
-  UI by adb taps.
-- 2026-07-10: Routine ⋯ menus + editor (Adilzhan's spec, Strong reference).
-  Grid cards' trash → Ellipsis opening a CenterDialog menu (MenuRow
-  extracted from WorkoutSummary into Dialog.tsx): my routines get
-  Edit / Rename (CenterDialog + TextField) / Archive / Duplicate (name +
-  " (n)" via uniqueName, deep-cloned sets) / Share (text sheet) / Delete
-  (ConfirmDialog); recommended get only "Duplicate to my routines"
-  (`importRecommended` store action; plain name unless taken).
-  `updateRoutine(id, patch)` store action powers rename/archive;
-  `Routine.archived` hides cards into an "Archived (n)" grid section
-  whose menu offers Unarchive/Delete. Section headers are now
-  "Routines (n)" / "Recommended" (18px extrabold, replacing the uppercase
-  SectionTitle). New `src/components/RoutineEditor.tsx`: full-screen
-  overlay (fixed header + lime Save pill) editing a template's sets
-  (weight/reps NumberFields, X to remove, Add set duplicates the last)
-  with a per-exercise ⋯ menu (Replace exercise, which opens the
-  ExercisePicker in single-swap mode and keeps the set scheme, plus
-  Remove exercise) and an
-  Add-exercises footer (multi picker, new entries 3×10). Back cancels,
-  Save commits via saveRoutine (plan/weekday preserved). Verified on the
-  emulator: grid, menu, editor, exercise menu.
-- 2026-07-10: Start-Workout routines as a 2-column grid (Adilzhan's spec):
-  shared `RoutineGridCard` in Workout.tsx, fixed 168px height, no gifs,
-  name + up to 4 "N × Exercise" lines (sets count only, no reps), "· · ·"
-  overflow row, small trash for user routines; whole card tap starts the
-  routine. `TwoColumnGrid` chunks cells into flex rows (flex:1 wrapper
-  Views: the Squish gotcha again). Applies to user/plan routines AND
-  Recommended (old RecommendedCard with gif thumbnails + Start button
-  deleted). Verified on the emulator.
-- 2026-07-10: History grouped by month (Strong-style, Adilzhan's request):
-  month name left + "N workouts" right per section, newest first; months
-  outside the current year render as "July 2025". The old flat
-  "N workouts" SectionTitle is gone. Verified on the emulator.
-- 2026-07-10: Suggested next weights (roadmap task 4).
-  `src/lib/suggest.ts`, double progression: every top-weight working set
-  hit the target reps last session → +1 step (2.5 kg / 5 lb, rounded to
-  step); missed once → repeat; missed twice at the SAME top weight →
-  deload to ~90% (≥1 step below, floored at 1 step → repeat). Warmups and
-  bodyweight (0-weight) history never count; only finished workouts.
-  Applied in `startWorkout` ONLY to routine entries with no hand-typed
-  weights (plan routines are weight-less; typed routine weights are
-  respected) using `targetRepsOf` (modal non-warmup reps). Prefilled sets
-  carry `WorkoutSet.suggested: "up"|"down"` → the logger's weight cell
-  shows a tiny TrendingUp/Down corner badge (good/warn colors), cleared
-  the moment the user edits the weight and stripped in `finishWorkout`.
-  Ad-hoc picker adds still replay last session verbatim (no prescription →
-  no honest judgement). Verified: 23-scenario table (hits, misses, stalls,
-  deload rounding/floor, warmups, backoffs, lb steps, unsorted history).
-- 2026-07-10: Home hero reworked around the plan (roadmap task 3). New
-  TodayHero (see Screens above) replaces the generic dark CTA; gauges went
-  plan-relative WEEK-scope (workouts/sets/minutes vs the stored plan
-  routines; fallbacks 3/60/180 when plan-less), typed
-  activeMinGoal/setsGoal/volumeGoal fields DELETED from Settings (never
-  released; kcalGoal survives, Profile's Daily-goals card is now
-  calorie-only), `dailyGoals()` → `kcalGoal()` in stats.ts. plan.ts gained
-  `routineMinutes`/`routineSets` (verified to agree with planDayMinutes);
-  charts.tsx gained `Sparkline` (7-day volume teaser card ending at the
-  selected day, ink polyline + lime end dot). planWizard state moved into
-  `useUi()` (openPlanWizard/closePlanWizard) so Home's no-plan hero and
-  Profile's Rebuild plan share it; Icon gained Moon (rest-day hero).
-- 2026-07-10: Training plan + onboarding, the "coach, not notebook" pivot
-  (Adilzhan's direction: differentiate from Strong; roadmap lives in the
-  session task list: next are Home plan-hero, suggested weights, Progress
-  tab). `src/lib/plan.ts`: deterministic generator, the user picks CONCRETE
-  training weekdays (2–6, Monday-first day-row list in onboarding, max 6 so
-  one rest day survives; `PlanPrefs.weekdays`, 0=Sun); the count picks the
-  split (2 FB A/B · 3 PPL · 4 UL×2 · 5 PPL+UL · 6 PPL×2 with B-variants)
-  and templates zip onto the chosen days via `mondayFirst()`. Verified over
-  all 1428 goal×weekday-subset×focus combos (0 problems),
-  goal picks schemes (muscle 4×8/3×12 · lean 3×12/3×15 · fit 3×10/3×12 ·
-  strength runs mains-first: first 2 compounds 5×5×180s, rest 3×8, flat
-  5×5 made 2-hour sessions, caught by the exhaustive spot-check), focus
-  parts get +1 set + unlock a per-day extra slot, days trimmed from the
-  tail to a 90-min cap. Exercises referenced by VERIFIED dbIds (snapshot
-  names have mojibake, e.g. "sled 45в° leg press", never match by name);
-  missing ids skip. Verified: 160 goal×days×focus combos, 0 problems.
-  Types: `PlanPrefs` (+ `Settings.plan`/`onboarded`), Routine gains
-  `plan`/`weekday` (0=Sun). Store: `applyPlan` (buries old plan routines,
-  writes new ones with per-set restSec, saves prefs, prefills kcalGoal per
-  goal) and `ensureCatalog(dbId)` (extracted from startRecommended).
-  `src/screens/Onboarding.tsx`: dark premium wizard (C.primary bg, lime
-  accents), welcome → "How do you measure?" (Metric kg·cm / Imperial
-  lb·ft-in cards) → about-you (sex/weight/height/age, dark fields; imperial
-  shows ft + in height fields, converted via `src/lib/units.ts`,
-  `LB_TO_KG`/`ftInToCm`/`cmToFtIn`, deduped from calories/Profile) → goal →
-  days → focus → pulsing-logo "building" theater → staggered plan-reveal
-  cards. Profile's Body-profile height also switches to ft/in when the
-  unit is lb (heightCm stays canonical in storage). Direction-aware StepSlide transitions;
-  every choice step confirms with an explicit Continue button (auto-advance
-  shipped first, Adilzhan vetoed it. You can't change your mind); Skip
-  everywhere, hardware Back walks steps (first-run not dismissable),
-  answers prefill from Settings on rebuild. GOTCHA (hit again): flex:1 on
-  a Squish inside a row collapses it to 0 width, the days-per-week squares
-  rendered as an empty page; wrap the Squish in a flex:1 View. Root shows it when `!settings.onboarded` (existing installs see
-  it once) or via Profile's new "Training plan" card → Rebuild plan
-  (`onRebuildPlan` prop).
-- 2026-07-10: Home rebuilt as a day dashboard (nutrition-app reference from
-  Adilzhan). New pieces: `DateRuler.tsx`, horizontal snap FlatList of day
-  numbers (ITEM_W 54, window 365 days back, ending at today so the future
-  is unscrollable), scroll-driven native interpolations (scale 0.72→1.25;
-  ink layer crossfaded over a faint layer since text color can't animate
-  natively), 5 tick marks per cell + fixed ▲ caret; exports `dayStart`/
-  `addDays` (calendar-based math, adding 24h blocks drifts an hour across
-  DST, caught by a scratchpad spot-check). `CalendarDialog.tsx`, custom
-  calendar in CenterDialog: ‹month› stepper, tap title → month grid +
-  ‹year› stepper, Mo–Su grid, black capsule selected / ringed today /
-  future disabled. `charts.tsx`, `SegmentedBar` (barcode bars, animated
-  width mask, fills lime at goal) and `ArcGauge` (SVG round-cap ticks on a
-  270° arc, gap at bottom; animated counter sweeps ticks in; value/goal
-  centered). Home: `day` state drives the goal card (BURNT/GOAL numbers,
-  bar, gauges MINUTES orange / SETS teal / VOLUME purple) and the workout
-  list (Today → recents, else that day's workouts); header PopIn-crossfades
-  on date change; live session counts toward today. Settings gained
-  `kcalGoal`/`activeMinGoal`/`setsGoal`/`volumeGoal` (defaults 300/60/25/
-  8000 via `dailyGoals` in stats.ts; volumeGoal is in the display unit),
-  edited in a Profile "Daily goals" card. The old Flame "Today" card is
-  gone.
-- 2026-07-10: Floating top bar, the dock's light twin. The in-flow
-  logo/greeting/avatar row in App.tsx became an absolute pill (top 8,
-  left/right 14, height 52, `C.surface`, radius 999, clay shadow; logo
-  left, greeting centered, avatar right) so tab content scrolls under it.
-  `TOP_BAR_SPACE` (60) in theme.ts = screen top → below the bar; every tab
-  ScrollView and in-tab overlay (WorkoutSummary, ExerciseInfo,
-  ExerciseBrowser toolbar, which also covers ExercisePicker) pads
-  `TOP_BAR_SPACE + <old padding>`. Render order in Root: content → top bar
-  → BottomNav → Profile, so the bar (like the dock) stays visible over
-  in-tab overlays but Profile covers both. CAREFUL: overlays with a FIXED
-  header outside their ScrollView (ExerciseInfo, ExerciseBrowser toolbar)
-  need the TOP_BAR_SPACE padding on the HEADER, not the scroll content,
-  ExerciseInfo shipped with it on the wrong one (header hidden under the
-  bar, content double-spaced) and was fixed after Adilzhan hit it.
-- 2026-07-10: WorkoutSummary compacted + ⋯ menu. All exercises now render
-  in ONE Card (sections split by Divider, 1RM column label on the first
-  section only; the old card-per-exercise ate too much space,
-  `highlightExerciseId` now tints the section lime instead of ringing a
-  card). The duration/volume/kcal/PRs stats bar sits ABOVE the exercises
-  card (was a floating footer pinned over the navbar, per Adilzhan). Header gained a ⋯ button opening a CenterDialog menu (the app's
-  shared animated dialog): Repeat workout (starts a fresh session from the
-  workout's entries, all sets unticked, jumps to the Workout tab; disabled
-  while a session is live), Save as routine (`saveRoutine` with unticked
-  sets), Share workout (RN `Share` sheet, name, long date, stats line,
-  per-exercise "N × name, top kg" lines), Delete workout (ConfirmDialog →
-  `deleteWorkout` → close). `startWorkout` now stores
-  `routineId: routine?.id || undefined` so repeating a quick-start workout
-  (ephemeral routine with id "") doesn't stamp an empty routineId. Icon
-  gained Share2.
-- 2026-07-10: Strong-style exercise header in the live session, the trash
-  button is gone, replaced by a focus-metric pill + a ⋯ menu (both
-  anchored popovers, same Modal+PopIn+statusBarTranslucent pattern as the
-  set-type menu, right-aligned under their buttons). Metric pill: shows a
-  Waypoints icon until a metric is picked in the "Set a Focus Metric"
-  dialog (Total Volume / Volume Increase / Total Reps / Weight/Reps,
-  live values from `metricsFor` in Workout.tsx: done sets only, increase
-  is % vs the most recent finished workout with that exercise, clamped to
-  +0% until something is logged, top set for Weight/Reps); the pick is
-  saved as `WorkoutEntry.focusMetric` (types.ts) so it persists/syncs;
-  re-picking clears it. ⋯ menu is UI-only for now (Add note / Add sticky
-  note / Add warm-up sets / Update rest timers / Replace exercise /
-  Create superset / Preferences: lucide FileText, Pin, Diff, Timer,
-  Undo2, List, SlidersVertical) EXCEPT Remove exercise (X, red), which
-  routes to the existing ConfirmDialog since the trash is gone. Verified
-  on the emulator end to end.
-- 2026-07-10: Fixed the order/sort menu positioning on the Exercises page ([ExerciseBrowser.tsx](file:///home/wopler/dev/torq/src/components/ExerciseBrowser.tsx)) by shifting its absolute `top` coordinate by `TOP_BAR_SPACE` (setting it to `TOP_BAR_SPACE + 42` instead of hardcoded `42`). This positions the dropdown menu correctly under the Order button toolbar icon and prevents it from overlapping with/rendering under the floating top bar.
-- 2026-07-10: Customized weight progression steps in the suggestion engine ([suggest.ts](file:///home/wopler/dev/torq/src/lib/suggest.ts)) based on equipment type. Added a dynamic `getWeightStep` helper that returns micro-loading steps (1 kg / 2 lb) for dumbbells, cables, kettlebells, and bands, while maintaining default steps (2.5 kg / 5 lb) for barbell/machine compound exercises. Integrated in `startWorkout` ([store.tsx](file:///home/wopler/dev/torq/src/lib/store.tsx)).
-- 2026-07-11: Live-session set rows compacted (Adilzhan, three passes,
-  gap-shaving alone read as no change; the space was the divider strip):
-  final values: exercise Card gap 0, NO set-block gap, idle RestDivider is
-  a fixed 12px-high strip (text 10), set row paddingVertical 1; the
-  SET/PREVIOUS/KG/REPS header row carries its own marginTop 12 (room under
-  the exercise-name pill, per Adilzhan) + marginBottom 3. Consecutive done
-  sets sit flush as one tinted block, and a done set shows NO rest divider
-  at all unless its countdown is actively running, idle "2:00" timers
-  live under unfinished sets only. Verified on the emulator.
-- 2026-07-11: Live-session done-set polish (Adilzhan): the RestDivider
-  between two DONE sets is hidden (rest already happened; it stays while
-  its countdown still runs, and at the done→open boundary), and the
-  done-row tint lightened rgba(160,210,20,0.42) → 0.16. The old wash
-  read too heavy. Verified on the emulator.
-- 2026-07-11: Live-session KG/REPS inputs select their content on every
-  tap (`SetNumInput` in Workout.tsx now passes `selectTextOnFocus`
-  unconditionally, not just for done-set re-edits), prefilled values
-  (suggestions, replays, plan reps) get replaced by typing instead of
-  appended to. Verified on the emulator (tap → full-value selection).
-- 2026-07-11: Plan-aware streaks (Adilzhan's idea, mechanics agreed in
-  chat). `src/lib/streak.ts`, pure function of (workouts, plan routines):
-  every day with a finished workout counts 1 (same-day sessions once,
-  rest-day bonus workouts count), streak breaks after 3 CONSECUTIVE missed
-  planned weekdays (scattered misses tolerated; a workout resets the miss
-  counter), today's pending session isn't a miss, no plan → no streak.
-  Longest tracked in the same pass. Verified with a 12-case table. UI:
-  StreakPill next to Home's "Today" (lime = safe today, ink = today's
-  session pending, orange warnSurf = at-risk after 2 consecutive misses,
-  faint = broken; hidden without a plan) → tap opens a CenterDialog (flame
-  count, since-date, at-risk warning, gold-trophy longest, rule sentence);
-  Stats page gained a lifetime "current / longest streak" card under the
-  overview row (not month-scoped). Verified on the emulator incl. dialog.
-- 2026-07-11: Streak modal auto-pops once per trained day: Home effect,
-  first visit after today's first FINISHED workout opens StreakDialog
-  after 450ms; `Settings.streakCelebratedDay` (local-midnight ms, synced)
-  marks the day so it never repeats. GOTCHA: don't clearTimeout in the
-  effect cleanup, updateSettings changes a dep, re-runs the effect, and
-  the cleanup would cancel the timer before it fired. The pill stays
-  tappable for on-demand opens.
-- 2026-07-11: CenterDialog gained an EXIT animation (Adilzhan: dialogs
-  popped in but vanished instantly): one Animated.Value drives backdrop
-  dim + card scale/fade both ways, backdrop tap plays a 150ms ease-in
-  shrink/fade before calling onClose (guarded against double-close).
-  Children that close the dialog themselves can use the new
-  `useDialogClose()` context hook for the animated path, ConfirmDialog's
-  Cancel/confirm buttons now do; menu rows that call their own setState
-  still unmount instantly (adopt the hook when touching them). PopIn no
-  longer used by Dialog.tsx.
-- 2026-07-11: Streak dialog redesigned to a Duolingo-style celebration
-  (Adilzhan's reference image): new `src/components/StreakDialog.tsx`,
-  hand-authored Lottie flame (`assets/flame.json`, 2s loop: squash &
-  stretch + rotation flicker anchored at the flame base, counter-phased
-  amber mid + white core layers, two rising embers; played via
-  lottie-react-native 7.x, bundled in Expo Go) inside a soft peach halo,
-  giant count, "Day Streak", personalized encouragement (settings.name;
-  at-risk variant in warnAcc), Monday-first week strip (orange
-  LinearGradient check circles on trained days, plain day numbers
-  otherwise, today bold), gold-trophy longest line. Home's old inline
-  streak dialog replaced. NOTE: killing a Metro the app is attached to
-  makes Expo Go show "Cannot connect to Expo CLI", force-stop + reopen
-  the exp:// URL. Verified on the emulator (two captures confirm the
-  loop is animating).
-- 2026-07-11: WorkoutCard restructured (Adilzhan's spec): pills row gone,
-  top shows CalendarDays "Fri, Jul 10 · 18:57" + Clock duration; the
-  exercise list sits between Dividers; bottom row is icon stats CheckCheck
-  sets (goodAcc) · Scale volume (prAcc) · Flame kcal (warnAcc, hidden at
-  0) · Trophy PRs (C.gold, hidden at 0, via computePRs against all
-  workouts, memoized). Local IconStat helper. Verified on the emulator.
-- 2026-08-04: Rank-redesign kickoff decisions locked by Adilzhan (via lavish
-  plan review): hybrid rank engine (real percentiles + calibrated formula),
-  friends-first social scope, FULL visual rebrand (new logo direction: sharp
-  Greek tau τ, lime on near-black; app name stays torq), Phase 1 (rank engine
-  + standards dataset + Ranks tab) approved to start.
-- 2026-08-04: App font swapped Onest → Space Grotesk (first rebrand change,
-  Adilzhan picked it from a 4-font lavish tryout of the Rank Card). Only
-  App.tsx (useFonts) and theme.ts FONT tokens changed: every component
-  reads FONT, so the swap is global. extrabold now aliases 700 Bold (family
-  max). tsc clean.
-- 2026-08-04: PATH.md created (business idea, rank-system design, locked
-  decisions, 4-phase roadmap) so torq-local sessions carry the full product
-  context; pointer added at the top of this file.
-- 2026-08-06 (later): Home goal card replaced (Adilzhan: "showing calories
-  is bad"; picked "A+C combined, kcal off Home only" from the lavish
-  options page .lavish/torq-home-upgrade.html). The BURNT/GOAL kcal block
-  + SegmentedBar + week ArcGauges are GONE from Home (kcal survives in
-  WorkoutCard/summary/Stats; calories.ts untouched). In their place:
-  (1) WEEK STRIP, Monday-first 7 dots for the selected day's week:
-  trained day = lime check, today = lime ring, planned weekday = faint
-  ring with date number, rest = dot; eyebrow "This week · X of Y done"
-  (Y = plan sessions, fallback 3). (2) RANK MOMENTUM: RankBadge +
-  points + "▲ +N this week" (overall pts now vs before this Monday,
-  rankLifts on workouts ended before weekStart) + tier label + pts-to-
-  next + progress bar + "Closest tier-up: <lift>, N kg from <tier>"
-  via new rank.ts helpers `kgForPoints` (inverse DOTS) and
-  `closestTierUp`. Verified on the emulator (strip checks, +2 delta,
-  bench 5.3 kg from Silver).
-- 2026-08-06 (later): Ranks TAB + shield badges in RN (from the approved
-  brand-v2 mockup). `src/components/RankBadge.tsx`: react-native-svg port
-  of the lavish badge generator, rounded-hex shield (Polygon + thick
-  round-join stroke), tier metal LinearGradient frame (World Class =
-  holo multi-stop), vortex emblem (VORTEX_PATH now exported from
-  Logo.tsx) scaled into the shield, orbit ring as sampled half-ellipse
-  Paths with a userSpaceOnUse Mask cutting the gap around each static
-  jewel ball (RadialGradient + specular dot; no SMIL/filters in RN so
-  no comet trails/blur, since those stay web/share-card). Stage I–IV = ring →
-  ball → two balls, derived from tier progress quarters (`stageOf` +
-  `tierLabel` "Gold IV" in rank.ts). `src/screens/Ranks.tsx`: cardless,
-  logo + "Ranks" + "NN kg · M/F" header, OVERALL row (badge + lime pts +
-  tier label + pts-to-next + progress bar), LIFTS list (badge · name ·
-  e1RM · tier label · pts). New "ranks" Tab (ui.tsx) second in the dock
-  (Medal icon added to Icon.tsx). GOTCHA: module-level edits to
-  BottomNav ITEMS didn't Fast-Refresh: force-stop Expo Go + reopen for
-  a fresh bundle. Verified on the emulator with seeded data.
-- 2026-08-06 (later): Rank engine v1 + Rank Card (PATH.md Phase 1 start,
-  from the approved concept mockup). `src/lib/rank.ts`: pure functions,
-  `dotsPoints` (official DOTS polynomial, sex+bodyweight normalized,
-  bw clamped to the formula's valid range), 9-tier ladder on calibrated
-  per-lift DOTS thresholds (Iron 30 → World Class 165; overall = ×3 on
-  the sum of the TOP-3 lifts), `rankLifts` (best e1RM per exercise:
-  finished workouts, no warmups, weight>0, reps 1–10; display-unit→kg
-  via LB_TO_KG), `tierFor` (tier + toNext + progress), `overallRank`.
-  Math spot-checked (mockup persona → 284 pts Gold; 60kg F ≈ 74kg M
-  equivalence; WR bench → World Class). NO percentile claims by design
-  until the OpenPowerlifting dataset ships. UI: `RankCard` in
-  Profile.tsx above Settings (cardless): lime avatar initial + name +
-  "NN kg · M/F" + translucent TierPill (TIER_COLORS/TIER_SHORT from
-  rank.ts), big points + lime progress bar + "N pts to <tier>", BEST
-  LIFTS top-3 rows (name · tier pill · e1RM), fine-print eligibility
-  note; empty state before any eligible lift. Verified on the emulator
-  with seeded data.
-- 2026-08-06 (later): Floating top bar removed entirely (Adilzhan's
-  request): App.tsx renders no bar; `TOP_BAR_SPACE` = 0 in theme.ts so
-  every screen/overlay padding collapses (constant kept for easy revival);
-  Profile now opens from a new fixed-width UserCircle icon button at the
-  FAR RIGHT of the BottomNav dock (`BottomNav` gained an `onProfile`
-  prop; plain Pressable, not a morphing tab, the overlay covers the
-  dock). Verified on the emulator: header at top, dock button opens
-  Profile.
-- 2026-08-06 (later): Splash/icon config modernized: legacy app.json
-  `splash` key replaced by the `expo-splash-screen` config plugin (SDK 57
-  deprecates the old key; package installed, without it Metro dies with
-  PluginError). GOTCHAS: (1) Expo Go shows the app ICON (not the splash)
-  while loading a project, and it CACHES project icons, after changing
-  icon.png, `adb shell pm clear host.exp.exponent` is the only reliable
-  flush, BUT pm clear also wipes AsyncStorage = the app's whole local DB
-  on that device. (2) After pm clear, bare `am start -a VIEW -d exp://…`
-  may not resolve to Expo Go, append the package: `am start -a
-  android.intent.action.VIEW -d "exp://10.0.2.2:8081" host.exp.exponent`.
-- 2026-08-06 (later): CARDLESS + DARK migration shipped (Adilzhan approved
-  via the lavish mockups, "start migrating screens"). theme.ts rewritten:
-  clay palette → near-black rebrand (page #0E0F0E, surface #151714 for
-  interactive/overlays only, page2 #1B1E1A inputs, ink #F2F4EE→inkSoft
-  #9AA294→inkFaint #5C6356 steps, NEW C.line #262A24 borders + C.hair
-  #22261F hairlines, dark good/warn/bad/pr surfaces, light chart palette,
-  black shadows); global.css mirrored. ui.tsx: `Card` is now a TRANSPARENT
-  padded block (explicit background restores a bordered box), every old
-  Card usage renders bare automatically; new `Surface` (old card look:
-  surface bg + line border + clay) for dialogs/sheets; new `Eyebrow`
-  (10px uppercase letterspaced label); Divider → C.hair; Pill defaults
-  ink-on-page2; PrimaryButton defaults lime. Dialog.tsx uses Surface +
-  black backdrop. App.tsx: top bar bordered, StatusBar light. Home.tsx
-  rebuilt to the mockup (TodayHero = eyebrow + headline + lime Start
-  pill per state; goal + sparkline sections bare; recents hairlined).
-  Workout start screen: routine GRID replaced by cardless RoutineRow list
-  (RoutineGridCard/TwoColumnGrid deleted); quick start is a bare row with
-  a lime play chip; live-session exercise names are plain bold text (dark
-  pill gone), done-tint now lime-on-dark. WorkoutCard → bare block
-  (callers add Dividers). Selected chips (Stats measure kinds, Profile
-  sex/unit, ExerciseInfo tabs) primary→lime. BottomNav: active capsule
-  now a dark #2A2F27 chip with ink text (was white), dock bordered.
-  CalendarDialog selection lime. DateRuler ticks + ProCharts grid/
-  pointer/tooltip lines flipped to light rgba. Remaining screens go
-  cardless automatically via the transparent Card; deeper per-screen
-  typography passes can follow as they're touched. tsc clean + android
-  export verified. NOT yet eyeballed on the emulator.
-- 2026-08-06: New brand logo, the lime "vortex" mark (8 sharp blades
-  spinning around a center; AI concept by Adilzhan, source
-  `assets/torq_logo_v2.png`), replacing both the old pulse mark AND the
-  planned sharp-tau direction (Adilzhan dropped the tau; PATH.md updated).
-  Traced with potrace to one vector path: `Logo.tsx` rewritten (path in a
-  1024 box under `<G transform="translate(0,1024) scale(0.1,-0.1)">`,
-  potrace emits math-axis coords), `LOGO_BG` now `#0E0F0E`;
-  `assets/logo.svg` redrawn; icon.png / splash-icon.png / favicon /
-  android adaptive+monochrome icons regenerated via ImageMagick from the
-  trace; app.json splash+adaptiveIcon backgrounds `#f1efe9` → `#0E0F0E`.
-  Rank-badge design (lavish sessions, `.lavish/torq-rank-system.html` +
-  `torq-brand-v2.html`): badge emblem is now the vortex; jewel-style orbit
-  balls upgraded to comets (glow halo + tapered energy trail streaming
-  behind the travel direction via animateMotion rotate="auto"; jewel core
-  with radial gradient + specular dot + drop shadow; masked moving gap in
-  the ring), laurel leaves redrawn as pointed blades (per Adilzhan's
-  reference images). A silver crown above World Class was built then
-  removed at Adilzhan's request, laurel only. tsc clean; badges not yet
-  ported to RN.
-- 2026-07-11: Implemented a month switcher on the Stats page ([Stats.tsx](file:///home/wopler/dev/torq/src/screens/Stats.tsx)). Users can click left/right arrows to switch months, with the right arrow disabled for the future (relative to the current real month). Overview cards (workouts, volume, sets, hours), weekly charts (custom Monday-start weeks that fall in the month), body weight trendline, and logged measurements list are all scoped/filtered to the selected month.
+**The full dated changelog lives in `docs/HISTORY.md`.** It was moved out of
+this file on 2026-08-17 because CLAUDE.md had grown to 158k characters against
+a 150k context limit. Nothing was deleted, only relocated: every entry, every
+gotcha and every "why we rejected the other option" is still there, in date
+order. Read it when you need the reasoning behind a decision the sections
+above only state. Keep appending new entries THERE, not here, and keep the
+sections above current instead, they are the part that has to be in context.
 
+The short version of how the project got here:
 
-- 2026-08-08: Per-exercise rank page + world-record mentions (PATH.md Phase 1
-  continued). New `src/data/records.ts`, bundled, versioned IPF Classic
-  (raw) world-record table per sex and weight class for squat/bench/deadlift
-  (`RECORDS_VERSION`, `RECORDS_VERIFIED = false`: the numbers are an
-  APPROXIMATE snapshot and must be re-checked against the official IPF
-  database before release). New `src/lib/records.ts`, `recordLiftOf(name,
-  equipment)` maps a library exercise onto a competition lift with strict
-  keyword exclusions (barbell only; variations like incline bench, front
-  squat, RDL, JM press, Jefferson squat get NO record line rather than a
-  misleading one, verified against the catalog: 13 of 1500 names match),
-  `worldRecord(lift, sex, bwKg)` picks the weight class, `recordShare`.
-  ExerciseInfo gained a "Rank" tab (tabs row is now a horizontal ScrollView
-  since there are five): big RankBadge + tier label + DOTS points + progress
-  bar + "N pts to <tier>, about N kg more on your best set" (via
-  `kgForPoints`), then the world-record block ("41% of the 83 kg record",
-  bar, source fine print) when the lift matches. The info header shows the
-  tier badge (tap → Rank tab) whenever the lift is ranked, and `initialTab`
-  lets callers open straight on it. Ranks-tab lift rows are now Pressable
-  (chevron) and open that page. tsc + android export clean; NOT yet
-  eyeballed on the emulator.
-- 2026-08-08 (later): SHARP-10 radius system shipped app-wide (Adilzhan chose
-  "Sharp 10 px" from the lavish review `.lavish/torq-radius.html`, which put
-  today's pill look next to a live-adjustable preview of the same torq
-  surfaces). `R` in theme.ts went `{lg:28, md:22, sm:16, pill:999}` →
-  `{lg:16, md:12, ctrl:10, sm:8, pill:999}` (new `ctrl` token), mirrored in
-  global.css. Every component already reads `R`, so the sweep was the audit
-  of hand-written radii: pills that were really CONTROLS became tokens,
-  ProCharts range/metric pills, Profile sex+unit chips, ExerciseBrowser
-  filter chips + thumbnails, RoutineEditor Save, Stats measure chips, Home
-  lime CTA + calendar button, Onboarding focus chips + icon tiles,
-  ExerciseInfo tabs, Workout rest field / focus-metric pill / done check /
-  rest-pad buttons / quick-start chip, the BottomNav dock (16) and its
-  active capsule (10), Surface (dialogs) → R.lg, PrimaryButton → R.ctrl.
-  Left fully round on purpose: status pills (ui.tsx `Pill`, TierPill,
-  PrPill, StreakPill), true circles (avatar, week-strip dots, calendar days,
-  streak halo, chart legend dots) and thin progress bars. tsc + android
-  export clean; NOT yet eyeballed on the emulator.
-- 2026-08-08 (later): Live-session visual pass to the sharp-10 mock
-  (Adilzhan liked the preview phone in `.lavish/torq-radius.html` and asked
-  for the live screen to match; scope confirmed as a restyle, not new
-  controls). `NumberField` gained a hairline `C.line` border so every input
-  reads as a box on the bare page; a DONE set's KG/REPS keep that box
-  instead of collapsing to bare text (same padding metrics, so ticking a set
-  no longer jumps the row height) and its set number turns lime; FIELD_W
-  50 → 54; PREVIOUS moved inkFaint → inkSoft 12.5; exercise names 16/bold →
-  18/extrabold. `RestCountdownBar` rebuilt: 30px tall, R.ctrl corners, new
-  `C.restTrack` (#26320C) for the spent side, and the "1:24" label drawn
-  TWICE: lime on the track, dark inside an overflow-hidden copy of the
-  draining fill (the fill's inner View is pinned to the measured bar width
-  via onLayout, so the clipped label stays centered on the whole bar while
-  its container shrinks). `PrimaryButton` gained `large` (15px padding,
-  15.5px extrabold), used by Finish workout. tsc + android export clean;
-  NOT yet eyeballed on the emulator.
-- 2026-08-08 (later): World-record data replaced with SOURCED values. The
-  first pass wrote the IPF table from memory and was off by up to 17 kg
-  (men's 83 squat 337.5 → 320.5 actual), so `src/data/records.ts` was
-  rebuilt from published record tables (garagegymreviews, checked
-  2026-08-08) plus the 2026 Sheffield reports for the women's 84 kg squat:
-  version `ipf-classic-2026.1`, `RECORDS_CHECKED_AT`, and every cell is now
-  `{kg, holder} | null`. `worldRecord()` returns null for uncurated cells
-  (seven women's SQUAT classes, that source duplicates its bench table
-  there) so the Rank tab simply omits the record line instead of showing a
-  wrong one. The mention now names the holder and the check date.
-- 2026-08-08 (later): CARDLESS migration finished on the remaining screens
-  (PATH.md Phase 2, "screen by screen"). The bug driving it: `Card` is
-  transparent since the rebrand but still pads 16, so every Card inside an
-  already-padded ScrollView double-guttered its content, charts and rows
-  sat 32px from the screen edge while the page title sat at 16. Stats,
-  History, Profile, ExerciseInfo, WorkoutSummary and RoutineEditor now use
-  bare Views with `Eyebrow` section labels and hairline `Divider`s instead
-  of Cards; `SectionTitle` survives only inside ExerciseBrowser's filter
-  dialog/sheet (a true overlay). Screen specifics: Stats lost its surfaced
-  month box for a bare "Stats + ‹ ›" header row with the month underneath,
-  overview figures went 17px-in-a-box → 22px bare, streaks are a hairlined
-  row; History separates workouts with Dividers (WorkoutCard has documented
-  that contract since it went bare) and titles at 26; Profile's sections are
-  hairline-separated and its two Stat figures went 20 → 24. `Card` itself
-  stays for Workout.tsx's live-session exercise block, whose set rows
-  full-bleed with marginHorizontal -16 against its padding. tsc + android
-  export clean; NOT yet eyeballed on the emulator.
-- 2026-08-08 (later): Authentication gate shipped (Adilzhan supplied the
-  live Supabase project + keys). See the new "Auth + secrets" section above
-  for the .env split, the Metro cache gotcha and the guest escape hatch.
-  New files: `src/lib/password.ts` (policy + strength meter, spot-checked
-  against a 12-case table), `src/screens/Auth.tsx` (the gate),
-  `SpinningLogo` in Logo.tsx (native-driver linear loop; spins fast while a
-  request is in flight). `src/lib/auth.tsx` rewritten: guest mode persisted
-  in AsyncStorage, `signUp` reports `needsConfirmation` when Supabase
-  returns no session, more friendly error mappings. App.tsx holds one
-  splash for "DB not ready OR session still restoring" so a signed-in user
-  never sees the gate flash. Icon gained Eye/EyeOff/Lock/LockKeyhole/Mail/
-  TriangleAlert. NOT DONE: `supabase/schema.sql` has NOT been applied, all
-  six mirror tables 404 on the REST API, so sync will fail until Adilzhan
-  pastes it into the SQL editor. This machine cannot reach the DB directly
-  (db.<ref>.supabase.co resolves IPv6-only, "Network is unreachable") and
-  the pooler host needs the project's region.
-- 2026-08-08 (later): Phase 3 kickoff, social foundation shipped (see the
-  "Social" section above): supabase/social.sql, src/lib/social.ts,
-  src/screens/Friends.tsx, the You/Friends switch in Ranks, and a
-  fire-and-forget snapshot publish inside the store's finishWorkout. The
-  private mirror schema (schema.sql) was applied by Adilzhan, all six
-  tables now answer 200 on the REST API. social.sql still needs the same
-  paste; it has NOT been executed, so the Friends view will error until it
-  is. tsc + android export clean; NOT yet eyeballed on the emulator.
-- 2026-08-08 (later): Phase 3 continued, social.sql applied by Adilzhan
-  (profiles/friendships/rank_snapshots + find_profile all answer on the REST
-  API). Added the friends head-to-head compare and the rank share card; see
-  the "Social" section above for both. Structural fix along the way: Friends
-  had been rendering inside the Ranks ScrollView, which would have made its
-  overlays position against scroll content, Ranks now branches, giving the
-  Friends view its own scroll root. Deps added: react-native-view-shot 5.1.0
-  + expo-sharing (via `npx expo install`, so SDK-matched). tsc + android
-  export clean; NOT yet eyeballed on the emulator, the share capture in
-  particular is the one thing I cannot verify without running it.
-- 2026-08-08 (later): Percentiles shipped, the hybrid rank engine is now
-  whole (see "Percentiles + plausibility" above). Also added: plausibility
-  caps on published snapshots, `rank_events` retention (each device prunes
-  its own rows older than 90 days on publish, no cron job needed), and the
-  rank-up feed section in Friends. Spot-checked the percentile curve: a
-  125 kg bench at 83 kg bodyweight lands at the 49th percentile of
-  competitive raw benchers, world records clamp at 99%, and the curve is
-  monotonic across 20–300 kg. tsc + android export clean; NOT yet eyeballed
-  on the emulator.
-- 2026-08-08 (later): Percentiles surfaced beyond the Rank tab, each
-  ranked competition lift on the Ranks tab now carries its "Stronger than
-  N%" / "Top N%" line, and the rank share card gets a lime percentile chip
-  for the user's strongest one (the single most postable line on it).
-  Also verified the bundled IPF record table against the OpenPowerlifting
-  dump: all 41 curated values are at or below the best IPF-raw result ever
-  recorded in their class, 0 impossible entries. Deriving the records FROM
-  the dump was tried and rejected, see PATH.md for why, so nobody repeats
-  it. tsc + android export clean; NOT yet eyeballed on the emulator.
-- 2026-08-08 (later): Device-testing round on Adilzhan's phone. Four fixes.
-  (1) The Android navigation bar was drawing over the app: only BottomNav
-  compensated for the inset, so every OTHER bottom-anchored control (the
-  rest-timer pad, the picker's "Add N exercises" footer, the new-exercise
-  sheet) sat underneath it and couldn't be tapped. The root SafeAreaView
-  now reserves `edges={["top","bottom"]}`, so nothing in the app can draw
-  under the bar and every hardcoded paddingBottom stays correct; BottomNav
-  dropped its own inset maths (it would have double-counted).
-  (2) Accounts were unreachable in the EAS build. See the "Building (EAS)"
-  section above for the .env/eas.json cause and the new loud banner.
-  (3) Rank badges were far too small for the app's headline feature: the
-  exercise Rank tab is now a centred 190px shield with the tier and points
-  stacked under it (was a 92px thumbnail in a row), the Ranks tab overall
-  shield is 170px centred, and per-lift rows, Home momentum, Friends rows
-  and compare columns all scaled up.
-  (4) Sounds shipped. See the "Sound" section above.
-- 2026-08-08 (later): Keyboard handling, see the "Keyboard" rule above.
-  `KeyboardAwareScrollView` + `useKeyboardHeight()` added and wired into
-  every screen that holds an input: live session (KG/REPS + the rest
-  editor), Auth (replacing its hand-rolled KeyboardAvoidingView), Profile,
-  Stats, Friends, RoutineEditor, Onboarding's about-you step, and the
-  new-exercise bottom sheet in ExerciseBrowser. tsc + android export clean;
-  NOT yet eyeballed on a device.
-- 2026-08-08 (later): Test suite added (see "Tests" above), 128 vitest
-  assertions across ten lib modules, plus the MAX_DOTS fix it caught.
-- 2026-08-08 (later): Friend SEARCH replaced exact-handle-only discovery
-  (Adilzhan's request mid-session). `search_profiles` RPC + trigram indexes
-  appended to supabase/social.sql (re-run the file), `searchProfiles()` in
-  social.ts, and a debounced (300ms) results list in Friends with a per-row
-  Add button; people already in your list or with a pending request are
-  filtered out. The handle-claim field still forces handle characters, but
-  the search field does NOT sanitise input, otherwise a display name with a
-  space is untypeable.
-- 2026-08-08 (later): The live-session exercise ⋯ menu is no longer a set of
-  dead stubs. Implemented: **Add note** (WorkoutEntry.notes, this session
-  only) and **Add sticky note** (Exercise.notes, comes back every session;
-  that split is the whole reason both exist), both rendered under the
-  exercise header and tappable to re-edit; **Add warm-up sets**, which
-  prepends a 40/60/80% ramp of the heaviest WORKING set, rounded to the
-  bar's step and de-duplicated so a light top set doesn't produce three
-  identical warm-ups (no-op on bodyweight); **Update rest timers**, one rest
-  applied to every set of the exercise; **Replace exercise**, reusing the
-  picker and keeping the set scheme. REMOVED rather than faked: "Create
-  superset" (needs real grouping) and "Preferences" (never specified), a
-  menu item that does nothing is worse than no menu item. Store gained
-  `updateExercise`.
-- 2026-08-08 (later): Crash + data-loss hardening (see "Failure handling").
-  Added ErrorBoundary (per-tab and app-wide) and fixed loadDB silently
-  discarding a corrupt database, it now preserves the blob and warns.
-- 2026-08-08 (later): Account deletion + data export shipped (see the Play
-  requirement section above). supabase/social.sql gained
-  `delete_my_account()`; db.ts gained `wipeLocal()`; store gained
-  `exportLocal`/`wipeLocalData`.
-- 2026-08-08 (later): Startup + search performance, measured before and
-  after. (1) Catalog split (see "ExerciseDB catalog"): 289 ms → 86 ms of
-  cold-start work. (2) Search: the browser rebuilt each row's haystack,
-  array alloc + join + toLowerCase over 1500 rows, on EVERY keystroke.
-  `haystack()` now precomputes it once when the list is built and
-  `matchesText()` takes pre-tokenized input, so 8 keystrokes over the full
-  catalog went 17.3 ms → 1.1 ms. (3) The list was ALREADY virtualized (a
-  SectionList with tuned windowing), so nothing was needed there, worth
-  recording so nobody "optimizes" it again.
-- 2026-08-08 (later): Women's squat record gap, searched again for an
-  authoritative per-class source and found none that meets the bar (one
-  aggregator declares its numbers "approximate" with no holders or dates;
-  the OpenPowerlifting route was already rejected). Rather than invent
-  numbers, the Rank tab now states explicitly when torq has no verified
-  record for that class, so the blank reads as our data gap instead of "this
-  lift has no record". `weightClassOf()` added to records.ts for that
-  message. Filling it properly is a manual task against the official IPF
-  database.
-- 2026-08-08 (later): The Arena shipped (PATH.md Phase 4). See the section
-  above. Re-run supabase/social.sql: it gained profiles.arena/.verified and
-  the two arena RPCs. Regional boards remain TODO (no country is collected).
-- 2026-08-08 (later): Freemium groundwork shipped (see "Entitlements /
-  paywall"): entitlements.ts, Paywall + LockedPanel, gates on
-  Ranks/Friends/Arena/share cards, a dev Pro toggle, and 8 tests pinning the
-  promises (logging and backup stay free, nothing is both free and paid,
-  unlock() refuses honestly instead of pretending).
-- 2026-08-08 (later): Push notifications wired end to end in code (see the
-  section above), client token registration, push_tokens table, and the
-  notify Edge Function for friend requests and friends' rank-ups. NOT LIVE
-  until the FCM credentials, function deploy and two webhooks are done.
-- 2026-08-09 (later): ICON PACK SWAPPED, lucide -> TABLER (Adilzhan picked
-  it from the lavish review `.lavish/torq-icons.html`, which drew the dock
-  in four packs using each one's REAL published geometry, fetched from the
-  Iconify API rather than redrawn).
-  Why Tabler: same 2 px outline idiom on the same 24-unit box, so the swap
-  is one map and nothing else, but drawn on a squarer grid, lucide's
-  rounded terminals sat oddly against SHARP-10 and a logo made of blades.
-  ~6 200 glyphs vs lucide's ~1 600; MIT; official RN package.
-  THE BIG SURPRISE, and the reusable lesson: the Android bundle went
-  6.00 MB -> 4.23 MB. That 1.78 MB is NOT the pack. It is the IMPORT
-  STYLE. The old `import { Archive, ... } from "lucide-react-native"` is a
-  BARREL, and Metro does not tree-shake, so the app shipped all ~1 600
-  lucide icons to use 57. Icon.tsx now deep-imports
-  (`@tabler/icons-react-native/IconHome`), one module per icon. Do not
-  "tidy" those 57 lines into one import.
-  The MAP KEYS are still the old lucide names, on purpose: ~60 call sites
-  say `<Icon name="Dumbbell" />` and renaming them across 20 files would be
-  churn. Icon.tsx is the one place the two vocabularies meet.
-  `src/types/tabler-icons.d.ts` exists because the package's `exports` map
-  points subpath types at `dist/icons/*.d.ts` while they actually live at
-  `dist/icons/icons/*.d.ts`, a packaging bug in 3.46.0. Delete the file if
-  a later version fixes it.
-  One glyph has no equivalent: lucide's BicepsFlexed became
-  `IconStretching`. Everything else mapped on first choice, verified against
-  the package's 6 243 exports rather than guessed.
-  `lucide-react-native` is uninstalled; nothing imports it.
-- 2026-08-09 (later): TAB SWITCHES MADE FAST, measured, not guessed.
-  Adilzhan: "when i change pages it feels too slow". Instrumented first
-  (stamp the moment setTab fires, log on the new screen's mount effect) and
-  the numbers named the culprit immediately: Workout 38 ms, Stats 51,
-  Home 114, Ranks 140–167, **History 601**.
-  HISTORY was the whole complaint. Two causes, one real:
-  (a) `computePRs` was called PER CARD and each call rescanned the entire
-      history, quadratic. New `prTotals(workouts)` in stats.ts does one
-      chronological pass; both it and computePRs now share a `scoreWorkout`
-      helper so the fast path cannot drift from the slow one, and six tests
-      assert they agree (including the same-`startedAt` tie case, which is
-      why prTotals scores tied sessions as a group).
-  (b) THE ACTUAL BOTTLENECK: the tab mounted every card at once, 37
-      workouts × the six lucide icons a card draws. It is a SectionList now
-      (initialNumToRender 5, windowSize 5, removeClippedSubviews).
-      601 ms -> 80–118 ms.
-  Also: Ranks memoised `rankLifts`/`overallRank`/`tierDates` (tierDates was
-  called INLINE IN JSX, so it walked the whole history on every render), the
-  carousel mounts only the badges within ±2 of the focused tier (each one is
-  a 2 500-char traced path), and `RankBadge` is `memo`-wrapped. Home
-  memoised its two `rankLifts` calls and `computeStreak`.
-  AFTER: Workout 38, Stats 56, History 80–118, Home 86–90, Ranks 125–165.
-  RANKS, a second pass: ablation, not guesswork. Baseline 113–115 ms;
-  removing the eight lift-row badges took it to 81, removing the carousel to
-  ~71. So the badges were ~75 ms of 113, and the emblem is the reason: a
-  2 500-character traced path drawn thirteen times.
-  Re-tracing the vortex was TRIED AND REJECTED, potrace at every tolerance
-  came back 2 021–3 050 chars against the original 2 502 (RMSE 0.008, so
-  visually identical but no cheaper). The original trace is already near
-  optimal; do not spend another afternoon on it.
-  What worked: nothing below the fold needs to exist in the first frame. A
-  `warm` flag flips on a frame callback, and until it does the carousel
-  mounts only the focused badge (`window={0}`) and the lift list only its
-  first three. 113 -> 55–68 ms.
-  Use `requestAnimationFrame`, NOT `InteractionManager`: the latter is
-  deprecated in RN 0.86 and shows a runtime warning toast (which also sat
-  over the dock and ate the taps in the middle of measuring this).
-  Numbers are from the DEV bundle in Expo Go; a production build is faster.
-  NOT DONE, deliberately: keeping visited tabs mounted. It would make
-  revisits instant, but the RankBadge orbits and carousel loops would keep
-  running off-screen, trading one performance problem for another.
-- 2026-08-09 (later): ONE PAGE TITLE. Adilzhan: "there is a different size
-  of page name on top in every page… remove the logo, make the page name
-  consistent". The app had FIVE sizes for the same thing, 30 on Home, 26 on
-  History/Workout/Ranks/Stats/Profile/Settings, 24 on sub-pages, 22 on the
-  exercise browser, none of it chosen, all of it accumulated. `PageTitle`
-  in ui.tsx is now the single definition (26 / extrabold / -0.6 tracking)
-  and every page uses it; measured after, the five tab titles land within
-  0.33 dp of each other. It carries `includeFontPadding: false` as part of
-  the definition, which is also what keeps the streak pill level beside
-  Home's heading.
-  The Ranks header lost its `<Logo size={30} />`: no other page had one.
-  Logo/SpinningLogo still belong on the auth gate, onboarding, the error
-  screen, the paywall and the share card, and RankBadge still uses
-  VORTEX_PATH.
-  DELIBERATELY NOT migrated: the TodayHero panel headlines, the onboarding
-  wizard's step titles, and Auth's centred "Confirm your email", those are
-  hero copy inside a screen, not the page's name.
-- 2026-08-09 (later): THE STREAK MARK IS OURS NOW. Adilzhan asked for a
-  streak icon "unique to the app, not just an icon from a pack" and picked
-  concept A, "Cut flame", from `.lavish/torq-streak.html`: a SOLID flame
-  silhouette with two tapered BLADES cut out of it (evenodd), curving the
-  way the vortex logo's blades curve. `src/components/StreakMark.tsx`.
-  Method worth repeating: the candidates were generated PARAMETRICALLY
-  (a tapered-blade function over quadratic beziers) and rasterised at 14 /
-  16 / 20 / 28 px with rsvg before any of them were shown, because a streak
-  mark lives in a pill next to a number and that is where icons die. That
-  caught two failures, concept B's first draft read as a CROWN, and
-  concept C's read as a blob below ~20 px. Regenerate with
-  scratchpad `gen_streak.py` rather than nudging beziers by hand.
-  OPTICAL FIX the same day: the mark's ink is 13.95 x 20.38 inside the
-  24-unit box, so drawing it in a SQUARE left 3.15 units of dead air down
-  each side, the streak pill's padding was geometrically equal (12/12) but
-  looked lopsided because the real gaps were 15.2 px left against 12 px
-  right. StreakMark now defaults to a TIGHT viewBox at the ink's true
-  aspect (`STREAK_ASPECT`), so `size` is the flame's actual height and
-  padding maths means what it says; `square` keeps the old box for the
-  animated version, whose embers are positioned in those coordinates.
-  Measured after, by sampling the screenshot per row (the pill is rounded,
-  so a bounding box catches its own antialiasing): left 10.67 dp vs right
-  11.00 dp, top 8.33 vs bottom 8.00, inside a third of a dp on both axes.
-  `includeFontPadding: false` on the count removed Android's phantom line
-  padding (which had the contents sitting 0.67 dp high); that shrank the
-  pill 28 -> 26 dp, so `hitSlop={11}` restores a 48 dp tap target.
-  SECOND ROUND, and the more useful lesson: the pill still "looked a bit
-  up", and it was not the pill. It was the HEADING. `alignItems: "center"`
-  centres a sibling on a Text's LINE BOX, and Android pads that box above
-  the caps, so the pill sat 1.67 dp above "Sunday"'s cap block (and the
-  descender of "y" pulls the ink centre lower still). Adding
-  `includeFontPadding: false` to the heading landed it at +0.17 dp of the
-  cap block. **When something next to text looks vertically off on Android,
-  suspect the text's line box before you nudge the thing beside it.** Not
-  applied globally in `Txt` on purpose. It would shift spacing on every
-  screen at once, which is not a change to make blind.
-  ONLY the streak uses it. Kcal keeps lucide's stroked `Flame` in
-  WorkoutCard / WorkoutSummary / Settings, which turns a collision into a
-  distinction: solid mark = your streak, outline = energy burnt.
-  `StreakMarkLive` replaced the hand-authored Lottie in StreakDialog,
-  keeping it would have meant the celebration using a DIFFERENT flame from
-  the pill that opened it. It keeps what the Lottie had that mattered
-  (squash-and-stretch flicker, two rising embers) on the native driver.
-  `assets/flame.json` stays in the repo but nothing references it, and
-  `lottie-react-native` now has no importer in src/.
-- 2026-08-09 (later): HOME REBUILT as "Today, full-bleed" (Adilzhan picked
-  idea 1 from the lavish review `.lavish/torq-home.html`; his brief was
-  "remove volume completely, no one is measuring that… show more about
-  stats, today's session (rest or training day) with more visuals so the
-  user knows what day is today").
-  The diagnosis the screenshots made obvious: a REST DAY and a TRAINING DAY
-  rendered as the SAME typographic block with a different noun (eyebrow,
-  headline, grey sentence), so you had to read the page to learn what today
-  was. The day is now a panel that changes shape: training is lime-gradient
-  and framed with muscle chips and a big Start; rest is a grey moonlit
-  object with no primary CTA that spends its space on what is recovering
-  and what lands next. Verified BOTH states on the device (the training
-  panel by temporarily forcing the state, then reverting).
-  DELETED: the volume Sparkline (it measured work done, not strength) and
-  the DateRuler. It cost ~90 px to repeat the date already in the header
-  and its ticks said nothing about which days you train. The week strip now
-  carries that, tagged PUSH / PULL / LEG per day, and the calendar button
-  still reaches any date.
-  NEW `src/lib/muscles.ts` (11 tests): `routineMuscles` ranks a session's
-  body parts by SET COUNT, volume would let one heavy squat outrank six
-  shoulder movements, `recovering` gives days-since per group counting
-  only ticked working sets (a warmup does not fatigue anything worth
-  reporting), and `sessionTag` makes the week-strip labels.
-- 2026-08-09 (later): HISTORY BACK IN THE DOCK. Adilzhan asked "where is
-  history page?", which is the answer to whether a lime "See all" link on
-  Home was a discoverable enough entry point. It is a tab again, so the dock
-  is six fixed slots at ~58 dp. That is NOT a return to the old problem: the
-  36 dp squeeze came from six tabs PLUS a separate profile button PLUS the
-  capsule stealing 2.6× the width, and with the morph gone six equal slots
-  still clear Android's 48 dp minimum. History dropped its back chevron and
-  its back-to-Home handler (it is top level again); Home's "See all" stays
-  as a second door. Exercises remains a sub-page of Workout.
-- 2026-08-09 (later): RANK BADGE ANIMATED + THE TIER LADDER (Adilzhan: show
-  the badge bigger, animate the orbit on every tier and not just World
-  Class, and list the tiers with the points each needs, "like in games, so
-  they are disabled, but user can see how they look like").
-  `RankBadge` now has TWO render paths and the split matters: STATIC (the
-  default) is the old single-SVG badge with the balls parked and the ring
-  masked around them, list rows keep it, because Ranks draws 8 lift rows,
-  Friends draws a row per friend and none of them should pay for motion
-  nobody is watching. ANIMATED (`animated` prop) actually orbits. RN has no
-  SMIL, so one looping Animated.Value drives translateX/translateY/scale/
-  opacity through interpolation tables sampled off the tilted ellipse, all
-  on the NATIVE driver, the motion never touches the JS thread while you
-  scroll. Z-ORDER IS FAKED: each ball is drawn TWICE, once under the shield
-  and once over it, cross-fading between the copies at the ellipse's left
-  and right extremes where the ball is clear of the shield and the swap is
-  invisible. The balls are plain Views, not SVG circles, at ~12 px a fill
-  plus a specular dot is indistinguishable from the radial gradient and
-  costs a fraction of the nodes. The animated path drops the ring's mask gap
-  on purpose: an opaque ball riding over a continuous ring reads as "in
-  front" by itself, and animating the mask would need JS-driven SVG props.
-  The Ranks hero went 170 → 248 px with negative vertical margins, because
-  the artwork only occupies y 25–104 of the 136-unit viewBox and at that
-  size the empty bands are ~45 px at each end.
-  NEW `src/components/TierCarousel.tsx`: all nine tiers as a horizontally
-  scrollable ladder (a 3×3 grid shipped first and Adilzhan replaced it the
-  same day). It IS the hero. It opens centred on your own tier at 240 px,
-  and swiping walks the ladder. Earned tiers show the DATE they were reached
-  and keep orbiting; locked ones carry a lock, the points required and how
-  many to go, and stand still at 50% opacity, the real art, never a
-  silhouette, because the point is seeing what Diamond looks like while you
-  are still Silver.
-  Mechanics follow DateRuler: one scrollX Animated.Value drives every item's
-  scale and opacity on the NATIVE driver, so flicking through nine badges
-  never touches the JS thread; only the caption needs JS, and its listener
-  is guarded on the centred index actually changing. Slot geometry is solved
-  rather than guessed. The centred badge renders 240 wide (edge 120 from
-  centre) against a neighbour's inner edge at 133, so the cards never
-  overlap into a stack. GOTCHA fixed: the carousel is full-bleed, so the
-  side padding must NOT subtract the page gutter, or every centred badge
-  sits 16 px left of centre.
-  `tierDates` in progress.ts supplies the achieved dates: it walks the same
-  running-best map and records the FIRST crossing of each threshold. First
-  reached, not currently held, points fall when bodyweight rises, and a
-  badge that un-earns itself is a promise broken; games don't take tiers
-  back and neither does this.
-  Orbit verified on the emulator by capturing three frames 1.4 s apart and
-  montaging them, the ball visibly crosses in front of the shield.
-- 2026-08-09 (later): STATS REBUILT as "the climb" (Adilzhan: "I don't like
-  that it shows the volume, not rank advancement, or weight increasing in
-  exercises". He picked idea 1 plus the dumbbell chart from idea 2 in the
-  lavish review `.lavish/torq-stats.html`, which embeds real screenshots of
-  the old page rather than a mock of it).
-  The old page led with "29k VOLUME (KG)" and its biggest chart was weekly
-  volume, above a near-identical weekly workout-count chart, four of whose
-  six slots were empty. Volume measures how much work you did; it rewards
-  long sessions, not strong ones.
-  NEW `src/lib/progress.ts` (pure, 16 new tests): `rankHistory` replays DOTS
-  points across a window, the running best-per-exercise map is advanced
-  through the workouts ONCE rather than recomputed per sample, because the
-  naive version is quadratic and this runs on every render, and reads
-  BODYWEIGHT PER SAMPLE, since DOTS divides by it and a fixed weight would
-  draw a flat line over a real decline. `liftMovement` gives each lift's
-  best e1RM then vs now (a debut starts at its first value, not zero, or the
-  chart would claim a jump that never happened). `recentRecords` is the PR
-  feed, and a lift's FIRST appearance is deliberately not a record.
-  NEW `src/components/ProgressCharts.tsx`: `RankLine` (one series =
-  emphasis, so no legend and exactly ONE direct label; tier bands are an
-  ordinal ramp at 6% alpha; the window always leaves the band ABOVE enough
-  height to carry its own name, because that band is the target) and
-  `Dumbbell` (before → after per lift; one hue in two treatments, hollow =
-  then, filled = now, so a row with no gap reads as a stall).
-  Extracted `src/components/SubPage.tsx` from Settings so Stats and Settings
-  share one sub-page frame and one back-handling story.
-  TWO CHART BUGS fixed on the device in the same pass: `MuscleBreakdown`'s
-  RAMP was `rgba(26,27,26,…)`, near-BLACK, left over from the light clay
-  theme, so on the #0E0F0E cardless page every segment was invisible and
-  the bar rendered as an empty grey strip beside a legend of percentages;
-  it is now a validated ordinal ramp for a dark surface (monotone lightness,
-  ΔL ≥ 0.06 per step, 2.17:1 at the dim end). And dropping the empty weekly
-  buckets turned a sparse chart into a ONE-BAR bar chart, so the weekly bars
-  now need two weeks before they draw at all. One bar is not a chart, it is
-  the figure already printed above it.
-- 2026-08-09 (later): FIRST EMULATOR RUN since the push work, the app did
-  not load at all. Red box: "[runtime not ready]: expo-notifications:
-  Android Push notifications … was removed from Expo Go with the release of
-  SDK 53", thrown from `addPushTokenListener` during module require. See the
-  rule at the top of "Push notifications" above; fixed by loading the
-  package lazily. Two visual fixes found in the same pass: Profile's lime
-  avatar ring around the lime no-photo avatar read as one blob (the ring now
-  only frames an actual photo), and Home's week strip could print an
-  impossible "4 of 3 done" (it now says "4 done · 1 above plan" once you
-  pass the target). Verified on the emulator: Home, Ranks and the new
-  Profile all render, and the five-tab dock behaves.
-  `supabase/social.sql` was then applied from this machine over the session
-  pooler (see "Auth + secrets") and verified: `profiles.avatar_url` exists,
-  the public `avatars` bucket and its four folder-scoped storage policies are
-  in place, and `handle_taken` is granted to `anon`. The Friends view's
-  "column profiles.avatar_url does not exist" banner is gone and it reads the
-  handle again.
-- 2026-08-09 (later): PROFILE split into an ATHLETE CARD + a SETTINGS HUB
-  (Adilzhan picked "idea 1 with a settings page built like idea 2" from the
-  lavish review `.lavish/torq-profile.html`). The old page was four screens
-  in one ~2 400 px scroll: identity, a full rank card, every setting, and
-  account deletion.
-  `Profile.tsx` now has one job, "who am I here": centred avatar in a lime
-  ring (tap to edit), name, @handle (from `myProfile()`), body line and
-  "lifting since <month year>" (derived from the earliest workout, so it
-  stays true for imported history); a rank STRIP with a 64px shield that
-  SUMMARISES and links to the Ranks tab instead of repeating its 168px
-  shield; workouts / volume / day-streak; best lifts with tier + percentile;
-  Share (wired to the existing `ShareRankCard`, which had no button anywhere
-  near this page) and Edit profile; then three quick links, Friends,
-  Training plan, Settings.
-  NEW `src/screens/Settings.tsx` is the grouped hub. Its rule: EVERY ROW
-  SHOWS ITS CURRENT VALUE, so "what unit am I on" is answered by scanning,
-  not tapping. Single-switch controls (units, sound) stay inline; anything
-  with more than one field opens a `SubPage` (body profile, daily goals,
-  account, your data, developer), plain `sub` state plus a shared frame,
-  not a router. Developer tools are now two taps off the main path instead
-  of sitting under a real user's history.
-  Also: the Ranks You/Friends/Arena segment moved from Ranks' local state
-  into `useUi` (`ranksView` + `openRanks(view)`), so Profile's Friends row
-  can deep-link straight to the Friends segment. `Icon` gained Camera and
-  UserRound.
-- 2026-08-09 (later): BOTTOM NAV redesigned, "Five, spelled out" (Adilzhan
-  picked it from the lavish review `.lavish/torq-navbar.html`, which put the
-  current morphing dock next to three interactive alternatives). The
-  diagnosis was measured, not guessed: on a 360 dp screen the dock's 6 tabs
-  plus the profile button shared 274 dp, and with the active tab at 2.6x the
-  flex of the others an IDLE tab was ~36 dp, under Android's 48 dp minimum
-  touch target, unlabelled, and it slid sideways on every tap. Now:
-  FIVE fixed fifths (~70 dp) that never resize, each with its NAME under the
-  icon, active = lime + a 3px rail on the dock's top edge (scaleX + opacity,
-  so the only animation left runs on the native driver and touches no
-  layout), and Profile as the fifth slot rendered with the user's AVATAR
-  instead of a generic glyph. Dock height 62 → 64.
-  History and Exercises LEFT the dock and became sub-pages: History opens
-  from Home's "Recent workouts · See all" and has a back chevron plus a
-  hardware-back handler to Home; Exercises opens from a new "Exercise
-  library" row on the Workout tab and passes ExerciseBrowser's existing
-  `onBack`. `PARENT` in BottomNav keeps the parent tab lit while a sub-page
-  is open, so the dock never shows nothing selected. Options B (centre lime
-  action button) and C (adaptive session bar) are described in the artifact
-  if the workout-first direction is ever wanted.
-- 2026-08-09 (later): HISTORY REBUILT as THE TIMELINE (Adilzhan: "I don't
-  really like how history page looks like"; he picked idea A from the lavish
-  review `.lavish/torq-history.html`, which embeds real screenshots of the
-  page as it was). The old page was a wall of identical WorkoutCards: every
-  session rendered the same five-line inventory of "4 x Barbell Full Squat
-  ... 90 kg", so a session that set fifteen records looked exactly like three
-  sets of bench. It was also the LAST screen still leading with VOLUME and
-  calories, months after both were cut from Home and Stats.
-  `src/screens/History.tsx` now draws a rail down the left with one node per
-  session (LIME when the session set a record, hollow when it did not) and
-  the row says what the session DID: "15 PRs" (gold), "+4 pts" (lime) and the
-  muscles worked, over duration/sets/exercises. The exercise list is gone
-  from the row; it was always one tap away in the summary, which is
-  unchanged.
-  The empty days are NAMED between the nodes ("1 day off"). That is the whole
-  argument for the redesign: a log's second job is showing your pattern, and
-  a gap marker says more about a training year than any per-session number.
-  Gaps are computed WITHIN a month only, one spanning a month boundary would
-  render above the next month's header and read as the wrong month's rest.
-  Two implementation notes worth keeping:
-  - Every row draws its OWN slice of the rail (plus a cap at the first and
-    last node of a month) rather than the list drawing one long line. The
-    list is virtualised, so a single continuous rail would be cut wherever
-    windowing decided to unmount. Stacked segments are seamless and survive
-    recycling.
-  - The two new numbers are ONE chronological pass each, not one per row:
-    `prTotals` (stats.ts, already there) and the new `pointsPerWorkout`
-    (progress.ts), which replays the running best-e1RM map and diffs overall
-    DOTS before and after each session. Per-row computation is what made this
-    page cost 600 ms to open in the first place.
-  Also new: `workoutMuscles` in muscles.ts (ticked, non-warmup sets only, a
-  session where you racked the bar after two warmups did not train that
-  muscle). `WorkoutCard` stays: Home's recents and the exercise-info History
-  tab still use it. tsc + 180 tests + android export clean; verified on
-  emulator-5556 (timeline, gap markers, rail caps, tap-through to summary).
-- 2026-08-09 (later): SWIPE LEFT TO DELETE A SET (Adilzhan asked how users
-  delete sets, referencing Strong). There was no way at all: the live session
-  had "Add set" and no inverse, so a mis-tapped extra set stayed for the rest
-  of the session. Now every set row swipes left to reveal a red Delete.
-  `src/components/SwipeToDelete.tsx` is HAND-ROLLED on PanResponder +
-  Animated rather than react-native-gesture-handler's Swipeable. The
-  dependency is not in this project, its legacy Swipeable is deprecated in
-  favour of a Reanimated one, and Reanimated needs a babel plugin, and this
-  app has NO babel.config.js at all, because NativeWind v5 is CSS-first.
-  Trading a 60-line gesture for a build-config change is a bad deal.
-  THE ONE THING THAT MATTERS IF YOU TOUCH IT: the claim is
-  `onMoveShouldSetPanResponderCapture`, not the bubbling version. The row is
-  full of Pressables and TextInputs, and once a child holds the responder an
-  ancestor can only take it during the CAPTURE phase. The bubbling handler
-  shipped first and did nothing at all. The 12 px + |dx| > 1.6·|dy|
-  threshold is what keeps taps, field focus and vertical scrolling with the
-  child; all three were re-verified on the emulator after the change.
-  Opening is CONTROLLED by ActiveSession (`swipeOpen` holds one "ei-si") so
-  only one row can sit open. Two half-open rows read as a rendering bug,
-  and an open row's own content is covered by a close-on-tap overlay, since
-  its controls are shifted off their labels while it is open.
-  `removeSet` takes NO confirmation on purpose: one set is cheap to retype
-  and a dialog on every mis-swipe costs more than the mistake. Deleting the
-  LAST remaining set falls through to the exercise's existing confirm instead
-  of leaving an empty header. It also cancels a running rest and clears the
-  grow-in keys for that exercise, because both are keyed by set INDEX and
-  every index at or after the removed row now points at a different set.
-  GOTCHA that ate twenty minutes: pressing hardware Back at the app root
-  exits Expo Go, and the `am start` that follows serves the CACHED bundle,
-  so edits appear not to apply. Force-stop first. Proven by giving the
-  component a red border and screenshotting for it, which is the fastest way
-  to answer "is my code even live".
-- 2026-08-09 (later): NOTES REDRAWN like Strong's (Adilzhan: "here is how
-  sticky note and note looks like. it's too bad", with a Strong screenshot).
-  Both notes were 12 px grey lines wedged under the exercise name, the
-  sticky one in inkFaint, which is the app's DIMMEST ink. A note you wrote to
-  your future self is an instruction ("elbows in", "bar on pin 4"); rendering
-  it fainter than the column headers guarantees it gets skipped.
-  Now, in Strong's order: exercise name → STICKY NOTE as a full-bleed amber
-  band (C.warnSurf, pin + warnAcc text, margin −16 so it reaches both screen
-  edges) → SET/PREVIOUS/KG/REPS header → SESSION NOTE as a field-shaped box
-  (page2 fill, hairline border, R.sm) → the sets.
-  The split in PLACEMENT now carries the split in MEANING that already
-  existed in the data: the sticky note belongs to the exercise and comes back
-  every session, so it sits with the exercise's identity; the session note is
-  about today ("shoulder felt off"), so it sits inside today's list. Editing
-  is unchanged, tap either to open the existing dialog.
-- 2026-08-10 (later): EVERY EM DASH IS GONE, all 1,144 of them, across every
-  tracked file (Adilzhan: "rewrite the CLAUDE.md and everything inside an app
-  so it doesn't use em dashes"). Nothing carries one now except the two
-  lines that have to name the character.
-  NOT a character swap. A scratchpad script classified each occurrence and
-  picked the punctuation that actually belongs: a dash PAIR became
-  parentheses (including pairs that wrap across two lines), a label followed
-  by its explanation became a colon, an independent clause became a full stop
-  with the next word capitalised, and everything else became a comma. It
-  never reflows, so lists, indentation and code stay exactly as they were.
-  THREE BUGS IT CAUGHT ON ITSELF, worth knowing if this is ever repeated:
-  (1) pairing dashes across lines joined two SEPARATE string literals and
-  produced `"...already has an account (try signing in."` with an unbalanced
-  paren, so cross-line pairing is now refused unless every line between is
-  prose; (2) the subject test required a capital letter, but the word after a
-  dash is nearly always lowercase, so almost every clause was misread as an
-  appositive and got a comma; (3) the sweep rewrote the UI's "no value"
-  GLYPH, the standalone `"—"` in the PREVIOUS column, the week strip and the
-  dumbbell chart, turning it into a comma on screen. Those eight are now a
-  plain `"-"`, which is a visual change and is verified on the emulator.
-  Afterwards, 18 comma splices and 13 run-on lists were fixed by hand, found
-  by grepping the diff for `, it is` / `, this is` patterns and by replaying
-  which dash pairs the script had split. tsc + 198 tests + android export
-  clean.
-- 2026-08-10 (later): THE SCREENSHOT PIPELINE IS NOW REPEATABLE (Adilzhan:
-  "we will add new features, so these screenshots should be updated, and you
-  need to remember how you did that"). The one-off scratchpad commands became
-  `scripts/snap.sh`, `scripts/build-shots.py` and `docs/shots/HOW.md`, and the
-  rule lives in the "Screenshots + the README product page" section above.
-  Verified by regenerating from the committed screenshots: `magick compare
-  -metric AE` reports 0 differing pixels against both hero.png and a framed
-  shot, so the scripts reproduce the artwork exactly rather than approximately.
-- 2026-08-10 (later): README REBUILT AS A PRODUCT PAGE (Adilzhan: "make great
-  screenshots of my app, cut the bar where time is shown, upload it on README
-  but in the way like you are selling it, not just 3 screenshots").
-  11 screenshots captured off emulator-5554 into `docs/shots/`, each cropped
-  `1080x2232+0+120`, that strips the Android status bar (40 dp) and the
-  gesture pill (16 dp) while keeping the dock, which is part of the app.
-  `docs/shots/framed/` holds the same shots rounded, bezelled and shadowed by
-  a scratchpad `frame.sh` (ImageMagick), so a raw screenshot reads as a
-  device. `docs/shots/hero.png` is a 2600x1400 banner: wordmark set in the
-  real Space Grotesk TTF from node_modules, the vortex dimmed to 6% bleeding
-  off the bottom-left (the same watermark idea as the app's hero panel), and
-  three phones with Home in front.
-  GOTCHA in frame.sh: a mask drawn on `xc:none` with no `-fill` uses IM's
-  DEFAULT fill, which is BLACK, as a CopyOpacity source that makes the whole
-  image transparent and you get a bezel with nothing in it. `-fill white`.
-  The old `docs/screens/` shots were deleted; they showed the clay/bento
-  design from before the rebrand.
-  FACTS CHECKED AGAINST THE CODE rather than written from memory, and two
-  were wrong on the first pass: the tier ladder is Rust → Iron → Bronze →
-  Silver → Gold → Platinum → Diamond → Elite → World Class (there is no
-  "Master"), and the percentile sample is 2.2M LIFTERS, not results. The
-  README also repeats the rule from the percentiles section: it never says
-  "top N% of people", always "of competitive lifters".
-- 2026-08-10 (later): HOME'S RECENTS ARE THE TIMELINE ROW (Adilzhan: "recent
-  workouts on the home page have an old design, change it to what is shown
-  now in History page"). History's node was extracted into
-  `src/components/WorkoutRow.tsx` and both screens now render the SAME
-  component (rail, PR dot, "15 PRs" / "+4 pts" / muscle chips) rather than
-  Home keeping the old WorkoutCard with its exercise inventory, volume and
-  calories.
-  Two props keep the two contexts honest rather than forking the design:
-  Home passes no `onDelete` (a glance list should not offer to destroy
-  anything; History keeps its trash) and no `gapDays` (rest-day markers are
-  History's way of showing your PATTERN: on three teaser rows they are
-  noise).
-  GOTCHA worth remembering: Home's ScrollView sets `gap: 14` on its children,
-  which cut the rail between every row. The rows are wrapped in one View so
-  the gap applies to the section, not between nodes.
-  `WorkoutCard` survives, the exercise-info History tab still uses it, and
-  there the per-exercise inventory is the point.
-- 2026-08-10 (later): THE STREAK PILL, LEVEL FOR REAL (Adilzhan: "doesn't
-  look equal isn't it? place them on the same line"). Measured before
-  touching anything, and the pill was geometrically PERFECT: centred on
-  "Monday"'s cap block to within 0.17 dp, its flame and digits within 0.33 dp
-  of each other, padding 10.7 left / 11.0 right, 8.3 top / 8.0 bottom.
-  It still looked high, and the reason is that `alignItems: "center"` centres
-  on the text's BOX (cap top to descender bottom) while the eye centres on
-  the word's INK. "Monday" hangs a "y" 13 px below the baseline, which pulls
-  its visual mass 2.33 dp below the box centre. Every weekday name ends in
-  "day", so that correction is the same all seven days and can be a constant.
-  Fixed with `translateY: 2.3` on the pill; after, the gaps above and below
-  the word's ink are 9 px and 8 px and the pill is 0.17 dp off its optical
-  centre.
-  A TRANSFORM, not a margin, and this is the trap worth remembering:
-  `alignItems: "center"` centres the MARGIN box, so `marginTop: 2.5` moved
-  the pill only 1.25 dp, half of what the number says. Measured, corrected,
-  re-measured.
-  BASELINE ALIGNMENT WAS CONSIDERED AND REJECTED: putting the digits on the
-  word's baseline needs +4 dp, which leaves the pill's box hanging 13 px
-  below the descender. Optical centring gives symmetry; baseline alignment
-  gives a bottom-heavy badge.
-- 2026-08-10 (later): THE VORTEX AS A WATERMARK on Home's hero (Adilzhan saw
-  a dimmed shape behind the training-day card and asked for it to be our
-  logo, what he was actually seeing was the lime gradient falling off, so
-  there was nothing there yet).
-  `HeroMark` in Home.tsx draws VORTEX_PATH from Logo.tsx at 340 px with 44%
-  of it hanging off the right edge, at 8% opacity, clipped by the panel's own
-  radius (`overflow: "hidden"` on the LinearGradient) and `pointerEvents:
-  "none"`.
-  THE SIZE IS THE WHOLE TRICK, and the first attempt got it wrong: a 260 px
-  mark fits INSIDE the panel, so you see a complete vortex and it reads as a
-  second logo arguing with the headline. Bigger and cropped, you see blades
-  cutting in from the corner, which reads as texture. If you ever retune it,
-  make it larger and push it further out, never smaller.
-  Only on the LIT faces (training day, done today). The rest-day panel spends
-  its space saying what is recovering and how long since, and a brand mark
-  behind that is decoration competing with the one thing the panel is for.
-  Verified both faces on emulator-5554 (the done face by temporarily forcing
-  its branch, then reverting).
-- 2026-08-10: EVERY MODAL REBUILT ON ONE SHELL (Adilzhan: "now it opens good,
-  but slowly, and it takes time for me to be able to actually press on
-  buttons there"). See the "Modals" section above for the rule; this is what
-  was measured and why.
-  THE ANIMATION, simulated and then measured on the emulator. Every overlay
-  sprang in with `friction: 6, tension: 140`. Those are ORIGAMI units. RN
-  maps them to stiffness 592 / damping 19 before solving, which the first
-  pass at this got wrong, so the real damping ratio is 0.39: a 26% overshoot
-  (the card sprang past full size and bounced back) and 967 ms before RN's
-  rest thresholds stop it. Frame-differencing a screen recording showed
-  150 ms of VISIBLE movement, the rest being sub-pixel ring. Replaced with a
-  150 ms `Easing.out(cubic)` timing, measured at 117 ms of visible movement,
-  no overshoot. The card also starts at 0.96 instead of 0.85: travel is what
-  makes a target hard to hit, and 0.85 displaced a control near the dialog's
-  edge by ~48 px mid-open, against ~6 px now.
-  THE BIGGER HALF WAS NEVER THE ANIMATION, and this is the part worth
-  keeping. Stamping the opening tap and logging the overlay's mount gave:
-  a modal opened from HOME renders 30 ms after the tap and starts animating
-  at 57 ms; the same code opened from the LIVE SESSION renders at 124 ms and
-  starts animating at 218 ms. So the dominant cost is React re-rendering the
-  whole ActiveSession tree (~124 ms) because the menu's state lives inside
-  it, plus ~47 ms for react-native's Modal to inflate an Android window
-  (measured as the render→effect gap: 47 ms inline vs 94 ms through a Modal
-  on the same screen). NOT FIXED, deliberately, memoising ActiveSession's
-  exercise blocks is a real refactor of a 1800-line file and belongs in its
-  own change. The live session also re-renders the open popover every second
-  via the elapsed-time ticker.
-  WHY AnchoredModal KEEPS THE RN MODAL despite those 47 ms: an inline
-  popover would sit under the dock (which the centered dialogs already do,
-  but they are centered) and would need page coordinates translated into the
-  screen root's space, which is exactly the status-bar bug this project has
-  already fixed once. Paying 47 ms to keep four popovers correct is the right
-  trade; the note is here so nobody "optimises" it blind.
-  PROOF OF PRESSABILITY, since that was the complaint: firing the opening tap
-  and a tap on the dialog's Cancel 100 ms apart from one adb shell dismisses
-  the dialog: a control is live while the entrance is still running. At
-  14 ms apart the second tap lands on the screen underneath, which is just
-  the mount cost above, not the animation.
-  ALSO IN THIS CHANGE: `Dialog.tsx` deleted and 15 files migrated
-  (`CenterDialog`→`CustomModal`, `ConfirmDialog`→`ConfirmModal`,
-  `useDialogClose`→`useModalClose`); the three live-session popovers and the
-  exercise-browser order menu moved onto `AnchoredModal`; `PopIn` and
-  `SlideUp` retuned off the same MOTION tokens (they were the same spring,
-  SlideUp rang for 567 ms); hardware BACK now closes the top-most modal
-  instead of falling through to the screen; the scrim color became
-  `C.scrim`/`C.scrimDeep` after the new test caught two files painting their
-  own; and the order menu now anchors off its button's page Y like every
-  other popover, because AnchoredModal positions in window coordinates and
-  its old hardcoded `TOP_BAR_SPACE + 42` was a local one.
-  tsc + 198 tests + android export clean; verified on emulator-5554 (streak
-  dialog, filter dialog, confirm dialog, set-type / exercise-⋯ / order
-  popovers, the new-exercise sheet's backdrop, and Back-to-close).
-- 2026-08-09 (later): WARM-UP SETS ARE NOW A DIALOG, Strong's (Adilzhan sent
-  the screenshot and asked "idk if you count it the way Strong counts warm up
-  sets. maybe there are different warm up set percentages for different
-  exercises?").
-  The old behaviour inserted a 40/60/80% ramp SILENTLY the moment you tapped
-  the menu item, the wrong shape for the decision twice over: warming up for
-  a heavy triple and warming up for lateral raises are not the same ramp, and
-  a menu item that rewrites your set list with no preview is a thing you undo
-  rather than a thing you use.
-  `src/components/WarmupDialog.tsx` + `src/lib/warmup.ts` (10 tests): work-set
-  field at the top, one row per warm-up with an editable formula and the REAL
-  kilos beside it, Add set, Restore, Cancel, Insert. Defaults are Strong's,
-  Bar × 5, 50% × 3, 80% × 3: not the old 40/60/80: three loaded ascending
-  sets is a lot of work before the work, and Strong's ramp spends its first
-  set on the movement itself.
-  THE BAR IS A ROW TYPE, not a percentage, and that is the point: 50% of a
-  40 kg work set is 20 kg, which IS the bar, but 50% of 120 kg is 60 and the
-  bar is still 20. A ramp that cannot say "just the bar" has to fake it.
-  BAR_WEIGHT is 20 kg / 45 lb.
-  ANSWER TO THE QUESTION ASKED: there is no per-exercise default, because no
-  honest one exists, nothing in the catalog says whether an exercise is a
-  heavy barbell triple or a lateral raise. Instead the ramp is REMEMBERED on
-  the Exercise (`Exercise.warmup`, so it syncs), and one tuned for squats
-  stays with squats. The app learns yours rather than guessing.
-  Percentages round to the loadable step for the equipment via the existing
-  `getWeightStep` (2.5 kg barbell, 1 kg dumbbell), which is how Strong's
-  screenshot gets 92.5 from 80% of 115. Rows that land at or above the work
-  set are dropped: they are not a warm-up any more. Insert REPLACES existing
-  warm-ups rather than stacking, so the preview is always what you end up
-  with however many times you open it.
-  GOTCHA, hit and fixed the same hour: `useDialogClose()` reads a context
-  CenterDialog provides, so calling it in the component that RENDERS the
-  dialog is outside the provider and silently returns the no-op fallback,
-  Insert inserted and the dialog stayed open. The footer is its own child
-  component now, the same reason ConfirmButtons is one in Dialog.tsx.
-- 2026-08-09: Four requested changes (Adilzhan).
-  (1) PROFILE PICTURES, `src/lib/avatar.ts` + `src/components/Avatar.tsx`.
-  expo-image-picker (config plugin added to app.json). The picture is kept
-  on the PHONE first (copied out of the picker cache into the document dir,
-  `Settings.avatarUri`) and uploaded second (`Settings.avatarUrl` +
-  `profiles.avatar_url`), so a guest gets an avatar too and a failed upload
-  never costs the user their choice; display order is avatarUrl → avatarUri
-  → lime initial, with `onError` falling back so a stale URI renders as the
-  initial rather than an empty hole. Filenames and the public URL carry a
-  timestamp because expo-image caches by URI, reusing one path would keep
-  showing the old picture. Storage bucket `avatars` is public with
-  folder-scoped writes (`<user_id>/avatar.jpg`), so nobody can overwrite
-  someone else's face. Friend rows show the avatar next to the shield.
-  (2) PROFILE RANKS ARE BADGES, not "GOLD"/"SILVER" chips: TierPill is gone
-  from Profile, the overall rank is a 168px shield with the tier named
-  underneath, and each best-lift row carries its own 52px shield. Identity
-  (avatar + name + body line) moved OUT of RankCard into its own row above
-  it, so a user with no ranked lift yet still has a face and a name.
-  (3) HISTORY SEPARATION, the real cause was WorkoutCard ruling off its own
-  sections with the SAME hairline the caller uses BETWEEN cards, so a list
-  read as one continuous striped block. The card's two internal Dividers are
-  gone (grouping is spacing + type weight now), its title went 15/bold →
-  16/extrabold, and the only rule left on the page is the one that ends a
-  workout.
-  (4) USERNAME ON REGISTER, the Create-account tab asks for a handle with a
-  debounced live availability check. `handle_taken` is now granted to `anon`
-  as well (rewritten so its "not me" clause doesn't drop every row when
-  auth.uid() is null) because there is no session yet on that screen. Since
-  sign-up returns NO session (email confirmation is on), the name is parked
-  in AsyncStorage by `rememberSignupHandle()` and claimed by
-  `claimPendingHandle()` from an effect in AuthProvider on the first session
-  that appears, which may be minutes later, after the confirmation link. It
-  publishes (`visible: true`): asking for a username and saying "this is how
-  friends find you" IS the opt-in. RE-RUN supabase/social.sql for the avatar
-  column, the storage bucket/policies and the new grant.
-- 2026-08-08 (later): Play launch pack written (docs/launch/), privacy
-  policy, a data-safety answer sheet verified against the schema, store
-  listing copy, and the ordered launch playbook. Key scheduling finding:
-  the 12-tester/14-day closed test and pre-registration both have hard
-  waiting periods, so they gate the date more than the code does.
+- **2026-07-04 to 07-11:** built. Expo + NativeWind scaffold, grit's design
+  system and Supabase sync ported, the 1500-exercise ExerciseDB catalog,
+  Strong-style live session (rest timers, set types, PREVIOUS column, swipe
+  to delete, warm-up ramps, notes), routines + editor, workout summary with
+  PRs, charts, the training-plan generator and onboarding wizard, suggested
+  next weights, plan-aware streaks, calories.
+- **2026-08-04 to 08-06:** the rebrand. Space Grotesk, the lime vortex logo,
+  the near-black CARDLESS palette, the rank engine (DOTS + a 9-tier ladder)
+  and the Ranks tab with SVG shield badges.
+- **2026-08-08:** the heavy day. SHARP-10 radii, the auth gate, the whole
+  social layer (profiles, friends, snapshots, compare, share cards),
+  OpenPowerlifting percentiles + plausibility caps, the Arena, entitlements,
+  push notifications, account deletion and export, error boundaries, the
+  vitest suite, and a measured startup/search performance pass.
+- **2026-08-09:** Tabler icons (and the barrel-import discovery that cut
+  1.78 MB off the bundle), a measured tab-switch performance pass, one
+  PageTitle everywhere, the five-slot dock, and Home / Stats / History /
+  Profile each rebuilt from a lavish review.
+- **2026-08-10 to 08-11:** 1,144 em dashes removed, the README rebuilt as a
+  generated product page with a repeatable screenshot pipeline, every overlay
+  moved onto one modal shell with measured timing, and the FEATURES.md top
+  five shipped (ghost mode, per-set timestamps, auto-deload, wrapped, plate
+  math). The streak became a character lifted out of a Lottie.
+- **2026-08-16:** exercise demo gifs switched off (quality and licence), so
+  the About tab leads with the instruction text.

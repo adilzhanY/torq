@@ -51,7 +51,10 @@ export const FEATURES: Record<Feature, FeatureSpec> = {
   },
   percentiles: {
     label: "Percentiles",
-    pitch: "Where you stand against 2.2 million competition lifters.",
+    // Deliberately vague where the exact figure differs per lift. The real
+    // per-lift samples run from 134k to 401k raw lifters; the app shows the
+    // exact n next to each percentile. "2.2 million" was never in the data.
+    pitch: "Where you stand among hundreds of thousands of competitive lifters.",
     free: false,
   },
   friends: {

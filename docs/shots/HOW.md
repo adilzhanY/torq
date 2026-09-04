@@ -44,13 +44,13 @@ it; if a feature adds a screen worth selling, add it here first.
 |---|---|---|
 | `home` | Home, a training day | Lime hero panel with the vortex watermark, week strip, rank tiles |
 | `live` | Workout, session active | Warm-up W rows, two ticked lime sets, a running rest countdown |
-| `ranks` | Ranks → You | Big animated badge, points, per-lift rows with percentiles |
+| `ranks` | Ranks → You | Big animated hex-track badge (gem on the track, corner studs at Gold), points, per-lift rows with percentiles |
 | `stats` | Stats | The rank line with tier bands, the dumbbell "what moved" chart |
 | `history` | History | Rail with lime PR nodes, PR/points chips, a "1 day off" marker |
 | `summary` | History → tap a session | The stats bar and trophy PR pills |
-| `library` | Workout → Exercise library | The catalog with animated demo thumbnails |
+| `library` | Workout → Exercise library | The catalog rows: name, muscle chips, equipment. NO thumbnails, demo media is off since 2026-08-16 |
 | `warmup` | Live session → ⋯ → Add warm-up sets | The dialog with real kilos beside each formula |
-| `streak` | Home → streak pill | The flame, the count, the week strip |
+| `streak` | Home → streak pill | The lime streak creature, the count, the week strip. NOT the old orange flame, that asset is deleted |
 | `workout` | Workout, no session | Quick start, routines, recommended |
 | `profile` | Profile | Avatar, rank strip, best lifts with percentiles |
 

@@ -308,7 +308,7 @@ export function Friends() {
         </Txt>
         <HandleInput value={handle} onChange={setHandle} placeholder="yourname" onSubmit={claim} />
         <Txt size={11} color={C.inkFaint}>
-          3–20 characters: lowercase letters, numbers and _.
+          3-20 characters: lowercase letters, numbers and _.
         </Txt>
         {error ? <Banner text={error} /> : null}
         <PrimaryButton

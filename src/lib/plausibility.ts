@@ -22,7 +22,7 @@ import type { Equipment } from "./../types";
  * Ceiling for exercises with no official record, expressed in DOTS.
  *
  * CAUGHT BY A TEST (2026-08-08): this was 200, on the mistaken belief that
- * elite single lifts land near 130–140 DOTS. They do not. DOTS is
+ * elite single lifts land near 130-140 DOTS. They do not. DOTS is
  * calibrated for a three-lift TOTAL, so a single world-record lift scores
  * far higher: Ray Williams' 490 kg squat is ~270, and the highest any
  * bundled record can score inside its own weight class is ~350. A 200

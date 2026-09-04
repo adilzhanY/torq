@@ -112,6 +112,17 @@ export function ExerciseInfo({
     exercise.libId ? e.id === exercise.libId : e.dbId != null && e.dbId === exercise.dbId,
   );
   const db = exercise.dbId ? DB_BY_ID[exercise.dbId] : undefined;
+  /**
+   * The how-to steps, and with the demo clip gone they are the whole lesson,
+   * so they are rendered as a numbered list rather than a grey paragraph.
+   * The catalog prefixes each one "Step:1 ", which is a storage artifact and
+   * never belonged on screen. Memoised because dbInstructions pulls in a
+   * 776 KB module the first time it runs.
+   */
+  const steps = useMemo(
+    () => (db ? dbInstructions(db.id).map((s) => s.replace(/^Step:\d+\s*/, "").trim()) : []),
+    [db],
+  );
 
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
@@ -323,33 +334,43 @@ export function ExerciseInfo({
                 contentFit="cover"
                 cachePolicy="memory-disk"
               />
-            ) : (
-              <View
-                style={{
-                  width: "100%",
-                  height: 160,
-                  borderRadius: R.md,
-                  backgroundColor: C.page2,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Icon name="Dumbbell" size={44} color={C.inkFaint} />
-              </View>
-            )}
+            ) : null}
             {db ? (
               <>
-                <Txt size={12} weight="bold" color={C.inkSoft}>
-                  Targets {db.targetMuscles.join(", ")}
-                  {db.secondaryMuscles.length ? ` · also ${db.secondaryMuscles.join(", ")}` : ""}
-                </Txt>
-                <View style={{ gap: 6 }}>
-                  {dbInstructions(db.id).map((step, i) => (
-                    <Txt key={i} size={13} color={C.inkSoft}>
-                      {step.replace(/^Step:\d+\s*/, `${i + 1}. `)}
+                <View style={{ gap: 4, marginTop: 4 }}>
+                  <Eyebrow>Muscles worked</Eyebrow>
+                  <Txt size={15} weight="bold">{db.targetMuscles.join(", ")}</Txt>
+                  {db.secondaryMuscles.length ? (
+                    <Txt size={13} color={C.inkSoft}>
+                      Also {db.secondaryMuscles.join(", ")}
                     </Txt>
-                  ))}
+                  ) : null}
                 </View>
+                {steps.length ? (
+                  <>
+                    <Divider />
+                    <View style={{ gap: 4 }}>
+                      <Eyebrow>How to do it</Eyebrow>
+                      <View style={{ gap: 12, marginTop: 6 }}>
+                        {steps.map((step, i) => (
+                          <View key={i} style={{ flexDirection: "row", gap: 12 }}>
+                            <Txt
+                              size={13}
+                              weight="extrabold"
+                              color={C.accent}
+                              style={{ width: 16, textAlign: "right", marginTop: 1 }}
+                            >
+                              {i + 1}
+                            </Txt>
+                            <Txt size={14.5} color={C.inkSoft} style={{ flex: 1, lineHeight: 21 }}>
+                              {step}
+                            </Txt>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </>
+                ) : null}
               </>
             ) : null}
             {!libRow ? (

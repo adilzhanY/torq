@@ -36,7 +36,7 @@ export const PERCENTILE_SOURCE = DATA.meta.source;
 export const PERCENTILE_BUILT = DATA.meta.built;
 
 export interface Percentile {
-  /** Share of competitors this lift beats, 1–99 (clamped at the tails). */
+  /** Share of competitors this lift beats, 1-99 (clamped at the tails). */
   percent: number;
   /** How many lifters the curve is built from. */
   sampleSize: number;
@@ -97,4 +97,18 @@ export function percentileForExercise(
 export function percentileLabel(p: Percentile): string {
   if (p.percent >= 90) return `Top ${100 - p.percent}%`;
   return `Stronger than ${p.percent}%`;
+}
+
+/**
+ * The same number with the population attached. Use this wherever the label
+ * stands on its own, with no nearby caption naming the sample.
+ *
+ * A bare "Top 8%" reads as "top 8% of people", which is a much stronger
+ * claim than the data supports: the population is people who entered a
+ * sanctioned raw meet, not the gym floor. Two screens shipped the bare
+ * version for a while, which is why the qualifier now lives in a function
+ * rather than in each call site's JSX.
+ */
+export function percentileLabelQualified(p: Percentile): string {
+  return `${percentileLabel(p)} of competitive lifters`;
 }

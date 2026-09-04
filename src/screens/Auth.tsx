@@ -403,9 +403,9 @@ export function Auth() {
               }
             >
               {username.length === 0
-                ? "How friends find you. 3–20 characters: a–z, 0–9 and _."
+                ? "How friends find you. 3-20 characters: a-z, 0-9 and _."
                 : !nameOk
-                  ? "3–20 characters: lowercase letters, numbers and _."
+                  ? "3-20 characters: lowercase letters, numbers and _."
                   : checking
                     ? "Checking…"
                     : taken === true

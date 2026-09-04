@@ -47,14 +47,18 @@ export interface ArenaStanding {
   points: number;
 }
 
+/**
+ * What a friend's client is allowed to see. Deliberately NOT the shape of
+ * the `rank_snapshots` row: that table also stores bodyweight_kg and sex,
+ * because the rank engine needs them to normalize, and they must never be
+ * read back by anyone but their owner. See snapshotsByIds().
+ */
 export interface RankSnapshot {
   userId: string;
   points: number;
   tier: string;
   stage: 1 | 2 | 3 | 4;
   lifts: SnapshotLift[];
-  bodyweightKg: number | null;
-  sex: "male" | "female" | null;
   updatedAt: string;
 }
 
@@ -117,7 +121,7 @@ function fail<T>(message: string): Result<T> {
 function friendly(message: string): string {
   const m = message.toLowerCase();
   if (m.includes("handle_format"))
-    return "Handles are 3–20 characters: lowercase letters, numbers and _.";
+    return "Handles are 3-20 characters: lowercase letters, numbers and _.";
   if (m.includes("profiles_handle_key") || m.includes("duplicate key") && m.includes("handle"))
     return "That handle is taken.";
   if (m.includes("one_row_per_pair") || m.includes("duplicate key"))
@@ -183,7 +187,7 @@ export async function saveProfile(
   if (!auth.user) return fail("Sign in first.");
   const clean = handle.trim().toLowerCase();
   if (!handleOk(clean))
-    return fail("Handles are 3–20 characters: lowercase letters, numbers and _.");
+    return fail("Handles are 3-20 characters: lowercase letters, numbers and _.");
   const { data, error } = await sb
     .from("profiles")
     .upsert(
@@ -564,9 +568,13 @@ async function snapshotsByIds(ids: string[]): Promise<Map<string, RankSnapshot>>
   const out = new Map<string, RankSnapshot>();
   const sb = supabase();
   if (!sb || ids.length === 0) return out;
+  // Columns are listed one by one on purpose. `bodyweight_kg` and `sex`
+  // live on this table too, and RLS lets a friend read the whole row, so a
+  // `select("*")` here would put someone's bodyweight on their friend's
+  // phone. The UI never showed it, which is exactly why it went unnoticed.
   const { data } = await sb
     .from("rank_snapshots")
-    .select("user_id, points, tier, stage, lifts, bodyweight_kg, sex, updated_at")
+    .select("user_id, points, tier, stage, lifts, updated_at")
     .in("user_id", ids);
   for (const s of data ?? [])
     out.set(s.user_id, {
@@ -575,8 +583,6 @@ async function snapshotsByIds(ids: string[]): Promise<Map<string, RankSnapshot>>
       tier: s.tier,
       stage: s.stage,
       lifts: (s.lifts ?? []) as SnapshotLift[],
-      bodyweightKg: s.bodyweight_kg == null ? null : Number(s.bodyweight_kg),
-      sex: s.sex,
       updatedAt: s.updated_at,
     });
   return out;

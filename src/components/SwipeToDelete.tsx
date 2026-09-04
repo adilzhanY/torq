@@ -1,133 +1,174 @@
 /**
- * Swipe a row left to reveal a Delete action (Strong's gesture, 2026-08-09).
+ * Swipe a row all the way left to delete it (2026-08-11, Adilzhan: "it should
+ * let me drag it fully to the left, and the whole line is red. When it's all
+ * red then show a confirmation dialog").
+ *
+ * It used to reveal an 88 px Delete button that you then had to hit, which is
+ * Strong's pattern and two gestures for one decision. Now the swipe IS the
+ * decision: the red bed grows behind the row as you pull, and past the
+ * commit point the whole line goes bright red, so the row tells you what will
+ * happen before you let go. Releasing there asks for confirmation; releasing
+ * short of it springs back and nothing happened.
+ *
+ * The confirm lives with the PARENT, not here. This component only reports
+ * that a full swipe happened and takes `open` back as a prop, so cancelling
+ * the dialog is what returns the row. Owning a dialog inside a gesture
+ * component would put the same modal in every row of the list.
  *
  * HAND-ROLLED on PanResponder + Animated rather than
- * `react-native-gesture-handler`'s Swipeable, for the same reason the keyboard
- * handling is hand-rolled: the dependency is not currently in this project, its
- * legacy Swipeable is deprecated in favour of a Reanimated one, and Reanimated
- * needs a babel plugin, and this app has NO babel.config.js at all, because
- * NativeWind v5 is CSS-first. Trading a 60-line gesture for a build-config
- * change is a bad deal when the gesture is one axis with two rest positions.
+ * `react-native-gesture-handler`'s Swipeable: the dependency is not in this
+ * project, its legacy Swipeable is deprecated in favour of a Reanimated one,
+ * and Reanimated needs a babel plugin, which this app does not have at all
+ * because NativeWind v5 is CSS-first.
  *
- * The gesture is claimed CONSERVATIVELY: only once the finger has travelled
- * 12 px and is moving clearly sideways (|dx| > 1.6·|dy|). Below that the touch
- * still belongs to the row, so tapping a weight field, ticking a set and
- * scrolling the session all behave exactly as before.
- *
- * Opening is CONTROLLED by the parent (`isOpen` + `onOpenChange`) so only one
- * row can sit open at a time. Two half-open rows read as a rendering bug.
+ * The gesture is claimed CONSERVATIVELY, and in the CAPTURE phase: the row is
+ * full of Pressables and TextInputs, and once a child holds the responder an
+ * ancestor can only take it during capture. Below 12 px of clearly sideways
+ * travel the touch still belongs to the child, so tapping a weight field,
+ * ticking a set and scrolling the session all behave as before.
  */
-import { useEffect, useRef } from "react";
-import { Animated, PanResponder, Pressable, View, type ViewStyle } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Animated, PanResponder, Vibration, View, type ViewStyle } from "react-native";
 import { C } from "../theme";
 import { Icon } from "./Icon";
 import { Txt } from "./ui";
 
-/** Width of the revealed Delete panel. */
-const ACTION_W = 88;
-/** How far past the panel the row can be dragged, for rubber-band feel. */
-const OVERDRAG = 26;
+/** Fraction of the row width that commits to the delete. */
+const COMMIT = 0.55;
 
 export function SwipeToDelete({
   children,
-  onDelete,
-  isOpen,
-  onOpenChange,
-  /** Painted under the sliding row so the action never shows through it. */
+  onRequestDelete,
+  open,
+  /** Painted under the sliding row so the red bed never shows through it. */
   background = C.page,
   style,
 }: {
   children: React.ReactNode;
-  onDelete: () => void;
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
+  /** The row was pulled past the commit point. Ask the user, then either
+   *  unmount the row or set `open` back to false. */
+  onRequestDelete: () => void;
+  /** Held fully open while the parent's confirmation is up. */
+  open: boolean;
   background?: string;
   style?: ViewStyle;
 }) {
+  const [width, setWidth] = useState(0);
   const x = useRef(new Animated.Value(0)).current;
-  /** Where the row settled last, so a second drag continues from there. */
   const settled = useRef(0);
-  // PanResponder is created once; its handlers would capture the first render's
-  // props forever, so the live ones are read through a ref.
-  const cb = useRef({ onOpenChange });
-  cb.current = { onOpenChange };
+  const armed = useRef(false);
+  // PanResponder is built once, so its handlers would capture the first
+  // render's props forever. The live ones are read through refs.
+  const live = useRef({ width, onRequestDelete });
+  live.current = { width, onRequestDelete };
 
-  const settle = (open: boolean) => {
-    settled.current = open ? -ACTION_W : 0;
-    Animated.spring(x, {
-      toValue: settled.current,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 4,
-    }).start();
+  const settle = (to: number) => {
+    settled.current = to;
+    Animated.spring(x, { toValue: to, useNativeDriver: true, speed: 20, bounciness: 4 }).start();
   };
 
-  // The parent closes this row when another one opens.
+  // Cancelling the dialog is what brings the row back.
   useEffect(() => {
-    if (!isOpen && settled.current !== 0) settle(false);
-    if (isOpen && settled.current === 0) settle(true);
-  }, [isOpen]);
+    if (!open && settled.current !== 0) {
+      armed.current = false;
+      settle(0);
+    }
+  }, [open]);
 
   const pan = useRef(
     PanResponder.create({
-      // CAPTURE, not bubble: the row is full of Pressables and TextInputs, and
-      // once a child holds the responder an ancestor can only take it during
-      // the capture phase. The threshold is what keeps taps and vertical
-      // scrolling with the child, they never travel 12 px sideways.
       onMoveShouldSetPanResponderCapture: (_, g) =>
         Math.abs(g.dx) > 12 && Math.abs(g.dx) > Math.abs(g.dy) * 1.6,
       onPanResponderMove: (_, g) => {
-        const next = Math.max(
-          -ACTION_W - OVERDRAG,
-          Math.min(0, settled.current + g.dx),
-        );
+        const w = live.current.width || 1;
+        const next = Math.max(-w, Math.min(0, settled.current + g.dx));
         x.setValue(next);
+        // One short buzz the moment it commits, the way the OS does it, so
+        // you can feel the point of no return without watching the colour.
+        const past = next <= -w * COMMIT;
+        if (past !== armed.current) {
+          armed.current = past;
+          if (past) Vibration.vibrate(12);
+        }
       },
       onPanResponderRelease: (_, g) => {
+        const w = live.current.width || 1;
         const at = settled.current + g.dx;
-        // Either dragged past the halfway point or flicked hard enough.
-        const open = g.vx < -0.4 || (g.vx <= 0.4 && at < -ACTION_W * 0.5);
-        settle(open);
-        cb.current.onOpenChange(open);
+        // Past the commit point, or flicked hard enough to mean it.
+        if (at <= -w * COMMIT || g.vx < -1.2) {
+          settle(-w);
+          live.current.onRequestDelete();
+        } else {
+          armed.current = false;
+          settle(0);
+        }
       },
-      onPanResponderTerminate: () => settle(settled.current !== 0),
+      onPanResponderTerminate: () => {
+        armed.current = false;
+        settle(0);
+      },
     }),
   ).current;
 
+  const commitAt = -(width || 1) * COMMIT;
+  /** The bed goes from a dark red to the full red exactly at the commit. */
+  const hot = x.interpolate({
+    inputRange: [commitAt * 1.25, commitAt * 0.75],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  /** The label rides in from the right edge rather than sitting there. */
+  const labelIn = x.interpolate({
+    inputRange: [commitAt, commitAt * 0.35],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
   return (
-    <View style={[{ overflow: "hidden" }, style]}>
-      <Pressable
-        onPress={onDelete}
+    <View
+      style={[{ overflow: "hidden" }, style]}
+      onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+    >
+      {/* The red bed. Dark while you are still deciding, full red once the
+          swipe commits, which is the whole feedback of the gesture. */}
+      <View
         style={{
           position: "absolute",
+          left: 0,
           right: 0,
           top: 0,
           bottom: 0,
-          width: ACTION_W,
           backgroundColor: C.badSurf,
-          alignItems: "center",
           justifyContent: "center",
-          flexDirection: "row",
-          gap: 6,
+          alignItems: "flex-end",
+          paddingHorizontal: 16,
         }}
       >
-        <Icon name="Trash2" size={15} color={C.badAcc} />
-        <Txt size={12.5} weight="bold" color={C.badAcc}>Delete</Txt>
-      </Pressable>
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+            backgroundColor: C.badAcc,
+            opacity: hot,
+          }}
+        />
+        <Animated.View
+          style={{ flexDirection: "row", alignItems: "center", gap: 6, opacity: labelIn }}
+        >
+          <Icon name="Trash2" size={15} color={C.ink} />
+          <Txt size={12.5} weight="bold" color={C.ink}>Delete</Txt>
+        </Animated.View>
+      </View>
+
       <Animated.View
         {...pan.panHandlers}
         style={{ backgroundColor: background, transform: [{ translateX: x }] }}
       >
         {children}
-        {/* While the row is open its own controls are shifted off their
-            labels, so a tap should close it rather than land on whatever
-            slid under the finger. */}
-        {isOpen ? (
-          <Pressable
-            onPress={() => cb.current.onOpenChange(false)}
-            style={{ position: "absolute", left: 0, right: 0, top: 0, bottom: 0 }}
-          />
-        ) : null}
       </Animated.View>
     </View>
   );

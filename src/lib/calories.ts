@@ -10,7 +10,7 @@
  * logged in minutes: a real 22-set session showed 89 kcal. Activity only):
  *
  * 1. LIFTING WORK: moving the load. Raising 1 kg through a ~0.5 m range is
- *    ~0.0012 kcal of mechanical work; at ~20–25% muscular efficiency plus
+ *    ~0.0012 kcal of mechanical work; at ~20-25% muscular efficiency plus
  *    the eccentric lowering that's ≈0.008 kcal per kg·rep (matches published
  *    per-set costs for bench/squat). Bodyweight exercises count ~60% of body
  *    mass as the load (plus any logged added weight).
@@ -18,7 +18,7 @@
  *    at the Compendium MET for the movement class (resistance training 3.5,
  *    olympic lifting 6, cardio 7, the lifting itself is component 1).
  * 3. REST BETWEEN SETS, 1.8 MET (standing around) for the PLANNED rest per
- *    completed set (per-set override or the default timer, clamped 30s–4min).
+ *    completed set (per-set override or the default timer, clamped 30s-4min).
  */
 import { LB_TO_KG } from "./units";
 import type { Exercise, Measurement, Settings, Workout } from "../types";

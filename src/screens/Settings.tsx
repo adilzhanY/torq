@@ -18,6 +18,7 @@ import { C, R } from "../theme";
 import { Icon } from "../components/Icon";
 import { SlideUp } from "../components/anim";
 import { SubPage } from "../components/SubPage";
+import { Licences } from "../components/Licences";
 import { ConfirmModal } from "../components/CustomModal";
 import { Divider, Eyebrow, NumberField, PageTitle, PrimaryButton, Txt } from "../components/ui";
 import { useStore } from "../lib/store";
@@ -27,7 +28,7 @@ import { isPro, setPro } from "../lib/entitlements";
 import { LB_TO_KG, cmToFtIn, ftInToCm } from "../lib/units";
 import type { Settings as SettingsModel, Unit } from "../types";
 
-type Sub = "body" | "goals" | "account" | "data" | "dev" | null;
+type Sub = "body" | "goals" | "account" | "data" | "licences" | "dev" | null;
 
 const GOAL_LABEL: Record<string, string> = {
   muscle: "Build muscle",
@@ -248,8 +249,20 @@ function DailyGoals({
  */
 function Account() {
   const { enabled, user, signOut, exitGuest } = useAuth();
-  const { syncNow } = useStore();
+  const { syncNow, wipeLocalData } = useStore();
   const [syncing, setSyncing] = useState(false);
+  const [confirmOut, setConfirmOut] = useState(false);
+
+  // Sign-out used to drop the session and keep the DB, so the next account
+  // on this phone uploaded the previous owner's history into its own cloud
+  // (2026-09-04 audit). Now: one last sync, wipe the phone, reset the cursor.
+  const doSignOut = async () => {
+    setSyncing(true);
+    await syncNow().catch(() => null);
+    await wipeLocalData();
+    await signOut();
+    setSyncing(false);
+  };
 
   if (!enabled) {
     return (
@@ -276,7 +289,22 @@ function Account() {
             void syncNow().finally(() => setSyncing(false));
           }}
         />
-        <PrimaryButton label="Sign out" background={C.page2} color={C.ink} onPress={() => void signOut()} />
+        <PrimaryButton
+          label="Sign out"
+          background={C.page2}
+          color={C.ink}
+          disabled={syncing}
+          onPress={() => setConfirmOut(true)}
+        />
+        {confirmOut ? (
+          <ConfirmModal
+            title="Sign out?"
+            message="Your history stays in your account. This phone's copy is removed, and syncs back when you sign in again."
+            confirmLabel="Sign out"
+            onConfirm={() => void doSignOut()}
+            onClose={() => setConfirmOut(false)}
+          />
+        ) : null}
       </View>
     );
   }
@@ -583,15 +611,29 @@ export function Settings({
           onPress={() => setSub("data")}
         />
 
-        <Eyebrow>Developer</Eyebrow>
-        <Row
-          icon="SlidersVertical"
-          title="Developer tools"
-          value="Pro toggle and demo data"
-          onPress={() => setSub("dev")}
-        />
+        {/* Debug builds only. A "Pro: ON" switch and a demo-data seeder in
+            a shipped app invite the obvious question about unlocking paid
+            features outside Play Billing, and a reviewer who taps Seed sees
+            a year of workouts that are not theirs. */}
+        {__DEV__ && (
+          <>
+            <Eyebrow>Developer</Eyebrow>
+            <Row
+              icon="SlidersVertical"
+              title="Developer tools"
+              value="Pro toggle and demo data"
+              onPress={() => setSub("dev")}
+            />
+          </>
+        )}
 
         <Eyebrow>About</Eyebrow>
+        <Row
+          icon="FileText"
+          title="Open source licences"
+          value="Fonts, icons and libraries torq is built on"
+          onPress={() => setSub("licences")}
+        />
         <Txt size={12.5} weight="semibold">torq 1.0.0</Txt>
         <Txt size={11.5} color={C.inkFaint} style={{ marginTop: 2 }}>
           Local-first workout tracking with a real strength rank. Your logs
@@ -617,6 +659,11 @@ export function Settings({
       {sub === "data" ? (
         <SubPage title="Your data" onBack={() => setSub(null)}>
           <DataSection />
+        </SubPage>
+      ) : null}
+      {sub === "licences" ? (
+        <SubPage title="Open source licences" onBack={() => setSub(null)}>
+          <Licences />
         </SubPage>
       ) : null}
       {sub === "dev" ? (

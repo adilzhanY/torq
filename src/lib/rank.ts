@@ -8,7 +8,7 @@
  * (no fake precision, locked decision).
  *
  * Rank-eligible sets (consistent with the PR engine, plus the rep cap):
- * finished workouts only, no warmups, weight > 0, reps 1–10 (Epley
+ * finished workouts only, no warmups, weight > 0, reps 1-10 (Epley
  * degrades past 10, such sets still count for PRs, just not ranks).
  */
 import { est1RM } from "./stats";
@@ -116,7 +116,7 @@ export function tierFor(points: number, scale: number): TierState {
 }
 
 /**
- * Stage within a tier (the badge's orbit progression, I–IV): quarters of
+ * Stage within a tier (the badge's orbit progression, I-IV): quarters of
  * the progress through the current tier band. World Class (progress 1)
  * caps at IV.
  */

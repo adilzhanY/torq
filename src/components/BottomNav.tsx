@@ -49,7 +49,10 @@ const PARENT: Partial<Record<Tab, Tab>> = {
   exercises: "workout",
 };
 
-const IDLE = "rgba(255,255,255,0.6)";
+/** Idle tabs are SOLID ink, not a translucent white: alpha over the dark
+ * dock read as dimmed or disabled (Adilzhan, 2026-09-04). The active tab
+ * is told apart by lime and the rail, not by opacity. */
+const IDLE = C.ink;
 
 /** Shared shell so every tab and the avatar slot measure identically. */
 function Slot({

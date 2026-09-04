@@ -3,7 +3,7 @@
  * While a session is active, this tab is the live logger: sets with
  * weight × reps, tick to complete, finish/discard.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -23,10 +23,12 @@ import { RECOMMENDED, type RecommendedRoutine } from "../lib/recommended";
 import { useUi } from "../lib/ui";
 import { computePRs, lastSetsFor } from "../lib/stats";
 import { targetRepsOf } from "../lib/suggest";
+import { exerciseName, findGhost, ghostLabel, ghostProgress } from "../lib/ghost";
 import { warmupSets } from "../lib/warmup";
 import { ExercisePicker } from "../components/ExercisePicker";
 import { SwipeToDelete } from "../components/SwipeToDelete";
 import { WarmupDialog } from "../components/WarmupDialog";
+import { PlateDialog } from "../components/PlateDialog";
 import { ExerciseInfo } from "../components/ExerciseInfo";
 import { RoutineEditor } from "../components/RoutineEditor";
 import { Card, Divider, Eyebrow, NumberField, PageTitle, Pill, PrimaryButton, TextField, Txt } from "../components/ui";
@@ -34,6 +36,7 @@ import { GrowIn, PopIn, SlideUp, Squish } from "../components/anim";
 import { AnchoredModal, ConfirmModal, CustomModal, MenuRow } from "../components/CustomModal";
 import { useStore } from "../lib/store";
 import { countdown, play, resetCountdown } from "../lib/sounds";
+import { parseNum } from "../lib/units";
 import {
   workoutSets,
   workoutVolume,
@@ -97,14 +100,17 @@ function SetNumInput({
         hitSlop={4}
         style={{
           width: FIELD_W,
-          // Same box metrics as NumberField(compact) so ticking a set
-          // doesn't jump the row height.
+          // NO BOX once the set is done (2026-08-11): a field is an
+          // invitation to type, and a finished set is a record. The number
+          // stands on the lime row on its own.
+          //
+          // The metrics still MATCH NumberField(compact) to the pixel,
+          // border width included, because the box comes back the moment you
+          // tap to edit and the row must not jump when it does.
           paddingVertical: 5,
-          alignItems: "center",
-          backgroundColor: C.page2,
-          borderRadius: R.sm,
           borderWidth: 1,
-          borderColor: C.line,
+          borderColor: "transparent",
+          alignItems: "center",
         }}
       >
         <Txt size={14} weight="bold">{value || "0"}</Txt>
@@ -396,6 +402,18 @@ function RestDivider({
   );
 }
 
+/** What finishing keeps and what it drops: unticked sets never make it into
+ * the saved workout, so say so before the user commits. */
+function finishMessage(w: WorkoutModel): string {
+  const done = workoutSets(w);
+  const planned = w.entries.reduce((n, e) => n + e.sets.length, 0);
+  const left = planned - done;
+  const sets = (n: number) => `${n} ${n === 1 ? "set" : "sets"}`;
+  return left > 0
+    ? `${sets(done)} will be saved. ${sets(left)} not ticked will be dropped.`
+    : `${sets(done)} will be saved to your history.`;
+}
+
 function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }) {
   const {
     activeWorkout,
@@ -422,8 +440,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [pad, setPad] = useState(false);
   /** Bumped to pop a specific set's rest editor open (pad's RESET). */
   const [editReq, setEditReq] = useState<{ key: string; n: number } | null>(null);
-  /** "ei-si" of the set row swiped open, if any, one at a time. */
-  const [swipeOpen, setSwipeOpen] = useState<string | null>(null);
+  /** "ei-si" of the set row swiped fully left and awaiting confirmation. */
+  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   /** Which set's type menu is open + where to anchor it (touch position). */
   const [typeMenu, setTypeMenu] = useState<{ ei: number; si: number; x: number; y: number } | null>(null);
   /** Per-exercise header menus, anchored at the pressed button's pageY. */
@@ -431,6 +449,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [dotsMenu, setDotsMenu] = useState<{ ei: number; y: number } | null>(null);
   /** Entry index pending delete confirmation. */
   const [confirmRemove, setConfirmRemove] = useState<number | null>(null);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmFinish, setConfirmFinish] = useState(false);
   /** ⋯ menu actions that open their own editor, by entry index. */
   const [noteFor, setNoteFor] = useState<number | null>(null);
   const [stickyFor, setStickyFor] = useState<number | null>(null);
@@ -438,6 +458,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   const [replaceFor, setReplaceFor] = useState<number | null>(null);
   /** Entry index whose warm-up dialog is open. */
   const [warmupFor, setWarmupFor] = useState<number | null>(null);
+  /** Entry index whose plate-math dialog is open. */
+  const [platesFor, setPlatesFor] = useState<number | null>(null);
   /** Draft text while a note dialog is open. */
   const [draftNote, setDraftNote] = useState("");
   /** "ei-si" keys of sets added via Add set this render lifetime, only
@@ -476,17 +498,18 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   /**
    * Delete one set (swipe left on its row).
    *
-   * No confirmation on purpose: one set is cheap to retype, and a dialog on
-   * every mis-swipe mid-session costs more than the mistake. Deleting the LAST
-   * remaining set falls through to the exercise's own confirm instead of
-   * leaving an empty header with nothing but "Add set" under it.
+   * The full-width swipe asks first (see SwipeToDelete), so by the time this
+   * runs the user has confirmed. Deleting the LAST remaining set takes the
+   * exercise with it rather than leaving an empty header with nothing but
+   * "Add set" under it, which is what the dialog warns about.
    */
   const removeSet = (ei: number, si: number) => {
     const entry = w.entries[ei];
     if (!entry) return;
-    setSwipeOpen(null);
+    setPendingDelete(null);
     if (entry.sets.length <= 1) {
-      setConfirmRemove(ei);
+      // The last set going means the exercise goes; the dialog said so.
+      setEntries(w.entries.filter((_, i) => i !== ei));
       return;
     }
     // Rest keys and the grow-in keys are index-based, so anything at or after
@@ -523,6 +546,12 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
   };
 
   const restFor = (set: WorkoutSet) => set.restSec ?? settings.restSec;
+
+  /** The session being raced, and where you stand. Memoised because
+   *  findGhost scans the whole history and the logger re-renders every
+   *  second off the elapsed timer. */
+  const ghost = useMemo(() => findGhost(workouts, w), [workouts, w]);
+  const race = useMemo(() => (ghost ? ghostProgress(w, ghost) : null), [w, ghost]);
 
   const patchEntry = (ei: number, patch: Partial<WorkoutEntry>) =>
     setEntries(w.entries.map((e, i) => (i !== ei ? e : { ...e, ...patch })));
@@ -597,7 +626,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
 
   const toggleDone = (ei: number, si: number, set: WorkoutSet) => {
     const done = !set.done;
-    patchSet(ei, si, { done });
+    // Stamp WHEN, not just that it happened: see WorkoutSet.doneAt. Un-ticking
+    // clears it, so the timestamp never outlives the set it describes.
+    patchSet(ei, si, { done, doneAt: done ? Date.now() : undefined });
     const key = `${ei}-${si}`;
     if (done) {
       play("setDone");
@@ -684,6 +715,31 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         </View>
         <Pill text="LIVE" color={C.accentInk} bg={C.accent} />
       </View>
+
+      {/* GHOST: how you stand against the last time you did this session.
+          Only once something has been ticked, because "level with Aug 3" on
+          an empty session is noise, not a race. */}
+      {ghost && race && race.done > 0 ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginTop: -6 }}>
+          <Icon
+            name={race.delta >= 0 ? "TrendingUp" : "TrendingDown"}
+            size={14}
+            color={race.delta >= 0 ? C.accent : C.warnAcc}
+          />
+          <Txt size={13} weight="extrabold" color={race.delta >= 0 ? C.accent : C.warnAcc}>
+            {race.delta === 0
+              ? "Level with"
+              : `${Math.abs(Math.round(race.delta))} ${settings.unit} ${race.delta > 0 ? "ahead of" : "behind"}`}
+          </Txt>
+          <Txt size={12.5} color={C.inkSoft}>{ghostLabel(ghost)}</Txt>
+          {race.next ? (
+            <Txt size={12} color={C.inkFaint} numberOfLines={1} style={{ flex: 1 }}>
+              · then {exerciseName(exercises, race.next.exerciseId)} {race.next.weight} ×{" "}
+              {race.next.reps}
+            </Txt>
+          ) : null}
+        </View>
+      ) : null}
 
       {w.entries.map((entry, ei) => {
         const prevSets = prevSetsFor(entry.exerciseId);
@@ -836,9 +892,8 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                   edge like the row does. */}
               <SwipeToDelete
                 style={{ marginHorizontal: -16 }}
-                isOpen={swipeOpen === restKey}
-                onOpenChange={(open) => setSwipeOpen(open ? restKey : null)}
-                onDelete={() => removeSet(ei, si)}
+                open={pendingDelete === restKey}
+                onRequestDelete={() => setPendingDelete(restKey)}
               >
               <View
                 style={{
@@ -887,7 +942,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     onChange={(v) =>
                       // Editing the weight makes it the user's number, not
                       // the engine's, drop the suggestion badge.
-                      patchSet(ei, si, { weight: Number(v) || 0, suggested: undefined })
+                      patchSet(ei, si, { weight: parseNum(v), suggested: undefined })
                     }
                     inputRef={(r) => {
                       weightRefs.current[restKey] = r;
@@ -917,7 +972,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                 <SetNumInput
                   value={set.reps ? String(set.reps) : ""}
                   done={set.done}
-                  onChange={(v) => patchSet(ei, si, { reps: Number(v) || 0 })}
+                  onChange={(v) => patchSet(ei, si, { reps: parseNum(v) })}
                 />
                 <Squish
                   onPress={() => toggleDone(ei, si, set)}
@@ -985,17 +1040,10 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         large
         background={C.accent}
         color={C.accentInk}
-        onPress={() => {
-          const finished = finishWorkout();
-          if (finished) {
-            // A session that set records earns the brighter flourish.
-            play(computePRs(finished, workouts).total > 0 ? "pr" : "workoutDone");
-            onFinished(finished);
-          }
-        }}
+        onPress={() => setConfirmFinish(true)}
         disabled={workoutSets(w) === 0}
       />
-      <PrimaryButton label="Discard" background={C.badSurf} color={C.badAcc} onPress={discardWorkout} />
+      <PrimaryButton label="Discard" background={C.badSurf} color={C.badAcc} onPress={() => setConfirmDiscard(true)} />
 
       <AnchoredModal open={typeMenu !== null} onClose={() => setTypeMenu(null)}>
           {typeMenu ? (
@@ -1123,6 +1171,7 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                     { icon: "FileText", label: "Add note" },
                     { icon: "Pin", label: "Add sticky note" },
                     { icon: "Diff", label: "Add warm-up sets" },
+                    { icon: "Scale", label: "Plate math" },
                     { icon: "Timer", label: "Update rest timers" },
                     { icon: "Undo2", label: "Replace exercise", divider: true },
                     { icon: "X", label: "Remove exercise", divider: true, danger: true },
@@ -1149,6 +1198,9 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
                             break;
                           case "Add warm-up sets":
                             setWarmupFor(ei);
+                            break;
+                          case "Plate math":
+                            setPlatesFor(ei);
                             break;
                           case "Update rest timers":
                             setRestForEntry(ei);
@@ -1310,6 +1362,17 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         />
       ) : null}
 
+      {platesFor != null && w.entries[platesFor] ? (
+        <PlateDialog
+          title={name(w.entries[platesFor].exerciseId)}
+          sets={w.entries[platesFor].sets}
+          unit={settings.unit}
+          barWeight={settings.barWeight}
+          plates={settings.plates}
+          onClose={() => setPlatesFor(null)}
+        />
+      ) : null}
+
       {warmupFor != null ? (
         (() => {
           const entry = w.entries[warmupFor];
@@ -1353,6 +1416,30 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
         }}
       />
 
+      {pendingDelete != null ? (
+        (() => {
+          const [ei, si] = pendingDelete.split("-").map(Number);
+          const entry = w.entries[ei];
+          const set = entry?.sets[si];
+          const last = (entry?.sets.length ?? 0) <= 1;
+          const label = set
+            ? `${set.weight || 0} ${settings.unit} × ${set.reps || 0}`
+            : "this set";
+          return (
+            <ConfirmModal
+              title={last ? "Delete the last set?" : "Delete this set?"}
+              message={
+                last
+                  ? `${label}. It is the only set left, so ${name(entry.exerciseId)} goes with it.`
+                  : label
+              }
+              onConfirm={() => removeSet(ei, si)}
+              onClose={() => setPendingDelete(null)}
+            />
+          );
+        })()
+      ) : null}
+
       {confirmRemove != null ? (
         <ConfirmModal
           title="Remove exercise?"
@@ -1360,6 +1447,38 @@ function ActiveSession({ onFinished }: { onFinished: (w: WorkoutModel) => void }
           confirmLabel="Remove"
           onConfirm={() => setEntries(w.entries.filter((_, i) => i !== confirmRemove))}
           onClose={() => setConfirmRemove(null)}
+        />
+      ) : null}
+
+      {confirmFinish ? (
+        <ConfirmModal
+          title="Finish workout?"
+          message={finishMessage(w)}
+          confirmLabel="Finish"
+          tone="accent"
+          onConfirm={() => {
+            const finished = finishWorkout();
+            if (finished) {
+              // A session that set records earns the brighter flourish.
+              play(computePRs(finished, workouts).total > 0 ? "pr" : "workoutDone");
+              onFinished(finished);
+            }
+          }}
+          onClose={() => setConfirmFinish(false)}
+        />
+      ) : null}
+
+      {confirmDiscard ? (
+        <ConfirmModal
+          title="Discard workout?"
+          message={
+            workoutSets(w) > 0
+              ? `${workoutSets(w)} logged ${workoutSets(w) === 1 ? "set" : "sets"} will be lost. This cannot be undone.`
+              : "This session will be closed without saving anything."
+          }
+          confirmLabel="Discard"
+          onConfirm={discardWorkout}
+          onClose={() => setConfirmDiscard(false)}
         />
       ) : null}
 

@@ -1,43 +1,52 @@
 /**
- * RankBadge: the react-native-svg port of the shield badge designed in
- * the lavish rounds (.lavish/torq-brand-v2.html): rounded hex shield in
- * the tier's metal gradient, the vortex brand mark as the emblem, and the
- * orbit ring that grows with the stage, I bare · II ring · III one jewel
- * ball · IV two balls. World Class swaps the metal for the holographic
- * gradient.
+ * RankBadge: the hex-track badge Adilzhan picked on 2026-09-04 from the
+ * artifact "Torq Badge Ladder" (three concepts were drawn against it, Loaded
+ * Bar / Momentum / Cut Stone, and this one won). It keeps what the earlier
+ * shield had, the vortex emblem, the nine tier metals and the rounded
+ * hexagon, and changes two things:
  *
- * TWO RENDER PATHS, and the split is deliberate:
+ *  - STAGE is a TRACK, not an orbit. A thin hexagon outside the frame lights
+ *    a quarter of its perimeter per stage, clockwise from the top, with one
+ *    gem at the lit tip. Stage IV closes the loop and the gem sits at the
+ *    crown. It follows the shield's own edges instead of tilting away from
+ *    them, and it reads as a quantity ("three quarters there") at a glance.
+ *  - TIER earns DETAIL, one thing per step, cumulative, driven by the
+ *    `DETAIL` table below: Rust is matte and bare, Iron gets a bevel, Silver
+ *    a gloss band, Gold corner studs, Platinum a halo, Diamond facets and
+ *    glints, Elite eight rays behind the shield (one per blade of the
+ *    vortex), World Class the holographic frame and a sheen. Each flag has a
+ *    `minSize`, so a 34 px feed badge is frame + emblem + track + gem and
+ *    the ornaments only appear where they are legible. Tuning a tier is a
+ *    data edit, not a render edit.
  *
- *  - STATIC (default): one SVG, balls parked at the ellipse's ends, the
- *    ring masked so it breaks around each ball. This is what list rows use:
- *    a Ranks screen with 8 lifts, a Friends list and Home all draw badges,
- *    and none of them should pay for an animation nobody is looking at.
+ * TWO RENDER PATHS, same split as before and for the same reason:
  *
- *  - ANIMATED (`animated`): the balls actually ORBIT, on every tier
- *    (Adilzhan, 2026-08-09: the motion should not be a World Class
- *    privilege). Used on the big hero badge and the tier ladder.
+ *  - STATIC (default): one SVG. List rows (Ranks, Friends, Profile, Home)
+ *    draw many badges and none of them should pay for motion.
+ *  - ANIMATED (`animated`): the hero badge and the tier ladder. The gem
+ *    glides around the track, the rays turn, the glints twinkle, and World
+ *    Class gets the sheen. Everything but the sheen runs on the NATIVE
+ *    driver through sampled interpolation tables (the gem's path is the hex
+ *    polyline sampled into lookup tables, exactly how the old ellipse orbit
+ *    worked). The gem is always OUTSIDE the shield, so the old under/over
+ *    double-draw and cross-fade are gone.
  *
- * How the orbit is done, since RN has no SMIL: one looping Animated.Value
- * drives translateX/translateY/scale/opacity through sampled interpolation
- * tables of the tilted ellipse, all on the NATIVE driver, so the motion
- * never touches the JS thread while you scroll. Z-ORDER is faked by drawing
- * each ball TWICE, once under the shield and once over it, and cross-fading
- * between the copies; the swap happens at the ellipse's left and right
- * extremes, where the ball is clear of the shield silhouette and the change
- * is invisible. The balls are plain Views rather than SVG circles: at 12 px
- * across, a fill plus a specular dot is indistinguishable from the gradient
- * and costs a fraction of the nodes.
+ * The sheen is the one JS-driven animation: it is a band sliding under an
+ * SVG mask, and a mask cannot be moved by a native transform, so the Rect's
+ * `x` is animated as a prop. It runs on exactly one badge at a time (the
+ * World Class hero), which is why that is acceptable.
  *
- * The animated path drops the ring's mask gap on purpose, an opaque ball
- * riding over a continuous ring reads as "in front" by itself, and a moving
- * gap would need animated SVG props, which are JS-driven.
+ * Geometry lives in a 200 x 160 viewBox, the same 0.8 aspect as the old
+ * 170 x 136 one, so no caller's layout moved. `BADGE_ASPECT` is exported for
+ * the one place that needs the number (TierCarousel's row height).
  */
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Animated, Easing, View } from "react-native";
 import Svg, {
   Circle,
   Defs,
   G,
+  Line,
   LinearGradient,
   Mask,
   Path,
@@ -47,7 +56,7 @@ import Svg, {
   Stop,
 } from "react-native-svg";
 import { VORTEX_PATH } from "./Logo";
-import type { TierName } from "../lib/rank";
+import { TIER_NAMES, type TierName } from "../lib/rank";
 
 type Metal = { base: string; light: string; dark: string; deep: string; holo?: boolean };
 
@@ -63,124 +72,127 @@ const METALS: Record<TierName, Metal> = {
   "World Class": { base: "#9C86E8", light: "#F4EFFF", dark: "#6E58B8", deep: "#443578", holo: true },
 };
 
-// Geometry (identical to the web generator).
-const CX = 85;
-const CY = 62;
-const R = 37;
-const SW = 12;
-const TILT = -13;
-const ORX = R + 21;
-const ORY = 16;
-const GAP = 3.6;
-const FIELD = "#131510";
-const D2R = Math.PI / 180;
-const VB_W = 170;
-const VB_H = 136;
-/** Ball radius in viewBox units. */
-const BALL_R = 6;
-/** One full orbit, in ms. Slow enough to read as a drift, not a spin. */
-const ORBIT_MS = 7000;
-/** Ellipse samples for the interpolation tables. */
-const STEPS = 48;
+/** The holographic frame, World Class only. */
+const HOLO = ["#7CF9D4", "#7FB2FF", "#C08CFF", "#FF7FB8", "#FFD97F"];
 
-function hexPoints(cx: number, cy: number, r: number): string {
-  const pts: string[] = [];
+const LEVEL = Object.fromEntries(TIER_NAMES.map((t, i) => [t, i])) as Record<TierName, number>;
+
+/**
+ * What each tier earns, and the smallest badge it is drawn at. `from` is the
+ * tier index (Rust 0 ... World Class 8); details are cumulative, so Diamond
+ * has everything from `from <= 6`.
+ */
+const DETAIL = {
+  bevel: { from: 1, minSize: 0 },
+  gloss: { from: 3, minSize: 46 },
+  studs: { from: 4, minSize: 46 },
+  halo: { from: 5, minSize: 64 },
+  facets: { from: 6, minSize: 46 },
+  glints: { from: 6, minSize: 46 },
+  rays: { from: 7, minSize: 64 },
+  sheen: { from: 8, minSize: 104 },
+} as const;
+type Detail = keyof typeof DETAIL;
+
+function has(tier: TierName, size: number, d: Detail): boolean {
+  return LEVEL[tier] >= DETAIL[d].from && size >= DETAIL[d].minSize;
+}
+
+// ── geometry (viewBox units) ─────────────────────────────────────────────
+const VB_W = 200;
+const VB_H = 160;
+export const BADGE_ASPECT = VB_H / VB_W;
+const CX = 100;
+const CY = 80;
+/** Frame hexagon, vertex radius. */
+const R = 50;
+/** Frame stroke. */
+const SW = 12;
+const TRACK_R = R + 13;
+const HALO_R = R + 21;
+const GEM_R = 5.6;
+/** Emblem width across the vortex's 1024 box. 72/50 = 1.44 x R: Adilzhan
+ * first asked for a touch smaller than the artifact (1.32), then for bigger
+ * once he saw it on the phone, so it now fills the field. The vortex's own
+ * silhouette is ~60% of its box, so it still clears the inner frame. */
+const EMBLEM_W = 72;
+/**
+ * The one row size. Home's rank row, Profile's rank strip and best lifts,
+ * and the Ranks lift rows all use it, so the badge never looks bigger on one
+ * page than another (Adilzhan, 2026-09-04: it read as small and inconsistent
+ * at 46 / 62 / 64 / 68). 96 is 1.5 x the old Profile strip.
+ */
+export const BADGE_ROW = 96;
+const FIELD = "#131510";
+/** One lap of the track, in ms. A drift, not a spin. */
+const LAP_MS = 7000;
+const RAY_MS = 26000;
+const TWINKLE_MS = 1300;
+const SHEEN_MS = 4500;
+/** Samples along the track for the gem's lookup tables. */
+const STEPS = 60;
+
+type Pt = [number, number];
+
+/** Pointy-top hexagon, first vertex at the top, clockwise on screen. */
+function hexPts(cx: number, cy: number, r: number): Pt[] {
+  const pts: Pt[] = [];
   for (let i = 0; i < 6; i++) {
     const a = -Math.PI / 2 + (i * Math.PI) / 3;
-    pts.push(`${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`);
+    pts.push([cx + r * Math.cos(a), cy + r * Math.sin(a)]);
   }
-  return pts.join(" ");
+  return pts;
+}
+const attr = (pts: Pt[]) => pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+const pathOf = (pts: Pt[]) => "M" + pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(" L") + " Z";
+
+/** Point at fraction `f` (0..1) of the hex perimeter, clockwise from the top. */
+function alongHex(pts: Pt[], f: number): Pt {
+  const d = (((f % 1) + 1) % 1) * 6;
+  const i = Math.min(5, Math.floor(d));
+  const t = d - i;
+  const a = pts[i];
+  const b = pts[(i + 1) % 6];
+  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 }
 
-/** Half of the tilted orbit ellipse as a sampled polyline path. */
-function ellArc(a0: number, a1: number, cy: number): string {
-  const rot = TILT * D2R;
-  const pts: string[] = [];
-  for (let i = 0; i <= 26; i++) {
-    const t = a0 + ((a1 - a0) * i) / 26;
-    const x = ORX * Math.cos(t);
-    const y = ORY * Math.sin(t);
-    const xr = x * Math.cos(rot) - y * Math.sin(rot);
-    const yr = x * Math.sin(rot) + y * Math.cos(rot);
-    pts.push(`${(CX + xr).toFixed(1)} ${(cy + yr).toFixed(1)}`);
-  }
-  return `M${pts.join(" L")}`;
-}
-
-/** Static ball positions: front ball on the right end, back ball opposite. */
-function ballPos(front: boolean, cy: number): { x: number; y: number } {
-  const a = TILT * D2R;
-  const sign = front ? 1 : -1;
-  return { x: CX + sign * ORX * Math.cos(a), y: cy + sign * ORY * 0 + sign * ORX * Math.sin(a) };
-}
-
-/** The tilted ellipse, sampled once into native-drivable lookup tables. */
-function orbitTables(cy: number) {
-  const rot = TILT * D2R;
+/** The track polyline, sampled into native-drivable lookup tables. */
+function trackTables(pts: Pt[]) {
   const input: number[] = [];
   const x: number[] = [];
   const y: number[] = [];
-  const front: number[] = [];
-  const scale: number[] = [];
   for (let i = 0; i <= STEPS; i++) {
     const p = i / STEPS;
-    const t = p * Math.PI * 2;
-    const ex = ORX * Math.cos(t);
-    const ey = ORY * Math.sin(t);
+    const [px, py] = alongHex(pts, p);
     input.push(p);
-    x.push(CX + ex * Math.cos(rot) - ey * Math.sin(rot));
-    y.push(cy + ex * Math.sin(rot) + ey * Math.cos(rot));
-    // SVG y grows downward, so the lower half of the ellipse is the near
-    // half, that is when the ball passes IN FRONT of the shield.
-    front.push(Math.sin(t) >= 0 ? 1 : 0);
-    // A touch of perspective: smaller when it is further away.
-    scale.push(0.8 + 0.2 * ((Math.sin(t) + 1) / 2));
+    x.push(px);
+    y.push(py);
   }
-  return { input, x, y, front, scale };
+  return { input, x, y };
 }
 
-/** The shield itself, shared by both render paths. */
-function shieldParts(m: Metal, frameId: string, cy: number) {
-  return (
-    <>
-      <Polygon
-        points={hexPoints(CX, cy + 4, R - SW / 2)}
-        fill={m.deep}
-        stroke={m.deep}
-        strokeWidth={SW}
-        strokeLinejoin="round"
-      />
-      <Polygon
-        points={hexPoints(CX, CY, R - SW / 2)}
-        fill={FIELD}
-        stroke={FIELD}
-        strokeWidth={SW}
-        strokeLinejoin="round"
-      />
-      <Polygon
-        points={hexPoints(CX, CY, R - 5)}
-        fill="none"
-        stroke={`url(#${frameId})`}
-        strokeWidth={8}
-        strokeLinejoin="round"
-      />
-      <G
-        transform={`translate(${CX} ${cy}) scale(0.5) translate(-50 -51) scale(0.09765625) translate(0 1024) scale(0.1 -0.1)`}
-      >
-        <Path fill={m.light} d={VORTEX_PATH} />
-      </G>
-    </>
-  );
+/** Four-point star, the glint. */
+function starPath(x: number, y: number, r: number): string {
+  const f = (n: number) => n.toFixed(1);
+  return `M${f(x)} ${f(y - r)} Q${f(x)} ${f(y)} ${f(x + r)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y + r)} Q${f(x)} ${f(y)} ${f(x - r)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y - r)} Z`;
 }
+
+const FRAME = hexPts(CX, CY, R);
+const TRACK = hexPts(CX, CY, TRACK_R);
+const HALO = hexPts(CX, CY, HALO_R);
+const TRACK_LEN = 6 * TRACK_R;
+/** Glint anchors: the upper-right and lower-left corners of the frame. */
+const GLINT_A: Pt = [FRAME[1][0] + 2, FRAME[1][1] - 8];
+const GLINT_B: Pt = [FRAME[4][0] - 3, FRAME[4][1] + 7];
+
+// ── shared pieces ────────────────────────────────────────────────────────
 
 function frameGradient(m: Metal, id: string) {
   return m.holo ? (
     <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-      <Stop offset="0" stopColor="#7CF9D4" />
-      <Stop offset="0.28" stopColor="#7FB2FF" />
-      <Stop offset="0.55" stopColor="#C08CFF" />
-      <Stop offset="0.78" stopColor="#FF7FB8" />
-      <Stop offset="1" stopColor="#FFD97F" />
+      {HOLO.map((c, i) => (
+        <Stop key={c} offset={i / (HOLO.length - 1)} stopColor={c} />
+      ))}
     </LinearGradient>
   ) : (
     <LinearGradient id={id} x1="0" y1="0" x2="0" y2="1">
@@ -190,74 +202,253 @@ function frameGradient(m: Metal, id: string) {
   );
 }
 
-/**
- * One orbiting ball: a plain View, positioned by the native driver. Two of
- * these exist per ball (an under-shield copy and an over-shield copy); each
- * is only visible on the half of the orbit it belongs to.
- */
-function OrbitBall({
-  m,
-  t,
-  phase,
-  layer,
-  tables,
-  k,
-}: {
-  m: Metal;
-  t: Animated.Value;
-  /** 0 or 0.5, the second ball rides opposite the first. */
-  phase: number;
-  layer: "front" | "back";
-  tables: ReturnType<typeof orbitTables>;
-  /** viewBox units → pixels. */
-  k: number;
-}) {
-  const d = BALL_R * 2 * k;
-  // Shift the lookup so the ball starts half an orbit later.
-  const shifted = (arr: number[]) => {
-    const off = Math.round(phase * STEPS);
-    const out = arr.slice(off).concat(arr.slice(1, off + 1));
-    return out;
-  };
-  const xs = shifted(tables.x).map((v) => v * k - d / 2);
-  const ys = shifted(tables.y).map((v) => v * k - d / 2);
-  const fronts = shifted(tables.front).map((v) => (layer === "front" ? v : 1 - v));
-  const scales = shifted(tables.scale);
+function gemGradient(m: Metal, id: string) {
+  return (
+    <RadialGradient id={id} cx="0.36" cy="0.28" r="0.95">
+      <Stop offset="0" stopColor={m.light} />
+      <Stop offset="0.45" stopColor={m.base} />
+      <Stop offset="0.82" stopColor={m.dark} />
+      <Stop offset="1" stopColor={m.deep} />
+    </RadialGradient>
+  );
+}
 
+/** Eight blades and a soft glow behind the shield (Elite and up). */
+function Rays({ m, frameId, glowId }: { m: Metal; frameId: string; glowId: string }) {
+  const blades = [];
+  for (let i = 0; i < 8; i++) {
+    blades.push(
+      <Path
+        key={i}
+        transform={`rotate(${i * 45} ${CX} ${CY})`}
+        d={`M${CX} ${CY - 60} L${CX + 4.5} ${CY - 27} L${CX - 4.5} ${CY - 27} Z`}
+        fill={m.holo ? `url(#${frameId})` : m.light}
+        opacity={m.holo ? 0.55 : 0.32}
+      />,
+    );
+  }
+  return (
+    <>
+      <Circle cx={CX} cy={CY} r={78} fill={`url(#${glowId})`} />
+      {blades}
+    </>
+  );
+}
+
+/**
+ * The shield: drop, field, frame, and every frame detail the tier has
+ * earned at this size. Shared by both render paths.
+ */
+function Shield({
+  tier,
+  size,
+  m,
+  frameId,
+  glossId,
+  sheenId,
+  sheenRect,
+}: {
+  tier: TierName;
+  size: number;
+  m: Metal;
+  frameId: string;
+  glossId: string;
+  sheenId: string;
+  /** The animated sheen band, rendered under the frame mask when present. */
+  sheenRect?: ReactNode;
+}) {
+  const facetPts = hexPts(CX, CY, R - 5.5);
+  const shades = [m.light, m.base, m.dark, m.deep, m.dark, m.light];
+  const gloss = has(tier, size, "gloss");
+  return (
+    <>
+      <Polygon
+        points={attr(hexPts(CX, CY + 4, R - SW / 2))}
+        fill={m.deep}
+        stroke={m.deep}
+        strokeWidth={SW}
+        strokeLinejoin="round"
+      />
+      <Polygon
+        points={attr(hexPts(CX, CY, R - SW / 2))}
+        fill={FIELD}
+        stroke={FIELD}
+        strokeWidth={SW}
+        strokeLinejoin="round"
+      />
+      <Polygon
+        points={attr(facetPts)}
+        fill="none"
+        stroke={`url(#${frameId})`}
+        strokeWidth={SW - 3}
+        strokeLinejoin="round"
+      />
+      {has(tier, size, "facets")
+        ? facetPts.map((a, i) => {
+            const b = facetPts[(i + 1) % 6];
+            return (
+              <Line
+                key={i}
+                x1={a[0]}
+                y1={a[1]}
+                x2={b[0]}
+                y2={b[1]}
+                stroke={shades[i]}
+                strokeWidth={SW - 3}
+                strokeLinecap="round"
+                opacity={m.holo ? 0.28 : 0.55}
+              />
+            );
+          })
+        : null}
+      {has(tier, size, "bevel") ? (
+        <>
+          <Polygon
+            points={attr(hexPts(CX, CY, R - SW + 2.5))}
+            fill="none"
+            stroke={m.deep}
+            strokeWidth={1.3}
+            strokeLinejoin="round"
+            opacity={0.9}
+          />
+          <Polygon
+            points={attr(hexPts(CX, CY, R + 0.5))}
+            fill="none"
+            stroke={m.light}
+            strokeWidth={0.9}
+            strokeLinejoin="round"
+            opacity={0.5}
+          />
+        </>
+      ) : null}
+      {gloss || sheenRect ? (
+        <G mask={`url(#${sheenId})`}>
+          <G transform={`rotate(-28 ${CX} ${CY})`}>
+            {sheenRect ?? (
+              <Rect x={40} y={-60} width={120} height={280} fill={`url(#${glossId})`} opacity={0.45} />
+            )}
+          </G>
+        </G>
+      ) : null}
+      {has(tier, size, "studs")
+        ? FRAME.map(([x, y], i) => (
+            <Circle key={i} cx={x} cy={y} r={2.6} fill={m.light} stroke={m.deep} strokeWidth={0.9} />
+          ))
+        : null}
+      <G
+        transform={`translate(${CX} ${CY + 1}) scale(${(EMBLEM_W / 1024).toFixed(5)}) translate(-512 -512) translate(0 1024) scale(0.1 -0.1)`}
+      >
+        <Path fill={m.light} d={VORTEX_PATH} />
+      </G>
+    </>
+  );
+}
+
+/** Track base, lit fraction, halo. The gem is drawn by the caller. */
+function Track({ tier, size, stage, m, frameId }: { tier: TierName; size: number; stage: number; m: Metal; frameId: string }) {
+  const lit = TRACK_LEN * (stage / 4);
+  return (
+    <>
+      {has(tier, size, "halo") ? (
+        <Polygon
+          points={attr(HALO)}
+          fill="none"
+          stroke={m.holo ? `url(#${frameId})` : m.base}
+          strokeWidth={1.1}
+          strokeLinejoin="round"
+          opacity={m.holo ? 0.7 : 0.45}
+        />
+      ) : null}
+      <Polygon points={attr(TRACK)} fill="none" stroke={m.deep} strokeWidth={2.8} strokeLinejoin="round" opacity={0.75} />
+      <Path
+        d={pathOf(TRACK)}
+        fill="none"
+        stroke={m.holo ? `url(#${frameId})` : m.base}
+        strokeWidth={2.8}
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        strokeDasharray={[lit, TRACK_LEN]}
+      />
+    </>
+  );
+}
+
+function Gem({ x, y, gemId, m }: { x: number; y: number; gemId: string; m: Metal }) {
+  return (
+    <>
+      <Circle cx={x} cy={y} r={GEM_R} fill={`url(#${gemId})`} stroke={m.deep} strokeWidth={0.9} />
+      <Circle cx={x - GEM_R * 0.25} cy={y - GEM_R * 0.42} r={GEM_R * 0.32} fill="#FAFDF3" opacity={0.92} />
+    </>
+  );
+}
+
+function SharedDefs({ m, ids }: { m: Metal; ids: Ids }) {
+  return (
+    <Defs>
+      {frameGradient(m, ids.frame)}
+      {gemGradient(m, ids.gem)}
+      <RadialGradient id={ids.glow}>
+        <Stop offset="0" stopColor={m.base} stopOpacity={0.35} />
+        <Stop offset="0.6" stopColor={m.base} stopOpacity={0.08} />
+        <Stop offset="1" stopColor={m.base} stopOpacity={0} />
+      </RadialGradient>
+      <LinearGradient id={ids.gloss} x1="0" y1="0" x2="1" y2="0">
+        <Stop offset="0" stopColor="#FFFFFF" stopOpacity={0} />
+        <Stop offset="0.5" stopColor="#FFFFFF" stopOpacity={0.9} />
+        <Stop offset="1" stopColor="#FFFFFF" stopOpacity={0} />
+      </LinearGradient>
+      {/* The frame ring as a mask: gloss and sheen only exist on the metal. */}
+      <Mask id={ids.sheen} maskUnits="userSpaceOnUse" x="0" y="0" width={VB_W} height={VB_H}>
+        <Polygon
+          points={attr(hexPts(CX, CY, R - 5.5))}
+          fill="none"
+          stroke="#fff"
+          strokeWidth={SW - 3}
+          strokeLinejoin="round"
+        />
+      </Mask>
+    </Defs>
+  );
+}
+
+type Ids = { frame: string; gem: string; glow: string; gloss: string; sheen: string };
+
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
+
+/** A glint as a native-driven view so it can twinkle without touching SVG props. */
+function Glint({
+  at,
+  k,
+  r,
+  t,
+  invert,
+}: {
+  at: Pt;
+  k: number;
+  r: number;
+  t: Animated.Value;
+  /** The second glint runs half a cycle behind the first. */
+  invert: boolean;
+}) {
+  const d = r * 2 * k;
+  const range = invert ? [1, 0.2] : [0.2, 1];
+  const scaleRange = invert ? [1, 0.6] : [0.6, 1];
   return (
     <Animated.View
       pointerEvents="none"
       style={{
         position: "absolute",
-        left: 0,
-        top: 0,
+        left: at[0] * k - d / 2,
+        top: at[1] * k - d / 2,
         width: d,
         height: d,
-        borderRadius: d / 2,
-        backgroundColor: m.base,
-        borderWidth: Math.max(0.5, d * 0.06),
-        borderColor: m.deep,
-        opacity: t.interpolate({ inputRange: tables.input, outputRange: fronts }),
-        transform: [
-          { translateX: t.interpolate({ inputRange: tables.input, outputRange: xs }) },
-          { translateY: t.interpolate({ inputRange: tables.input, outputRange: ys }) },
-          { scale: t.interpolate({ inputRange: tables.input, outputRange: scales }) },
-        ],
+        opacity: t.interpolate({ inputRange: [0, 1], outputRange: range }),
+        transform: [{ scale: t.interpolate({ inputRange: [0, 1], outputRange: scaleRange }) }],
       }}
     >
-      {/* Specular highlight, what sells it as a sphere at 12 px. */}
-      <View
-        style={{
-          position: "absolute",
-          left: d * 0.2,
-          top: d * 0.14,
-          width: d * 0.34,
-          height: d * 0.34,
-          borderRadius: d * 0.17,
-          backgroundColor: "#FAFDF3",
-          opacity: 0.92,
-        }}
-      />
+      <Svg width={d} height={d} viewBox={`${-r} ${-r} ${2 * r} ${2 * r}`}>
+        <Path d={starPath(0, 0, r)} fill="#FFFFFF" />
+      </Svg>
     </Animated.View>
   );
 }
@@ -266,158 +457,174 @@ function RankBadgeImpl({
   tier,
   stage = 4,
   size = 44,
-  animated = false,
+  animated = true,
 }: {
   tier: TierName;
   stage?: 1 | 2 | 3 | 4;
   size?: number;
-  /** Orbit the balls. Off by default, list rows should not pay for it. */
+  /** Move the gem, rays and glints. ON by default since 2026-09-04 (Adilzhan
+   * wanted the badge alive everywhere, not only on the Ranks hero). Every
+   * loop is native-driven, so a screen of them costs the UI thread nothing;
+   * pass false for a badge that is about to be captured as an image. */
   animated?: boolean;
 }) {
   const m = METALS[tier];
-  const cy = CY + 1;
-  const height = (size * VB_H) / VB_W;
-  const showRing = stage >= 2;
-  const showBall = stage >= 3;
-  const showBall2 = stage >= 4;
+  const height = size * BADGE_ASPECT;
   const uid = `${tier.replace(/\s/g, "")}${stage}${animated ? "a" : "s"}`;
-  const frameId = `f${uid}`;
-  const ballId = `b${uid}`;
-  const maskId = `m${uid}`;
+  const ids: Ids = useMemo(
+    () => ({ frame: `f${uid}`, gem: `g${uid}`, glow: `w${uid}`, gloss: `l${uid}`, sheen: `k${uid}` }),
+    [uid],
+  );
+  const rays = has(tier, size, "rays");
+  const glints = has(tier, size, "glints");
+  const sheen = animated && has(tier, size, "sheen");
 
-  const t = useRef(new Animated.Value(0)).current;
-  const tables = useMemo(() => orbitTables(cy), [cy]);
+  const lap = useRef(new Animated.Value(0)).current;
+  const turn = useRef(new Animated.Value(0)).current;
+  const twinkle = useRef(new Animated.Value(0)).current;
+  const slide = useRef(new Animated.Value(0)).current;
+  const tables = useMemo(() => trackTables(TRACK), []);
 
   useEffect(() => {
-    if (!animated || !showBall) return;
-    const loop = Animated.loop(
-      Animated.timing(t, {
-        toValue: 1,
-        duration: ORBIT_MS,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }),
-    );
-    loop.start();
-    return () => loop.stop();
-  }, [animated, showBall, t]);
+    if (!animated) return;
+    lap.setValue(0);
+    const loops = [
+      Animated.loop(Animated.timing(lap, { toValue: 1, duration: LAP_MS, easing: Easing.linear, useNativeDriver: true })),
+    ];
+    if (rays) {
+      loops.push(
+        Animated.loop(Animated.timing(turn, { toValue: 1, duration: RAY_MS, easing: Easing.linear, useNativeDriver: true })),
+      );
+    }
+    if (glints) {
+      loops.push(
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(twinkle, { toValue: 1, duration: TWINKLE_MS, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+            Animated.timing(twinkle, { toValue: 0, duration: TWINKLE_MS, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+          ]),
+        ),
+      );
+    }
+    if (sheen) {
+      // JS-driven on purpose: an SVG prop under a mask. One badge at a time.
+      loops.push(
+        Animated.loop(
+          Animated.sequence([
+            Animated.timing(slide, { toValue: 1, duration: SHEEN_MS * 0.6, easing: Easing.inOut(Easing.quad), useNativeDriver: false }),
+            Animated.delay(SHEEN_MS * 0.4),
+          ]),
+        ),
+      );
+    }
+    loops.forEach((l) => l.start());
+    return () => loops.forEach((l) => l.stop());
+  }, [animated, rays, glints, sheen, lap, turn, twinkle, slide]);
 
   // ── animated path ───────────────────────────────────────────────────────
-  if (animated && showBall) {
+  if (animated) {
     const k = size / VB_W;
+    const gd = GEM_R * 2 * k;
+    const layer = { position: "absolute" as const, left: 0, top: 0 };
     return (
-      <View style={{ width: size, height, justifyContent: "center" }}>
-        {/* under the shield */}
-        <Svg width={size} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} style={{ position: "absolute" }}>
-          <Path
-            d={ellArc(Math.PI, 2 * Math.PI, cy)}
-            fill="none"
-            stroke={m.dark}
-            strokeWidth={4}
-            strokeLinecap="round"
-            opacity={0.9}
-          />
-        </Svg>
-        <OrbitBall m={m} t={t} phase={0} layer="back" tables={tables} k={k} />
-        {showBall2 ? (
-          <OrbitBall m={m} t={t} phase={0.5} layer="back" tables={tables} k={k} />
+      <View style={{ width: size, height }}>
+        {rays ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              layer,
+              {
+                width: size,
+                height,
+                transform: [{ rotate: turn.interpolate({ inputRange: [0, 1], outputRange: ["0deg", "360deg"] }) }],
+              },
+            ]}
+          >
+            <Svg width={size} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`}>
+              <Defs>
+                {frameGradient(m, `${ids.frame}r`)}
+                <RadialGradient id={`${ids.glow}r`}>
+                  <Stop offset="0" stopColor={m.base} stopOpacity={0.35} />
+                  <Stop offset="0.6" stopColor={m.base} stopOpacity={0.08} />
+                  <Stop offset="1" stopColor={m.base} stopOpacity={0} />
+                </RadialGradient>
+              </Defs>
+              <Rays m={m} frameId={`${ids.frame}r`} glowId={`${ids.glow}r`} />
+            </Svg>
+          </Animated.View>
         ) : null}
 
-        {/* the shield, and the near half of the ring */}
-        <Svg width={size} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} style={{ position: "absolute" }}>
-          <Defs>{frameGradient(m, frameId)}</Defs>
-          {shieldParts(m, frameId, cy)}
-          <Path
-            d={ellArc(0, Math.PI, cy)}
-            fill="none"
-            stroke={m.base}
-            strokeWidth={4}
-            strokeLinecap="round"
+        <Svg width={size} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} style={layer}>
+          <SharedDefs m={m} ids={ids} />
+          <Track tier={tier} size={size} stage={stage} m={m} frameId={ids.frame} />
+          <Shield
+            tier={tier}
+            size={size}
+            m={m}
+            frameId={ids.frame}
+            glossId={ids.gloss}
+            sheenId={ids.sheen}
+            sheenRect={
+              sheen ? (
+                <AnimatedRect
+                  x={slide.interpolate({ inputRange: [0, 1], outputRange: [-140, 180] })}
+                  y={-60}
+                  width={120}
+                  height={280}
+                  fill={`url(#${ids.gloss})`}
+                  opacity={0.75}
+                />
+              ) : undefined
+            }
           />
         </Svg>
 
-        {/* over the shield */}
-        <OrbitBall m={m} t={t} phase={0} layer="front" tables={tables} k={k} />
-        {showBall2 ? (
-          <OrbitBall m={m} t={t} phase={0.5} layer="front" tables={tables} k={k} />
+        {/* The gem, gliding around the track on the native driver. */}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: gd,
+            height: gd,
+            transform: [
+              { translateX: lap.interpolate({ inputRange: tables.input, outputRange: tables.x.map((v) => v * k - gd / 2) }) },
+              { translateY: lap.interpolate({ inputRange: tables.input, outputRange: tables.y.map((v) => v * k - gd / 2) }) },
+            ],
+          }}
+        >
+          <Svg width={gd} height={gd} viewBox={`${-GEM_R - 1} ${-GEM_R - 1} ${2 * GEM_R + 2} ${2 * GEM_R + 2}`}>
+            <Defs>{gemGradient(m, `${ids.gem}m`)}</Defs>
+            <Gem x={0} y={0} gemId={`${ids.gem}m`} m={m} />
+          </Svg>
+        </Animated.View>
+
+        {glints ? (
+          <>
+            <Glint at={GLINT_A} k={k} r={6.5} t={twinkle} invert={false} />
+            <Glint at={GLINT_B} k={k} r={4.8} t={twinkle} invert />
+          </>
         ) : null}
       </View>
     );
   }
 
-  // ── static path (unchanged) ─────────────────────────────────────────────
-  const front = ballPos(true, cy);
-  const back = ballPos(false, cy);
-
+  // ── static path ─────────────────────────────────────────────────────────
+  const tip = alongHex(TRACK, (stage / 4) % 1);
   return (
     <View style={{ width: size, height }}>
       <Svg width={size} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`}>
-        <Defs>
-          {frameGradient(m, frameId)}
-          <RadialGradient id={ballId} cx="0.36" cy="0.28" r="0.95">
-            <Stop offset="0" stopColor={m.light} />
-            <Stop offset="0.45" stopColor={m.base} />
-            <Stop offset="0.82" stopColor={m.dark} />
-            <Stop offset="1" stopColor={m.deep} />
-          </RadialGradient>
-          {showBall ? (
-            <Mask id={maskId} maskUnits="userSpaceOnUse" x="-20" y="-20" width="210" height="176">
-              <Rect x="-20" y="-20" width="210" height="176" fill="#fff" />
-              <Circle cx={front.x} cy={front.y} r={6 + GAP} fill="#000" />
-              {showBall2 ? <Circle cx={back.x} cy={back.y} r={4.8 + GAP} fill="#000" /> : null}
-            </Mask>
-          ) : null}
-        </Defs>
-
-        {showRing ? (
-          <G mask={showBall ? `url(#${maskId})` : undefined}>
-            <Path
-              d={ellArc(Math.PI, 2 * Math.PI, cy)}
-              fill="none"
-              stroke={m.dark}
-              strokeWidth={4}
-              strokeLinecap="round"
-              opacity={0.9}
-            />
-          </G>
-        ) : null}
-        {showBall2 ? (
-          <G>
-            <Circle cx={back.x} cy={back.y} r={4.8} fill={`url(#${ballId})`} />
-            <Circle
-              cx={back.x - 4.8 * 0.04}
-              cy={back.y - 4.8 * 0.44}
-              r={4.8 * 0.28}
-              fill="#FAFDF3"
-              opacity={0.92}
-            />
-          </G>
-        ) : null}
-
-        {shieldParts(m, frameId, cy)}
-
-        {showRing ? (
-          <G mask={showBall ? `url(#${maskId})` : undefined}>
-            <Path
-              d={ellArc(0, Math.PI, cy)}
-              fill="none"
-              stroke={m.base}
-              strokeWidth={4}
-              strokeLinecap="round"
-            />
-          </G>
-        ) : null}
-        {showBall ? (
-          <G>
-            <Circle cx={front.x} cy={front.y} r={6} fill={`url(#${ballId})`} />
-            <Circle
-              cx={front.x - 6 * 0.04}
-              cy={front.y - 6 * 0.44}
-              r={6 * 0.28}
-              fill="#FAFDF3"
-              opacity={0.92}
-            />
-          </G>
+        <SharedDefs m={m} ids={ids} />
+        {rays ? <Rays m={m} frameId={ids.frame} glowId={ids.glow} /> : null}
+        <Track tier={tier} size={size} stage={stage} m={m} frameId={ids.frame} />
+        <Gem x={tip[0]} y={tip[1]} gemId={ids.gem} m={m} />
+        <Shield tier={tier} size={size} m={m} frameId={ids.frame} glossId={ids.gloss} sheenId={ids.sheen} />
+        {glints ? (
+          <>
+            <Path d={starPath(GLINT_A[0], GLINT_A[1], 6.5)} fill="#FFFFFF" opacity={0.9} />
+            <Path d={starPath(GLINT_B[0], GLINT_B[1], 4.8)} fill="#FFFFFF" opacity={0.6} />
+          </>
         ) : null}
       </Svg>
     </View>

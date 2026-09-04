@@ -46,3 +46,9 @@ yarn-error.*
 # Claude Code local state (keep only settings.json)
 .claude/*
 !.claude/settings.json
+
+# Third-party reference animations. These came from a commercial fitness
+# Lottie pack whose licence we cannot produce, so they must never be
+# committed or bundled. Working copies live in .lavish/ only.
+.lavish/SquatReach.json
+.lavish/BenchPress.json

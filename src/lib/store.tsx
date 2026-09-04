@@ -11,13 +11,15 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { emptyDB, getLoadFailure, loadDB, saveDB, wipeLocal, type DB, type SyncedTable } from "./db";
+import { emptyDB, getLoadFailure, loadDB, saveDB, wipeLocal, type DB, type SyncedTable, getSaveFailure } from "./db";
 import { DB_BY_ID, titleCase, toBodyPart, toEquipment } from "./exercisedb";
 import { workoutName } from "./stats";
 import { buildPlan, GOAL_META } from "./plan";
-import { suggestWeight, targetRepsOf } from "./suggest";
+import { getWeightStep, suggestWeight, targetRepsOf } from "./suggest";
+import { deloadActive, deloadWeight } from "./deload";
 import type { RecommendedRoutine } from "./recommended";
-import { sync } from "./sync";
+import { resetSyncCursor, sync } from "./sync";
+import { convertDB } from "./units";
 import { useAuth } from "./auth";
 import { publishRankFromData } from "./social";
 import { setSoundEnabled } from "./sounds";
@@ -32,7 +34,7 @@ import {
   type Settings,
   type Workout,
   type WorkoutEntry,
-} from "../types";
+  type Equipment,} from "../types";
 
 const SYNC_EVERY_MS = 30_000;
 
@@ -76,6 +78,8 @@ interface StoreValue {
   syncNow: () => Promise<void>;
   /** Set when the stored data could not be read on launch (see db.ts). */
   loadError: string | null;
+  /** Non-null when the last save to disk failed; memory is still the truth. */
+  saveError: string | null;
   /** Export the whole local database as a shareable JSON file. */
   exportLocal: () => Promise<{ ok: boolean; error: string | null }>;
   /** Erase everything on this device and start from a blank database. */
@@ -94,6 +98,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const dbRef = useRef<DB>(emptyDB());
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   // Bumped on every commit so consumers re-render off the mutable DB ref.
   const [, setVersion] = useState(0);
 
@@ -123,7 +128,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const commit = useCallback(() => {
     setVersion((v) => v + 1);
-    void saveDB(dbRef.current);
+    void saveDB(dbRef.current).then(() => setSaveError(getSaveFailure()));
   }, []);
 
   const syncNow = useCallback(async () => {
@@ -146,7 +151,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   });
 
   const bury = (table: SyncedTable, id: string) => {
-    dbRef.current.tombstones.push({ table, id, updatedAt: Date.now() });
+    dbRef.current.tombstones = [...dbRef.current.tombstones, { table, id, updatedAt: Date.now() }];
   };
 
   /** Library exercise for a catalog dbId: imports it if missing. */
@@ -163,7 +168,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         dbId,
         updatedAt: 0,
       });
-      dbRef.current.exercises.push(ex);
+      dbRef.current.exercises = [...dbRef.current.exercises, ex];
     }
     return ex;
   };
@@ -179,14 +184,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     addExercise: (e) => {
       const row = stamp({ ...e, id: uid(), updatedAt: 0 });
-      dbRef.current.exercises.push(row);
+      dbRef.current.exercises = [...dbRef.current.exercises, row];
       commit();
       return row;
     },
     updateExercise: (id, patch) => {
       const i = dbRef.current.exercises.findIndex((e) => e.id === id);
       if (i < 0) return;
-      dbRef.current.exercises[i] = stamp({ ...dbRef.current.exercises[i], ...patch });
+      const next = [...dbRef.current.exercises];
+      next[i] = stamp({ ...next[i], ...patch });
+      dbRef.current.exercises = next;
       commit();
     },
     deleteExercise: (id) => {
@@ -196,20 +203,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
 
     saveRoutine: (name, entries, id) => {
-      const routines = dbRef.current.routines;
+      const routines = [...dbRef.current.routines];
       if (id) {
         const i = routines.findIndex((r) => r.id === id);
         if (i >= 0) routines[i] = stamp({ ...routines[i], name, entries });
       } else {
         routines.push(stamp({ id: uid(), name, entries, updatedAt: 0 }));
       }
+      dbRef.current.routines = routines;
       commit();
     },
     updateRoutine: (id, patch) => {
-      const routines = dbRef.current.routines;
+      const routines = [...dbRef.current.routines];
       const i = routines.findIndex((r) => r.id === id);
       if (i < 0) return;
       routines[i] = stamp({ ...routines[i], ...patch });
+      dbRef.current.routines = routines;
       commit();
     },
     deleteRoutine: (id) => {
@@ -232,7 +241,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           })),
         });
       }
-      dbRef.current.routines.push(stamp({ id: uid(), name, entries, updatedAt: 0 }));
+      dbRef.current.routines = [...dbRef.current.routines, stamp({ id: uid(), name, entries, updatedAt: 0 })];
       commit();
     },
     applyPlan: (prefs) => {
@@ -258,7 +267,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             })),
           });
         }
-        dbRef.current.routines.push(
+        dbRef.current.routines = [
+          ...dbRef.current.routines,
           stamp({
             id: uid(),
             name: day.name,
@@ -267,7 +277,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
             weekday: day.weekday,
             updatedAt: 0,
           }),
-        );
+        ];
       }
 
       const s = dbRef.current.settings;
@@ -283,27 +293,53 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
     startWorkout: (routine) => {
       if (dbRef.current.activeWorkout) return;
+      // A deload week eases every prefilled working weight. It applies to
+      // hand-typed routine weights too: the whole point is that THIS WEEK is
+      // lighter, and respecting a typed 120 kg would defeat it.
+      const easing = deloadActive(dbRef.current.settings.deloadUntil, Date.now());
+      const ease = (weight: number, equipment?: Equipment) =>
+        easing ? deloadWeight(weight, getWeightStep(dbRef.current.settings.unit, equipment)) : weight;
       const entries: WorkoutEntry[] = (routine?.entries ?? []).map((e) => {
         const base = e.sets.map((s) => ({ ...s, done: false }));
+        const exercise = dbRef.current.exercises.find((x) => x.id === e.exerciseId);
         // Hand-typed routine weights are respected; weight-less entries
         // (plan routines) get the progression engine's suggestion.
-        if (base.some((s) => s.weight > 0)) return { ...e, sets: base };
-        const ex = dbRef.current.exercises.find((x) => x.id === e.exerciseId);
+        if (base.some((s) => s.weight > 0)) {
+          return {
+            ...e,
+            sets: base.map((s) =>
+              s.type === "warmup" ? s : { ...s, weight: ease(s.weight, exercise?.equipment) },
+            ),
+          };
+        }
         const sug = suggestWeight(
           e.exerciseId,
           targetRepsOf(base),
           dbRef.current.workouts,
           dbRef.current.settings.unit,
-          ex?.equipment,
+          exercise?.equipment,
         );
         if (!sug) return { ...e, sets: base };
-        const tag = sug.kind === "increase" ? ("up" as const) : sug.kind === "deload" ? ("down" as const) : undefined;
+        // A deload from the engine (two misses) and a deload WEEK are the same
+        // intent; applying both stacked to ~76% of the working weight. One
+        // discount, and the arrow says what the bar actually does.
+        const weight = sug.kind === "deload" ? sug.weight : ease(sug.weight, exercise?.equipment);
+        const tag =
+          weight < sug.weight || sug.kind === "deload"
+            ? ("down" as const)
+            : sug.kind === "increase"
+              ? ("up" as const)
+              : undefined;
         return {
           ...e,
           sets: base.map((s) =>
             s.type === "warmup"
               ? s
-              : { ...s, weight: sug.weight, ...(tag ? { suggested: tag } : {}) },
+              : {
+                  ...s,
+                  weight,
+                  ...(tag ? { suggested: tag } : {}),
+                },
           ),
         };
       });
@@ -363,7 +399,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         }))
         .filter((e) => e.sets.length > 0);
       const finished = stamp({ ...w, entries, endedAt: Date.now() });
-      dbRef.current.workouts.push(finished);
+      dbRef.current.workouts = [...dbRef.current.workouts, finished];
       dbRef.current.activeWorkout = null;
       bury("active", w.id);
       commit();
@@ -457,7 +493,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               })),
             });
           }
-          dbRef.current.workouts.push(
+          dbRef.current.workouts = [
+            ...dbRef.current.workouts,
             stamp({
               id: uid(),
               name: day.name,
@@ -467,7 +504,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
               notes: "demo-seed",
               updatedAt: 0,
             }),
-          );
+          ];
         }
       }
       commit();
@@ -481,9 +518,10 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
 
     addMeasurement: (kind, value, unit) => {
-      dbRef.current.measurements.push(
+      dbRef.current.measurements = [
+        ...dbRef.current.measurements,
         stamp({ id: uid(), kind, value, unit, at: Date.now(), updatedAt: 0 }),
-      );
+      ];
       commit();
     },
     deleteMeasurement: (id) => {
@@ -493,15 +531,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
 
     updateSettings: (patch) => {
+      const from = dbRef.current.settings.unit;
+      if (patch.unit && patch.unit !== from) {
+        // Weights are stored in the user's unit, so changing the unit means
+        // converting the data, not relabelling it. Every converted row is
+        // re-stamped so it syncs.
+        const converted = convertDB(dbRef.current, from, patch.unit);
+        const now = Date.now();
+        const restamp = <T extends { updatedAt: number }>(r: T): T => ({ ...r, updatedAt: now });
+        dbRef.current = {
+          ...converted,
+          workouts: converted.workouts.map(restamp),
+          routines: converted.routines.map(restamp),
+          measurements: converted.measurements.map(restamp),
+          activeWorkout: converted.activeWorkout ? restamp(converted.activeWorkout) : null,
+        };
+      }
       dbRef.current.settings = stamp({ ...dbRef.current.settings, ...patch });
       if (patch.sound !== undefined) setSoundEnabled(patch.sound);
       commit();
     },
     syncNow,
     loadError,
+    saveError,
     exportLocal: () => exportData(dbRef.current),
     wipeLocalData: async () => {
       await wipeLocal();
+      // The cursors are per user, but a stale one left behind would make
+      // the next sign-in on this phone believe it had already pulled.
+      if (user) await resetSyncCursor(user.id).catch(() => {});
       dbRef.current = emptyDB();
       setVersion((v) => v + 1);
     },

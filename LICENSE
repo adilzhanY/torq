@@ -1,16 +1,13 @@
-The MIT License (MIT)
+Copyright (c) 2026 Adilzhan Yerzhan. All rights reserved.
 
-Copyright (c) 2015-present 650 Industries, Inc. (aka Expo)
+This repository and the Torq application are proprietary. No licence to use,
+copy, modify, merge, publish, distribute, sublicense or sell any part of this
+software is granted, whether express or implied, except with the prior written
+permission of the copyright holder.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+Third-party components distributed with the application remain under their own
+licences. Their notices are reproduced in the app under Profile, then
+"Open source licences", and in NOTICE at the root of this repository.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

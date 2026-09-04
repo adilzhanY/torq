@@ -127,7 +127,9 @@ export function WorkoutCard({
             text={`${Math.round(workoutVolume(w))} ${settings.unit}`}
             color={C.prAcc}
           />
-          {kcal > 0 ? <IconStat icon="Flame" text={`${kcal} kcal`} color={C.warnAcc} /> : null}
+          {/* "est." is not decoration. A bare number reads as measured, and
+              this is Mifflin-St Jeor times a MET guess, not a calorimeter. */}
+          {kcal > 0 ? <IconStat icon="Flame" text={`~${kcal} kcal`} color={C.warnAcc} /> : null}
           {prCount > 0 ? (
             <IconStat icon="Trophy" text={`${prCount} PR${prCount === 1 ? "" : "s"}`} color={C.gold} />
           ) : null}

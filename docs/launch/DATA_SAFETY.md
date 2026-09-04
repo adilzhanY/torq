@@ -15,10 +15,17 @@ not "simplify" the answers.
 | --- | --- | --- |
 | Does your app collect or share any of the required user data types? | **Yes** | An optional account stores email + workouts |
 | Is all data encrypted in transit? | **Yes** | Supabase and Expo push are HTTPS-only |
-| Do you provide a way to delete data? | **Yes** | In-app: Profile → Your data → Delete my account |
+| Do you provide a way to delete data? | **Yes** | In-app: Profile → Settings → Export and delete → Delete my account |
 
-Deletion URL, if asked: point at the in-app path plus
-`adilzhan1112@gmail.com`.
+Deletion URL: Play wants a **web** page, not only an in-app path. It must be
+reachable without installing the app and must be on the same host as the
+privacy policy. Point it at the deletion page published alongside
+`PRIVACY.md`, and keep `adilzhan1112@gmail.com` on that page as the contact
+of last resort.
+
+Getting the in-app path wrong here is a real rejection cause: a reviewer
+follows this string literally, and the section lives under Settings, not
+directly under Profile.
 
 ## Data types to declare
 
@@ -40,7 +47,25 @@ Deletion URL, if asked: point at the in-app path plus
 - Purposes: **App functionality**.
 - This is the one people get wrong: bodyweight and sex are collected because
   the rank engine normalizes on them, so they must be declared even though
-  they are never shown to other users.
+  no screen in the app ever displays another user's bodyweight or sex.
+- Be careful with the wording. This file used to claim they are "never shown
+  to other users", which was true of the UI and false of the wire: both
+  columns live on `rank_snapshots`, whose RLS lets an accepted friend read
+  the row, and the client used to pull them down. Fixed 2026-08-17 with
+  column-level grants in `supabase/social.sql` plus a narrowed select in
+  `snapshotsByIds`. If either is ever reverted, this declaration becomes
+  false again.
+
+### Photos and videos → Photos
+- Collected: **Yes** (an optional profile picture, chosen from the photo
+  library). Shared: **No**.
+- Optional. Purposes: **App functionality**.
+- Declare it as collected even though it is optional and many users will
+  never set one. The app opens the photo library (`src/lib/avatar.ts`) and
+  uploads the chosen file to Supabase Storage.
+- Note for the reviewer's benefit: the avatar is stored in a bucket serving
+  public URLs, so other signed-in users can retrieve it. That is the same
+  visibility as the handle it sits next to.
 
 ### App activity → Other user-generated content
 - Collected: **Yes** (rank snapshots, rank-up events, workout notes).
@@ -54,11 +79,14 @@ Deletion URL, if asked: point at the in-app path plus
 
 ## Types NOT collected: do not tick these
 
-Location, contacts, photos/videos, audio, files, calendar, SMS, call logs,
-browsing history, search history, installed apps, purchase history,
-financial info, race/ethnicity, political or religious beliefs, sexual
-orientation, health records beyond fitness, advertising ID, crash logs,
-diagnostics, product interaction analytics.
+Location, contacts, audio, files, calendar, SMS, call logs, browsing
+history, search history, installed apps, purchase history, financial info,
+race/ethnicity, political or religious beliefs, sexual orientation, health
+records beyond fitness, advertising ID, crash logs, diagnostics, product
+interaction analytics.
+
+**Photos are NOT on this list**, and used to be. The avatar picker collects
+them. See the "Photos and videos" section above.
 
 torq ships **no analytics or crash-reporting SDK**, so the "App info and
 performance" section is entirely No.
@@ -79,10 +107,15 @@ Be ready to explain in the review notes:
 
 ## Third parties receiving data
 
-- **Supabase**: processor for auth, database, edge functions.
+- **Supabase**: processor for auth, database, storage, edge functions.
 - **Expo Push Service / FCM**: processor for notification delivery only.
-- **GitHub (raw.githubusercontent.com)**: serves exercise images. Receives
-  the image request only, no account data.
+
+GitHub used to appear here as the host for exercise demonstration images.
+Demo media was switched off on 2026-08-16
+(`EXERCISE_MEDIA_ENABLED` in `src/lib/exercisedb.ts`), so the app makes no
+such request and the entry was removed. Google matches this sheet against
+observed traffic, and a declared destination that never appears is still an
+inaccurate sheet. Put it back only if the flag is ever flipped on.
 
 ## Re-check this when
 

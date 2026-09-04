@@ -1,12 +1,13 @@
 /**
  * ExerciseDB catalog: the full open-source dataset (1500+ exercises) from
  * https://oss.exercisedb.dev/api/v1/exercises, snapshotted into
- * src/data/exercisedb.json for offline search. Gifs stay remote on the
- * ExerciseDB CDN (bundling ~1500 gifs would add hundreds of MB); expo-image
- * caches them on disk after first view.
+ * src/data/exercisedb.json for offline search.
  *
  * Refresh the snapshot by re-paginating the API (limit=100, follow
  * meta.nextCursor) into src/data/exercisedb.json.
+ *
+ * DEMO MEDIA IS OFF. See EXERCISE_MEDIA_ENABLED below; the catalog is data
+ * only until licensed clips replace the old gifs.
  */
 import type { BodyPart, Equipment } from "../types";
 import RAW from "../data/exercisedb.json";
@@ -24,7 +25,8 @@ export interface DbExercise {
   /** ExerciseDB id. */
   id: string;
   name: string;
-  gifUrl: string;
+  /** Undefined while EXERCISE_MEDIA_ENABLED is false. Every consumer handles it. */
+  gifUrl?: string;
   bodyParts: string[];
   equipments: string[];
   targetMuscles: string[];
@@ -34,12 +36,29 @@ export interface DbExercise {
 const raw = RAW as RawExercise[];
 
 /**
- * The dataset's gifUrl points at static.exercisedb.dev, a domain with no DNS
- * record (dead). The gifs are served from Adilzhan's mirror of the ExerciseDB
- * repo instead, github.com/adilzhanY/exercise-db holds all 1500 under
- * media/<exerciseId>.gif, delivered via GitHub's raw CDN.
+ * THE MEDIA SEAM. Flip to true and demo clips come back everywhere at once.
+ *
+ * Turned OFF on 2026-08-16 for two reasons, and the second is the real one:
+ *
+ * 1. QUALITY. The gifs are 180x180 with 12 frames. The About tab drew them at
+ *    `width: "100%"`, which on a 3x phone is 984 physical pixels, a 5.5x
+ *    upscale that invents 97% of what you see. A demo you cannot read the grip
+ *    from is not teaching anyone the movement.
+ * 2. LICENCE. They came from ExerciseDB's open v1 endpoint, which publishes the
+ *    DATA and never granted commercial rights to the MEDIA. The vendor has since
+ *    rebranded to AscendAPI and moved its media behind paid plans and signed
+ *    URLs. Mirroring someone else's artwork and shipping it in a paid Play app
+ *    is a takedown risk, and Google removes first and asks later.
+ *
+ * The text is ours to use and is the part that actually instructs, so the About
+ * tab leads with the how-to steps instead. When licensed clips are bought,
+ * point MEDIA_BASE at them, flip this flag, and every screen picks them up:
+ * nothing else reads a URL.
  */
-const GIF_BASE = "https://raw.githubusercontent.com/adilzhanY/exercise-db/main/media";
+export const EXERCISE_MEDIA_ENABLED = false;
+
+/** Where demo clips live once EXERCISE_MEDIA_ENABLED is true. */
+const MEDIA_BASE = "https://raw.githubusercontent.com/adilzhanY/exercise-db/main/media";
 
 export const DB_EXERCISES: DbExercise[] = raw
   .map((e) => ({
@@ -47,7 +66,7 @@ export const DB_EXERCISES: DbExercise[] = raw
     name: e.name,
     // Derived, not stored: the URL is a template around the id, and keeping
     // 1500 copies of it in the snapshot cost 89 KB of startup parsing.
-    gifUrl: `${GIF_BASE}/${e.exerciseId}.gif`,
+    gifUrl: EXERCISE_MEDIA_ENABLED ? `${MEDIA_BASE}/${e.exerciseId}.gif` : undefined,
     bodyParts: e.bodyParts,
     equipments: e.equipments,
     targetMuscles: e.targetMuscles,
@@ -55,10 +74,13 @@ export const DB_EXERCISES: DbExercise[] = raw
   }))
   .sort((a, b) => a.name.localeCompare(b.name));
 
-/** Gif URL by ExerciseDB id (for library rows imported from the catalog). */
-export const DB_GIF_BY_ID: Record<string, string> = Object.fromEntries(
-  DB_EXERCISES.map((e) => [e.id, e.gifUrl]),
-);
+/**
+ * Demo clip URL by ExerciseDB id (for library rows imported from the catalog).
+ * EMPTY while media is off, so every lookup returns undefined.
+ */
+export const DB_GIF_BY_ID: Record<string, string> = EXERCISE_MEDIA_ENABLED
+  ? Object.fromEntries(DB_EXERCISES.map((e) => [e.id, e.gifUrl as string]))
+  : {};
 
 /** Catalog exercise by ExerciseDB id. */
 export const DB_BY_ID: Record<string, DbExercise> = Object.fromEntries(
