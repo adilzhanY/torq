@@ -138,7 +138,7 @@ const Row = React.memo(function Row({
       <View style={{ flex: 1, gap: 1 }}>
         <Txt weight="semibold" numberOfLines={1}>{item.name}</Txt>
         <Txt size={11} color={C.inkFaint}>
-          {item.bodyPart} · {item.equipment}
+          {titleCase(item.bodyPart)} · {titleCase(item.equipment)}
         </Txt>
       </View>
       {selected ? (

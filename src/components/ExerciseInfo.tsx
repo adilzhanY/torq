@@ -25,7 +25,7 @@ import { RankBadge } from "./RankBadge";
 import { WorkoutCard } from "./WorkoutCard";
 import { WorkoutSummary } from "./WorkoutSummary";
 import { useStore } from "../lib/store";
-import { DB_BY_ID, dbInstructions } from "../lib/exercisedb";
+import { DB_BY_ID, dbInstructions, titleCase } from "../lib/exercisedb";
 import { est1RM, exerciseSeries, repMax } from "../lib/stats";
 import { bodyProfileAt } from "../lib/calories";
 import { dotsPoints, kgForPoints, stageOf, tierFor, tierLabel, TIER_COLORS } from "../lib/rank";
@@ -323,8 +323,8 @@ export function ExerciseInfo({
         {tab === "about" ? (
           <>
             <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap" }}>
-              <Pill text={exercise.bodyPart} color={C.inkSoft} bg={C.surface} />
-              <Pill text={exercise.equipment} color={C.inkSoft} bg={C.surface} />
+              <Pill text={titleCase(exercise.bodyPart)} color={C.inkSoft} bg={C.surface} />
+              <Pill text={titleCase(exercise.equipment)} color={C.inkSoft} bg={C.surface} />
               {libRow ? <Pill text="in your library" color={C.goodAcc} bg={C.goodSurf} /> : null}
             </View>
             {exercise.gifUrl ? (
